@@ -1,5 +1,5 @@
-const key          = 'HrJqqxZyt1rttQfp4F7rNe9yqR4cjY542FBDuUHEGvkEEqfx7aUc6yxp'; // API Key
-const secret       = 'O321ILCOl/v2gcutIc9vtMKyiTFRtK8Re9znpNxdyKl56qeLOqRQHZ6rfbQoXyjX2WSU7ttBxZq4gYDGI0Y2yA=='; // API Private Key
+const key          = ''; // API Key
+const secret       = ''; // API Private Key
 const KrakenClient = require('kraken-api');
 const kraken       = new KrakenClient(key, secret);
 const fs = require('fs');
