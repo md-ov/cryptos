@@ -1,8 +1,6 @@
 require('./global.js')
 console.log(globalvar)
-const keys = require('./keys.js')
-const KrakenClient = require('kraken-api');
-const kraken       = new KrakenClient(keys.key, keys.secret);
+const krakenc = krakenclient
 const fs = require('fs');
 const dateFormat = require('dateformat');
 
@@ -21,7 +19,7 @@ const dateFormat = require('dateformat');
 	// a = await kraken.api('OHLC', { pair : 'XXBTZEUR', interval  : 240, since : 0 });
 	// a = await kraken.api('OHLC', { pair : 'BCHEUR', interval  : 240, since : 0 });
 	// a = await kraken.api('OHLC', { pair : 'EOSEUR', interval  : 240, since : 0 });
-	a = await kraken.api('OHLC', { pair : 'XXLMZEUR', interval  : 240, since : 0 });
+	a = await krakenc.api('OHLC', { pair : 'XXLMZEUR', interval  : 240, since : 0 });
 
 	// fs.writeFile('aaa.csv', result.XXBTZEUR, 'utf8', function (err) {
   // if (err) {
