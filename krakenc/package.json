@@ -1,0 +1,23 @@
+{
+  "name": "kraken-client",
+  "version": "1.0.0",
+  "description": "kraken.com API client",
+  "keywords": [
+    "kraken",
+    "api",
+    "btc",
+    "bitcoin"
+  ],
+  "author": "Minh",
+  "contributors": [],
+  "license": "MIT",
+  "dependencies": {
+    "dateformat": "^3.0.3",
+    "kraken-api": "file:npm-kraken-api-master"
+  },
+  "main": "example.js",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "readmeFilename": "readme.txt"
+}
