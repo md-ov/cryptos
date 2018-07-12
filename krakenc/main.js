@@ -1,5 +1,4 @@
 require('./global.js');const krakenc = krakenclient;
-const fs = require('fs');const dateFormat = require('dateformat');
 var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
 } catch(error) { console.error("not a valid json argument"); }
     
@@ -46,6 +45,16 @@ var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
             price: argvJson.price,
             volume : argvJson.vol
         });
+            
+    }
+    
+    else if (argvJson.program == 'closeds') {
+        a = await krakenc.api('ClosedOrders');
+        closeds = a.result.closed
+        closedOdersKeys = Object.keys(closeds)
+        closedOdersKey = closedOdersKeys[argvJson.i]
+        console.log(closedOdersKey)
+        console.log(closeds[closedOdersKey])
             
     }
     
