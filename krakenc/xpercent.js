@@ -2,10 +2,11 @@ require('./global.js');const krakenc = krakenclient;
 var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
 } catch(error) { console.error("not a valid json argument"); }
 const g = argvJson.x;
-const volume = argvJson.vol;
+const vol = argvJson.vol
+const volNumber = new Number(vol);
 var txid1
 var txid2
-console.log("do you want to spend " + argvJson.vol + " BCH and gain " + g * volume / 100 + " BCH in euro ?") 
+console.log("do you want to spend " + argvJson.vol + " BCH and gain " + g * volNumber / 100 + " BCH in euro ?") 
 console.log("type \"yes i want\" to execute")
 console.log("type \"balance\" to know your balance")  
 console.log("type \"price\" to know the open price")    
@@ -60,16 +61,16 @@ stdin.addListener("data", function(d) {
             
             oder1 = await krakenc.api('AddOrder', { pair: 'BCHEUR', type: 'buy', ordertype: 'limit',
                 price: price1,
-                volume : volume
+                volume : vol
             });
             txid1 = oder1.result.txid[0]
             oder2 = await krakenc.api('AddOrder', { pair: 'BCHEUR', type: 'sell', ordertype: 'limit',
                 price: price2,
-                volume : volume
+                volume : vol
             });
             txid2 = oder2.result.txid[0]
             console.log("Orders placed : " + price1 + " " + price2)
-            console.log("Your future balance would be : " + (eurobalance + g*p*volume/100) + "€")
+            console.log("Your future balance would be : " + (eurobalance + g*p*volNumber/100) + "€")
         })();
     }
 });
