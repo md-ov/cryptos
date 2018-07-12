@@ -1,8 +1,6 @@
-require('./global.js')
-console.log(globalvar)
-const krakenc = krakenclient
-const fs = require('fs');
-const dateFormat = require('dateformat');
+require('./global.js');console.log(globalvar);const krakenc = krakenclient;
+
+const fs = require('fs');const dateFormat = require('dateformat');
 
 (async () => {
 	// Display user's balance
@@ -29,11 +27,4 @@ const dateFormat = require('dateformat');
   // }
 	// });
 
-	var file = fs.createWriteStream('bbb.csv');
-	file.on('error', function(err) { console.log("error createWriteStream ") });
-	a.result.XXLMZEUR.forEach(function(v) {
-		var dt = dateFormat(new Date(v[0]*1000), "yyyy-mm-dd'T'hh:MM:ssZ");
-		file.write('XLM;' + dt + ';' + v.join(';') + '\n');
-	});
-	file.end();
 })();
