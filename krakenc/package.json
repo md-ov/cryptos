@@ -10,12 +10,11 @@
   ],
   "author": "Minh",
   "contributors": [],
-  "license": "MIT",
   "dependencies": {
     "dateformat": "^3.0.3",
     "kraken-api": "file:npm-kraken-api-master"
   },
-  "main": "example.js",
+  "main": "main.js",
   "engines": {
     "node": ">=0.10"
   },

@@ -1,0 +1,1 @@
+global.globalvar = 'Welcome to Kraken Client Program'

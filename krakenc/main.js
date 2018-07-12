@@ -1,7 +1,8 @@
-const key          = ''; // API Key
-const secret       = ''; // API Private Key
+require('./global.js')
+console.log(globalvar)
+const keys = require('./keys.js')
 const KrakenClient = require('kraken-api');
-const kraken       = new KrakenClient(key, secret);
+const kraken       = new KrakenClient(keys.key, keys.secret);
 const fs = require('fs');
 const dateFormat = require('dateformat');
 
