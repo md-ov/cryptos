@@ -16,7 +16,7 @@ var txid2
 var stdin = process.openStdin();
 stdin.addListener("data", function(d) {
     var entered = d.toString().trim() // note:  d is an object, and when converted to a string it will end with a linefeed.  so we (rather crudely) account for that with toString() and then trim()
-    console.log("you entered: [" + entered + "]");
+    // console.log("you entered: [" + entered + "]");
     if (entered == "exit") process.exit()
     if (entered == "balance") {
         (async () => {
@@ -74,5 +74,4 @@ stdin.addListener("data", function(d) {
             console.log("Your future balance would be : " + (eurobalance + g*p*volNumber/100) + "€")
         })();
     }
-    console.log("---------");
 });
