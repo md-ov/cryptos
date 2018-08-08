@@ -58,8 +58,19 @@ var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
 
     }
 
+    else if (argvJson.program == 'testsbt') {
+      const exec = require("child_process").exec
+      function puts(error, stdout, stderr) {
+        console.log(stderr)
+        console.log(stdout)
+      }
+      exec("cryptos-apps predict --dt 20180808T16:56", puts)
+    }
+
     else {
 	    console.log("Please enter a valid program name for example : {\"program\":\"balance\"}")
-	}
+	  }
+
+
 
 })();
