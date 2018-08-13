@@ -26,11 +26,21 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
         else "local[*]"
     }
     
+    def encoder(ss: SparkSession): Encoder[CryptoValue] = {
+        import ss.implicits._
+        implicitly[Encoder[CryptoValue]]
+    }
+    
+    def toCryptoValue(line: String): CryptoValue = {
+        CryptoValue()
+    }
 
     def parquetFromCsv(args: ParquetFromCsv): String = {
         val master = getMaster(args.master)
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
+        val ds: Dataset[CryptoValue] = ss.read.textFile(args.csvpath).map(toCryptoValue)(encoder(ss))
+        ds.write.parquet(args.parquetPath)
         "status|SUCCESS"
     }
     
