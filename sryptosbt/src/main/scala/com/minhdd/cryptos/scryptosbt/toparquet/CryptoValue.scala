@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.toparquet
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.tools.Numbers
 import org.joda.time.DateTime
 
 case class CryptoValue
@@ -30,8 +31,8 @@ object CryptoValue {
     
     def parseLine(line: String): Seq[CryptoValue] = {
         val splits = line.split(";")
-        val timestamp: String = splits.apply(6)
-        val value = splits.apply(7)
+        val timestamp: String = splits.apply(5)
+        val value = splits.apply(6)
         val accuracy = splits.apply(3)
         val asset = splits.apply(0)
         val provider = splits.apply(1)
@@ -41,7 +42,7 @@ object CryptoValue {
             new CryptoValue(
                 processingDt = new Timestamp(DateTime.now().getMillis),
                 timestamp = new Timestamp(timestamp.toLong),
-                value = value.toDouble,
+                value = Numbers.toDouble(value),
                 accuracy = 100.00,
                 asset = asset.toUpperCase,
                 currency = currency.toUpperCase,
@@ -51,8 +52,8 @@ object CryptoValue {
             new CryptoValue(
                 processingDt = new Timestamp(DateTime.now().getMillis),
                 timestamp = new Timestamp(timestamp.toLong),
-                value = predictionValue.toDouble,
-                accuracy = accuracy.toDouble,
+                value = Numbers.toDouble(predictionValue),
+                accuracy = Numbers.toDouble(accuracy),
                 asset = asset.toUpperCase,
                 currency = currency.toUpperCase,
                 provider = "PREDICTION",
