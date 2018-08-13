@@ -1,6 +1,6 @@
-package com.minhdd.cryptos.scryptosbt
+package com.minhdd.cryptos.scryptosbt.toparquet
 
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.SparkSession
 
 object Tester {
     def main(args: Array[String]): Unit = {
