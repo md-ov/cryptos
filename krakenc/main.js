@@ -79,8 +79,8 @@ var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
         console.log(stdout)
         console.log(parseResponseFromSbt(stdout))
       }
-      exec("cryptos-apps predict --dt 20180808T16:56", puts)
-      exec("cryptos-apps parquet-from-csv --csvpath adf --parquet-path ppp", puts)
+//      exec("cryptos-apps predict --dt 20180808T16:56", puts)
+      exec("cryptos-apps parquet-from-csv --master local --csvpath adf --parquet-path ppp", puts)
     }
 
     else {

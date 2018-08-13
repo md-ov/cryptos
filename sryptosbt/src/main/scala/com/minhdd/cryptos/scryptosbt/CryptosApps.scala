@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 sealed trait CommandAppArgs
 
@@ -12,13 +13,24 @@ case class Predict(
 ) extends CommandAppArgs
 
 case class ParquetFromCsv(
+    master: String,                     
     csvpath: String,
     parquetPath: String
 ) extends CommandAppArgs
 
 object CryptosApps extends CommandApp[CommandAppArgs]{
     
+    def getMaster(master: String) = {
+        if (master == "local") "local[*]"
+        else if (master == "ov") "local[*]"
+        else "local[*]"
+    }
+    
+
     def parquetFromCsv(args: ParquetFromCsv): String = {
+        val master = getMaster(args.master)
+        val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
+        ss.sparkContext.setLogLevel("WARN")
         "status|SUCCESS"
     }
     
