@@ -60,11 +60,27 @@ var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
 
     else if (argvJson.program == 'testsbt') {
       const exec = require("child_process").exec
+      
+      function parseResponseFromSbt(response) {
+          var fields = response.split(',');
+          var fieldObject = {};
+          
+          if (typeof fields === 'object') {
+             fields.forEach(function(field) {
+                var c = field.trim().split('|');
+                fieldObject[c[0]] = c[1];
+             });
+          }
+          return fieldObject;
+      }
+      
       function puts(error, stdout, stderr) {
         console.log(stderr)
         console.log(stdout)
+        console.log(parseResponseFromSbt(stdout))
       }
       exec("cryptos-apps predict --dt 20180808T16:56", puts)
+      exec("cryptos-apps parquet-from-csv --csvpath adf --parquet-path ppp", puts)
     }
 
     else {
