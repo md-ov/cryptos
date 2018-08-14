@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.CSVFromParquet
+import com.minhdd.cryptos.scryptosbt.{CSVFromParquet, CommandAppArgs}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._

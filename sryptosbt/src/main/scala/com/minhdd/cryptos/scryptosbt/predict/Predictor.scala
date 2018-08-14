@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
-import com.minhdd.cryptos.scryptosbt.Predict
+import com.minhdd.cryptos.scryptosbt.{CommandAppArgs, Predict}
 
 object Predictor {
     def predict(args: Predict): String = {

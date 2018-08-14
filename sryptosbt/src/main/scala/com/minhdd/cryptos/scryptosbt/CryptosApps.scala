@@ -1,29 +1,29 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
-import com.minhdd.cryptos.scryptosbt.predict.Predictor
-import com.minhdd.cryptos.scryptosbt.parquet.{ParquetFromCSVObj, CSVFromParquetObj}
+import com.minhdd.cryptos.scryptosbt.predict.{Predictor}
+import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ParquetFromCSVObj}
 
 sealed trait CommandAppArgs
 
-case class Predict(
-    dt: String,
-    endDt: Option[String],
-    unit: Option[String],
-    step: Option[Int]
-) extends CommandAppArgs
+case class CSVFromParquet(
+                           master: String,
+                           csvpath: String,
+                           parquetPath: String
+                         ) extends CommandAppArgs
 
 case class ParquetFromCsv(
-    master: String,                     
-    csvpath: String,
-    parquetPath: String
-) extends CommandAppArgs
+                           master: String,
+                           csvpath: String,
+                           parquetPath: String
+                         ) extends CommandAppArgs
 
-case class CSVFromParquet(
-    master: String,
-    csvpath: String,
-    parquetPath: String
- ) extends CommandAppArgs
+case class Predict(
+                    dt: String,
+                    endDt: Option[String],
+                    unit: Option[String],
+                    step: Option[Int]
+                  ) extends CommandAppArgs
 
 object CryptosApps extends CommandApp[CommandAppArgs]{
     
