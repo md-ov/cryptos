@@ -14,6 +14,7 @@ class CryptoValueTest extends FunSuite {
             currency = "EUR",
             provider = "KRAKEN",
             datetime = new Timestamp(1523894400000L),
+            year = "2018", day = "16", month = "04",
             value = 0.2265,
             volume = 1087016.31536331,
             count = 584,
