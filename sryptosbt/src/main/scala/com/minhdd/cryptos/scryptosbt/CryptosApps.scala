@@ -20,6 +20,8 @@ case class ParquetFromCsv(
 
 case class Predict(
                     dt: String,
+                    asset: String,
+                    currency: String,
                     endDt: Option[String],
                     unit: Option[String],
                     step: Option[Int]

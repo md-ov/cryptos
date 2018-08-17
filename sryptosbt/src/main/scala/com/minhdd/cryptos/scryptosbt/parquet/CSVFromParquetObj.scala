@@ -19,10 +19,10 @@ object CSVFromParquetObj {
         ss.sparkContext.setLogLevel("WARN")
         import ss.implicits._
         
-        val ds: Dataset[CryptoValue] = ss.read.parquet(args.parquetPath).as[CryptoValue]
+        val ds: Dataset[Crypto] = ss.read.parquet(args.parquetPath).as[Crypto]
         ds.toDF().show(false)
         
-        val dsString: Dataset[String] = ds.map(_.toLine())
+        val dsString: Dataset[String] = ds.map(_.flatten.toLine)
     
         Sparks.csvFromDSString(dsString, args.csvpath)
     
