@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.{CSVFromParquet, CommandAppArgs}
+import com.minhdd.cryptos.scryptosbt.tools.Sparks
+import com.minhdd.cryptos.scryptosbt.CSVFromParquet
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
@@ -22,12 +23,9 @@ object CSVFromParquetObj {
         ds.toDF().show(false)
         
         val dsString: Dataset[String] = ds.map(_.toLine())
-        
-        dsString.coalesce(1)
-          .write.format("com.databricks.spark.csv")
-          .save(args.csvpath)
-        
-        merge(args.csvpath, args.csvpath+".csv")
+    
+        Sparks.csvFromDSString(dsString, args.csvpath)
+    
         "status|SUCCESS"
     }
     
