@@ -14,7 +14,16 @@ case class CryptoPartitionKey (
     day: String                     
 ) {
     def getPartitionPath(parquetDir: String) = {
-        ""
+        val separator = if (parquetDir.contains("/home")) "/" else "\\"
+        val fullParquetDir = if (parquetDir.endsWith(separator)) parquetDir else parquetDir + separator
+        val path = fullParquetDir + 
+          asset + separator + 
+          currency + separator + 
+          year + separator + month + separator + day + separator + 
+          provider + separator +
+          "parquet" 
+        println(path)
+        path
     }
 }
 case class CryptoValue (
