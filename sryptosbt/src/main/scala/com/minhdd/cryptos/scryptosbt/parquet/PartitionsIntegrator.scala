@@ -1,7 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.parquet.ParquetFromCSVObj.encoder
-import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoder, SaveMode, SparkSession}
 
 import scala.util.{Failure, Try}
 
@@ -9,13 +8,17 @@ object PartitionsIntegrator {
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-    
         val ds1: Dataset[Crypto] = getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
-      
-        val result = toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
-        println("")
+        toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
     }
-
+    
+    def run(ss: SparkSession, ds: Dataset[Crypto], parquetsDir: String): Unit = {
+        val partitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] = toPartitions(ss, parquetsDir, ds)
+        
+        partitions.foreach(partition => {
+            partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
+        })
+    }
 
     
     def reduceSeq(seq1: Seq[CryptoPartitionKey], seq2: Seq[CryptoPartitionKey]): Seq[CryptoPartitionKey] = {
@@ -40,12 +43,10 @@ object PartitionsIntegrator {
     }
     
     def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
-        
-        
         import ss.implicits._
         Try {
             ss.read.parquet(path).as[Crypto]
-        }.mapException(e => new Exception("error", e)).toOption
+        }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     
     def toPartitions(ss: SparkSession, parquetsDir: String, ds: Dataset[Crypto]): Seq[(CryptoPartitionKey, Dataset[Crypto])] = {
@@ -54,22 +55,24 @@ object PartitionsIntegrator {
             c.cryptoValue.datetime == b.cryptoValue.datetime
         }
 
-        def unionDataset(ds1: Option[Dataset[Crypto]], ds2: Dataset[Crypto]): Dataset[Crypto] = {
-            if (ds1.isEmpty) ds2 
-            else ds1.get
-              .filter(b => ds2.filter(c => sameDatetime(b, c)).count() == 0)
-              .union(ds2)
+        def unionDataset(existingDataset: Option[Dataset[Crypto]], newDataset: Dataset[Crypto]): Dataset[Crypto] = {
+            if (existingDataset.isEmpty) newDataset 
+            else existingDataset.get
+              .filter(b => newDataset.filter(c => sameDatetime(b, c)).count() == 0)
+              .union(newDataset)
         }
 
         def filterDataset(ds1: Dataset[Crypto], key: CryptoPartitionKey): Dataset[Crypto] = {
             ds1.filter(_.partitionKey.equals(key))
         }
+        val keys: Seq[CryptoPartitionKey] = getPartitionKeys(ss, ds)
         
-        getPartitionKeys(ss, ds)
-          .map(key => {
-              val existingDataset: Option[Dataset[Crypto]] = getPartitionFromPath(ss, key.getPartitionPath(parquetsDir))
-              (key, unionDataset(existingDataset, filterDataset(ds, key)))
-          })
+        keys.map(key => {
+            val existingPartitionDataset: Option[Dataset[Crypto]] = getPartitionFromPath(ss, key.getPartitionPath(parquetsDir))
+            val filteredDataset = filterDataset(ds, key)
+            val newDataset = unionDataset(existingPartitionDataset, filteredDataset)
+            (key, newDataset)
+        })
     }
 
     

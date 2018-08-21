@@ -1,8 +1,8 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
-import com.minhdd.cryptos.scryptosbt.predict.{Predictor}
-import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ParquetFromCSVObj}
+import com.minhdd.cryptos.scryptosbt.predict.Predictor
+import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ParquetFromCSVObj, ToParquetsFromCSV}
 
 sealed trait CommandAppArgs
 
@@ -16,6 +16,12 @@ case class ParquetFromCsv(
                            master: String,
                            csvpath: String,
                            parquetPath: String
+                         ) extends CommandAppArgs
+
+case class ToParquetsFromCsv(
+                           master: String,
+                           csvpath: String,
+                           parquetsDir: String
                          ) extends CommandAppArgs
 
 case class Predict(
@@ -40,6 +46,7 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
             case args: Predict => Predictor.predict(args)
             case args: ParquetFromCsv => ParquetFromCSVObj.run(args, getMaster(args.master))
             case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
+            case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
         })
     }
 }

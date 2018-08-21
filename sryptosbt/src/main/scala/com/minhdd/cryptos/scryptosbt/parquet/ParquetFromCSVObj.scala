@@ -9,14 +9,18 @@ object ParquetFromCSVObj {
         implicitly[Encoder[Crypto]]
     }
     
-    def toCryptoValue(line: String): Seq[Crypto] = {
+    def parseCrypto(line: String): Seq[Crypto] = {
         Crypto.parseLine(line)
+    }
+    
+    def parquet(ss: SparkSession, csvPath: String): Dataset[Crypto] = {
+        ss.read.textFile(csvPath).flatMap(parseCrypto)(encoder(ss))
     }
     
     def run(args: ParquetFromCsv, master: String): String = {
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-        val ds: Dataset[Crypto] = ss.read.textFile(args.csvpath).flatMap(toCryptoValue)(encoder(ss))
+        val ds: Dataset[Crypto] = parquet(ss, args.csvpath)
         ds.write.parquet(args.parquetPath)
         "status|SUCCESS"
     }
