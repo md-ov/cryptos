@@ -12,7 +12,11 @@ case class CryptoPartitionKey (
     year: String,
     month: String,
     day: String                     
-)
+) {
+    def getPartitionPath(parquetDir: String) = {
+        ""
+    }
+}
 case class CryptoValue (
     datetime : Timestamp,
     value: Double,
