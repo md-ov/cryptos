@@ -11,13 +11,27 @@ object PartitionsIntegrator {
         val ds1: Dataset[Crypto] = getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
         toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
     }
+
+    def filterDataset(ds1: Dataset[Crypto], key: CryptoPartitionKey): Dataset[Crypto] = {
+        ds1.filter(_.partitionKey.equals(key))
+    }
     
-    def run(ss: SparkSession, ds: Dataset[Crypto], parquetsDir: String): Unit = {
-        val partitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] = toPartitions(ss, parquetsDir, ds)
+    def run(ss: SparkSession, ds: Dataset[Crypto], parquetsDir: String, partitionElementNumber: Long): Unit = {
         
-        partitions.foreach(partition => {
-            partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
-        })
+        val keys: Seq[CryptoPartitionKey] = getPartitionKeys(ss, ds)
+
+        val newKeys: Seq[CryptoPartitionKey] = keys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
+
+        val newPartitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
+            newKeys.map(key => (key, filterDataset(ds, key)))
+
+        newPartitions
+          .filter(_._2.count() == partitionElementNumber)
+          .foreach(partition => {
+              println("writing partition : " + partition._1)
+              partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
+          })
+
     }
 
     
@@ -49,25 +63,18 @@ object PartitionsIntegrator {
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     
-    def toPartitions(ss: SparkSession, parquetsDir: String, ds: Dataset[Crypto]): Seq[(CryptoPartitionKey, Dataset[Crypto])] = {
-
+    def toPartitions(ss: SparkSession, parquetsDir: String, ds: Dataset[Crypto]): Unit = {
         def sameDatetime(b: Crypto, c: Crypto) = {
             c.cryptoValue.datetime == b.cryptoValue.datetime
         }
 
         def unionDataset(existingDataset: Option[Dataset[Crypto]], newDataset: Dataset[Crypto]): Dataset[Crypto] = {
-            if (existingDataset.isEmpty) newDataset 
+            if (existingDataset.isEmpty) newDataset
             else existingDataset.get
               .filter(b => newDataset.filter(c => sameDatetime(b, c)).count() == 0)
               .union(newDataset)
         }
-
-        def filterDataset(ds1: Dataset[Crypto], key: CryptoPartitionKey): Dataset[Crypto] = {
-            ds1.filter(_.partitionKey.equals(key))
-        }
-        val keys: Seq[CryptoPartitionKey] = getPartitionKeys(ss, ds)
-        
-        keys.map(key => {
+        getPartitionKeys(ss, ds).map(key => {
             val existingPartitionDataset: Option[Dataset[Crypto]] = getPartitionFromPath(ss, key.getPartitionPath(parquetsDir))
             val filteredDataset = filterDataset(ds, key)
             val newDataset = unionDataset(existingPartitionDataset, filteredDataset)

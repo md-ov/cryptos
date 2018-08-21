@@ -12,7 +12,7 @@ object ToParquetsFromCSV {
         
         val ds: Dataset[Crypto] = parquet(ss, args.csvpath)
         
-        PartitionsIntegrator.run(ss, ds, args.parquetsDir)
+        PartitionsIntegrator.run(ss, ds, args.parquetsDir, args.partitionElementNumber)
         
         "status|SUCCESS"
     }

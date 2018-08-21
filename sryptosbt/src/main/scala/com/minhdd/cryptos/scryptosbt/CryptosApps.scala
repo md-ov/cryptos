@@ -21,7 +21,8 @@ case class ParquetFromCsv(
 case class ToParquetsFromCsv(
                            master: String,
                            csvpath: String,
-                           parquetsDir: String
+                           parquetsDir: String,
+                           partitionElementNumber: Long
                          ) extends CommandAppArgs
 
 case class Predict(
