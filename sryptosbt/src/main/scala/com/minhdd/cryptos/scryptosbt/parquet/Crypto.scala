@@ -9,6 +9,7 @@ case class CryptoPartitionKey (
     asset: String,
     currency: String,
     provider: String,
+    api: String,
     year: String,
     month: String,
     day: String                     
@@ -21,16 +22,18 @@ case class CryptoPartitionKey (
           currency + separator + 
           year + separator + month + separator + day + separator + 
           provider + separator +
+          api + separator +
           "parquet" 
         path
     }
 }
+
 case class CryptoValue (
     datetime : Timestamp,
     value: Double,
-    volume: Double,
-    count: Int
+    volume: Double                    
 )
+
 case class CryptoPrediction (
     prediction: Double,
     accuracy: Option[Double],
@@ -38,34 +41,68 @@ case class CryptoPrediction (
 )
 
 object Crypto {
-    def parseLine(line: String): Seq[Crypto] = {
+    def parseOHLC(line: String): Seq[Crypto] = {
         val splits: Array[String] = line.split(";")
         val asset: String = splits.apply(0)
         val currency: String = splits.apply(1)
         val provider: String = splits.apply(2)
-        val timestampPosition = 4
+        val timestampPosition = 5
         val value: String = splits.apply(timestampPosition+1)
         val volume: String = splits.apply(timestampPosition+6)
         val count: String = splits.apply(timestampPosition+7)
         val ts: Timestamps = Timestamps(splits.apply(timestampPosition).toLong*1000)
-        Seq(
-            new Crypto(
-                partitionKey = new CryptoPartitionKey(
-                    asset = asset.toUpperCase,
-                    currency = currency.toUpperCase,
-                    provider = provider.toUpperCase,
-                    year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
-                ),
-                processingDt = new Timestamp(DateTime.now().getMillis),
-                cryptoValue = new CryptoValue(
-                    datetime = ts.timestamp,
-                    value = Numbers.toDouble(value),
-                    volume = Numbers.toDouble(volume),
-                    count = count.toInt
-                ),
-                prediction = None
-            )
+        val partitionKey = new CryptoPartitionKey(
+            asset = asset.toUpperCase,
+            currency = currency.toUpperCase,
+            provider = provider.toUpperCase,
+            api = "OHLC",
+            year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
         )
+        val processingDt = new Timestamp(DateTime.now().getMillis)
+        val cryptoValue = new CryptoValue(
+            datetime = ts.timestamp,
+            value = Numbers.toDouble(value),
+            volume = Numbers.toDouble(volume)
+        )
+        Seq(new Crypto(
+            partitionKey = partitionKey, 
+            cryptoValue = cryptoValue, 
+            tradeMode = None,
+            count = Some(count.toInt),
+            processingDt = processingDt,
+            prediction = None
+        ))
+    }
+    def parseTrade(line: String): Seq[Crypto] = {
+        val splits: Array[String] = line.split(";")
+        val asset: String = splits.apply(0)
+        val currency: String = splits.apply(1)
+        val provider: String = splits.apply(2)
+        val value: String = splits.apply(5)
+        val volume: String = splits.apply(6)
+        val ts: Timestamps = Timestamps((splits.apply(7).toDouble*1000).toLong)
+        val tradeMode: String = splits.apply(8)
+        val partitionKey = new CryptoPartitionKey(
+            asset = asset.toUpperCase,
+            currency = currency.toUpperCase,
+            provider = provider.toUpperCase,
+            api = "TRADES",
+            year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
+        )
+        val processingDt = new Timestamp(DateTime.now().getMillis)
+        val cryptoValue = new CryptoValue(
+            datetime = ts.timestamp,
+            value = Numbers.toDouble(value),
+            volume = Numbers.toDouble(volume)
+        )
+        Seq(new Crypto(
+            partitionKey = partitionKey,
+            cryptoValue = cryptoValue,
+            tradeMode = Some(tradeMode),
+            count = None,
+            processingDt = processingDt,
+            prediction = None
+        ))
     }
 }
 
@@ -73,6 +110,8 @@ case class Crypto
 (
   partitionKey : CryptoPartitionKey,
   cryptoValue : CryptoValue,
+  tradeMode : Option[String],
+  count: Option[Int],
   processingDt : Timestamp,
   prediction : Option[CryptoPrediction]
 ) {
@@ -90,7 +129,6 @@ case class Crypto
             datetime = datetime,
             value = value,
             volume = volume,
-            count = count,
             prediction = prediction.map(_.prediction),
             accuracy = prediction.flatMap(_.accuracy),
             predictionDt = prediction.map(_.predictionDt)
@@ -109,7 +147,6 @@ case class FlattenCrypto (
    datetime : Timestamp,
    value: Double,
    volume: Double,
-   count: Int,
    prediction: Option[Double],
    accuracy: Option[Double],
    predictionDt: Option[Timestamp]
@@ -120,3 +157,4 @@ case class FlattenCrypto (
             a + ";" + f.get(this)
         }.substring(1)
 }
+

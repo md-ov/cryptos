@@ -7,6 +7,7 @@ class CryptoPartitionKeyTest extends FunSuite {
         asset = "XLM",
         currency = "EUR",
         provider = "KRAKEN",
+        api = "OHLC",
         year = "2018",
         month = "08",
         day = "20"
@@ -14,18 +15,18 @@ class CryptoPartitionKeyTest extends FunSuite {
 
     test("testGetPartitionPath") {
         val path = cryptoPartitionKey.getPartitionPath("file:///home/mdao/minh/git/cryptos/data/parquets/")
-        assert (path == "file:///home/mdao/minh/git/cryptos/data/parquets/XLM/EUR/2018/08/20/KRAKEN/parquet")
+        assert (path == "file:///home/mdao/minh/git/cryptos/data/parquets/XLM/EUR/2018/08/20/KRAKEN/OHLC/parquet")
     }
 
     test("testGetPartitionPath 2") {
         val path = cryptoPartitionKey.getPartitionPath("file:///home/mdao/minh/git/cryptos/data/parquets")
-        assert (path == "file:///home/mdao/minh/git/cryptos/data/parquets/XLM/EUR/2018/08/20/KRAKEN/parquet")
+        assert (path == "file:///home/mdao/minh/git/cryptos/data/parquets/XLM/EUR/2018/08/20/KRAKEN/OHLC/parquet")
     }
 
 
     test("testGetPartitionPath for windows") {
         val path = cryptoPartitionKey.getPartitionPath("file:///D:\\ws\\cryptos\\data\\parquets\\parquet")
-        assert (path == "file:///D:\\ws\\cryptos\\data\\parquets\\parquet\\XLM\\EUR\\2018\\08\\20\\KRAKEN\\parquet")
+        assert (path == "file:///D:\\ws\\cryptos\\data\\parquets\\parquet\\XLM\\EUR\\2018\\08\\20\\KRAKEN\\OHLC\\parquet")
     }
 
 

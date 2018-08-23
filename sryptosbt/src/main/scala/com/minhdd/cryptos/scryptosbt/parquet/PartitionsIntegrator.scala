@@ -16,22 +16,24 @@ object PartitionsIntegrator {
         ds1.filter(_.partitionKey.equals(key))
     }
     
-    def run(ss: SparkSession, ds: Dataset[Crypto], parquetsDir: String, partitionElementNumber: Long): Unit = {
-        
-        val keys: Seq[CryptoPartitionKey] = getPartitionKeys(ss, ds)
-
-        val newKeys: Seq[CryptoPartitionKey] = keys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
-
-        val newPartitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
-            newKeys.map(key => (key, filterDataset(ds, key)))
-
-        newPartitions
-          .filter(_._2.count() == partitionElementNumber)
-          .foreach(partition => {
-              println("writing partition : " + partition._1)
-              partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
-          })
-
+    def run(ss: SparkSession, ds: Option[Dataset[Crypto]], parquetsDir: String, minimumNumberOfElementForOnePartition: Long): Unit = {
+        if (ds.isDefined) {
+            val dsGet = ds.get
+            
+            val keys: Seq[CryptoPartitionKey] = getPartitionKeys(ss, dsGet)
+    
+            val newKeys: Seq[CryptoPartitionKey] = keys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
+    
+            val newPartitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
+                newKeys.map(key => (key, filterDataset(dsGet, key)))
+    
+            newPartitions
+              .filter(_._2.count() >= minimumNumberOfElementForOnePartition)
+              .foreach(partition => {
+                  println("writing partition : " + partition._1)
+                  partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
+              })
+        }
     }
 
     

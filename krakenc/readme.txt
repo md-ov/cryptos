@@ -10,9 +10,16 @@ node main.js \{\"program\":\"cancel\",\"txid\":\"OAOW2D-E62UU-AVR6XE\"\}
 node xpercent.js \{\"vol\":0.1,\"x\":10\}
 
 
+
+
+
 node mainCleanOut.js
 node mainGetXLMEUR.js
 
+
+node main-get.js \{\"asset\":\"XLM\",\"currency\":\"EUR\",\"n\":3,\"start\":\"2017-05-08\"\}
+start : date to start retrieve elements
+each request from kraken will give you 1000 elements, if you want to get 3000 elements n would be 3
 
 
 interesting pairs:

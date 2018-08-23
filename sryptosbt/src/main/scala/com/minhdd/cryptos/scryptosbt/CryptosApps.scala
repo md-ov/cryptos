@@ -13,16 +13,18 @@ case class CSVFromParquet(
                          ) extends CommandAppArgs
 
 case class ParquetFromCsv(
+                           api: String,
                            master: String,
                            csvpath: String,
                            parquetPath: String
                          ) extends CommandAppArgs
 
 case class ToParquetsFromCsv(
-                           master: String,
-                           csvpath: String,
-                           parquetsDir: String,
-                           partitionElementNumber: Long
+                              api: String,
+                              master: String,
+                              inputDir: String,
+                              parquetsDir: String,
+                              minimum: Long  //minimum number for one partition
                          ) extends CommandAppArgs
 
 case class Predict(

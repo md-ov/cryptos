@@ -8,7 +8,7 @@ const fs = require('fs');const dateFormat = require('dateformat');
 	file.on('error', function(err) { console.log("error createWriteStream ") });
 	a.result.XXLMZEUR.forEach(function(v) {
 		var dt = dateFormat(new Date(v[0]*1000), dateTimeFormat);
-		file.write(coins.XLM + csvSeparator + 'EUR' + csvSeparator + 'kraken' 
+		file.write(coins.XLM + csvSeparator + 'EUR' + csvSeparator + 'kraken' + csvSeparator + 'OHLC'
 		+ csvSeparator + dt + csvSeparator + v.join(csvSeparator) + returnCharacter);
 	});
 	file.end();

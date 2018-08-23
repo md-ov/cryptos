@@ -19,3 +19,10 @@ global.coins = coins
 global.csvSeparator = ";"
 global.returnCharacter = "\n"
 
+global.getPair = function(asset, currency) {
+  if (asset.toLowerCase()  == 'xlm' && currency.toLowerCase() == 'eur') return 'XXLMZEUR';
+  if (asset.toLowerCase()  == 'xbt' && currency.toLowerCase() == 'eur') return 'XXBTZEUR';
+  if (asset.toLowerCase()  == 'bch' && currency.toLowerCase() == 'eur') return 'BCHEUR';
+  if (asset.toLowerCase()  == 'eos' && currency.toLowerCase() == 'eur') return 'XXLMZEUR';
+  else return '';
+}

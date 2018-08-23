@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.{CommandAppArgs, ParquetFromCsv}
+import com.minhdd.cryptos.scryptosbt.{ParquetFromCsv}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object ParquetFromCSVObj {
@@ -9,19 +9,19 @@ object ParquetFromCSVObj {
         implicitly[Encoder[Crypto]]
     }
     
-    def parseCrypto(line: String): Seq[Crypto] = {
-        Crypto.parseLine(line)
-    }
-    
-    def parquet(ss: SparkSession, csvPath: String): Dataset[Crypto] = {
-        ss.read.textFile(csvPath).flatMap(parseCrypto)(encoder(ss))
-    }
-    
     def run(args: ParquetFromCsv, master: String): String = {
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-        val ds: Dataset[Crypto] = parquet(ss, args.csvpath)
-        ds.write.parquet(args.parquetPath)
+        println(args.csvpath)
+        if (args.api.toLowerCase == "ohlc") {
+            ss.read.textFile("file:///" + args.csvpath)
+              .flatMap(Crypto.parseOHLC)(encoder(ss))
+              .write.parquet(args.parquetPath)
+        } else if (args.api.toLowerCase == "trades") {
+            ss.read.textFile(args.csvpath)
+              .flatMap(Crypto.parseTrade)(encoder(ss))
+              .write.parquet(args.parquetPath)
+        }
         "status|SUCCESS"
     }
 }
