@@ -12,6 +12,17 @@ case class CSVFromParquet(
                            parquetPath: String
                          ) extends CommandAppArgs
 
+case class ExtractToCsv(
+                         master: String,
+                         parquetsDir: String,
+                         asset: String,
+                         currency: String,
+                         csvpath: String,
+                         startDay: String,
+                         endDay: String,
+                         n: Int // number of elements for one day
+                       ) extends CommandAppArgs
+
 case class ParquetFromCsv(
                            api: String,
                            master: String,
@@ -48,8 +59,10 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
         println(options match {
             case args: Predict => Predictor.predict(args)
             case args: ParquetFromCsv => ParquetFromCSVObj.run(args, getMaster(args.master))
-            case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
+            case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
+            case args: ExtractToCsv => ExtractToCsvObj.run(args, getMaster(args.master))
+    
         })
     }
 }
