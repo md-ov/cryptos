@@ -1,1 +1,7 @@
-/sryptosbt/.idea/
+/sryptosbt/.idea
+/krakenc/.idea
+/crypto-scala
+/krakenc/node_modules
+/krakenc/out
+/sryptosbt/project
+/sryptosbt/target
