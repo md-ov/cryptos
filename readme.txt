@@ -36,3 +36,17 @@ cryptos-apps to-parquets-from-csv
 --input-dir D:\\ws\\cryptos\\data\\trades 
 --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets 
 --minimum 500
+
+cryptos-apps to-parquets-from-csv --master local --api trades --input-dir D:\\ws\\cryptos\\data\\trades --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 500
+
+
+cryptos-apps extract-to-csv 
+--master local 
+--parquets-dir file:///D:\\ws\\cryptos\\data\\parquets
+--asset xlm
+--currency eur
+--csvpath D:\\ws\\cryptos\\data\\fromparquet\\extract
+--start-day 2017-05-02
+--end-day 2017-05-06
+
+cryptos-apps extract-to-csv --master local --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --asset xlm --currency eur --csvpath D:\\ws\\cryptos\\data\\fromparquet\\extract --start-day 2017-05-02 --end-day 2017-05-06

@@ -8,7 +8,6 @@ object ParquetFromCSVObj {
     def run(args: ParquetFromCsv, master: String): String = {
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-        println(args.csvpath)
         if (args.api.toLowerCase == "ohlc") {
             ss.read.textFile(args.csvpath)
               .flatMap(Crypto.parseOHLC)(Crypto.encoder(ss))

@@ -10,8 +10,8 @@ object DateTimes {
     val defaultDateFormat = new SimpleDateFormat(defaultFormat)
     
     def getYear(date: String) =  date.substring(0,4)
-    def getMonth(date: String) =  date.substring(4,6)
-    def getDay(date: String) =  date.substring(6,8)
+    def getMonth(date: String) =  date.substring(5,7)
+    def getDay(date: String) =  date.substring(8,10)
     
     def getTime(date: String): Long = {
         getTime(date, DateTimes.defaultFormat)

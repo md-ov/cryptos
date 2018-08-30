@@ -20,13 +20,30 @@ case class CryptoPartitionKey (
         val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir + 
-          asset + separator + 
-          currency + separator + 
+          asset.toUpperCase + separator + 
+          currency.toUpperCase + separator + 
           year + separator + month + separator + day + separator + 
-          provider + separator +
-          api + separator +
+          provider.toUpperCase + separator +
+          api.toUpperCase + separator +
           "parquet" 
         path
+    }
+}
+
+object CryptoPartitionKey {
+    def fusion(keys: Seq[CryptoPartitionKey]): CryptoPartitionKey = {
+        def getFusionValue(values: Seq[String]) = {
+            if (values.size == 1) values.head else values.mkString(":")
+        }
+        CryptoPartitionKey(
+            asset = getFusionValue(keys.map(_.asset).distinct),
+            currency = getFusionValue(keys.map(_.currency).distinct),
+            provider = getFusionValue(keys.map(_.provider).distinct),
+            api = getFusionValue(keys.map(_.api).distinct),
+            year = getFusionValue(keys.map(_.year).distinct),
+            month = getFusionValue(keys.map(_.month).distinct),
+            day = getFusionValue(keys.map(_.day).distinct)
+        )
     }
 }
 

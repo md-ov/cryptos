@@ -23,7 +23,7 @@ class ExtractorTest extends FunSuite {
         val ds: Dataset[Crypto] = 
             getPartitionFromPath(ss, "file://" + getClass.getResource("/parquets/parquet").getPath).get
             
-        val extractedCrypto: Crypto = Extractor.getOneDayCryptoValue(ss, ds, key)
+        val extractedCrypto: Crypto = Extractor.oneDayCryptoValue(ss, "2018-08-29", ds, Seq(key))
     
         assert(extractedCrypto.partitionKey == key)
         assert(extractedCrypto.cryptoValue == CryptoValue(
