@@ -1,10 +1,11 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.tools.Timestamps
-import org.apache.spark.sql.SparkSession
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 object Extractor {
-    def getOneDayCryptoValue(ss: SparkSession, d: String, parquetPath: String, key: CryptoPartitionKey): Crypto = {
+    def getOneDayCryptoValue(ss: SparkSession, ds: Dataset[Crypto], key: CryptoPartitionKey): Crypto = {
+        val d = DateTimes.getDate(key.year, key.month, key.day)
         Crypto(
             partitionKey = key,
             cryptoValue = CryptoValue(
