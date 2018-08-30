@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
 import com.minhdd.cryptos.scryptosbt.predict.Predictor
-import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ParquetFromCSVObj, ToParquetsFromCSV}
+import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV}
 
 sealed trait CommandAppArgs
 

@@ -21,8 +21,8 @@ object ExtractToCsvObj {
             month = month,
             day = day)
         
-        val tradesDs = ss.read.parquet(key.getPartitionPath(args.parquetsDir)).as[Crypto]
-        val tradesDs2: Dataset[(Timestamp, Crypto)] = tradesDs.map(c => (c.cryptoValue.datetime, c))
+//        val tradesDs = ss.read.parquet(key.getPartitionPath(args.parquetsDir)).as[Crypto]
+//        val tradesDs2: Dataset[(Timestamp, Crypto)] = tradesDs.map(c => (c.cryptoValue.datetime, c))
         
         ???        
     }
