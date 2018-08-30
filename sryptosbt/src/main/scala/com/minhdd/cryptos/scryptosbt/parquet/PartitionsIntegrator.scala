@@ -1,14 +1,14 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import org.apache.spark.sql.{Dataset, Encoder, SaveMode, SparkSession}
-
-import scala.util.{Failure, Try}
+import Crypto.getPartitionFromPath
 
 object PartitionsIntegrator {
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-        val ds1: Dataset[Crypto] = getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
+        val ds1: Dataset[Crypto] = 
+            getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
         toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
     }
 
@@ -52,18 +52,7 @@ object PartitionsIntegrator {
           .reduce((seq1, seq2) => reduceSeq(seq1, seq2))
     }
 
-    implicit class TryOps[T](val t: Try[T]) extends AnyVal {
-        def mapException(f: Throwable => Throwable): Try[T] = {
-            t.recoverWith({ case e => Failure(f(e)) })
-        }
-    }
-    
-    def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
-        import ss.implicits._
-        Try {
-            ss.read.parquet(path).as[Crypto]
-        }.mapException(e => new Exception("path is not a parquet", e)).toOption
-    }
+
     
     def toPartitions(ss: SparkSession, parquetsDir: String, ds: Dataset[Crypto]): Unit = {
         def sameDatetime(b: Crypto, c: Crypto) = {

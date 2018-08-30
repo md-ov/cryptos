@@ -3,7 +3,9 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.tools.{Numbers, Timestamps}
-import org.joda.time.DateTime
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+
+import scala.util.{Failure, Try}
 
 case class CryptoPartitionKey (
     asset: String,
@@ -14,9 +16,9 @@ case class CryptoPartitionKey (
     month: String,
     day: String                     
 ) {
-    def getPartitionPath(parquetDir: String) = {
-        val separator = if (!parquetDir.contains("\\")) "/" else "\\"
-        val fullParquetDir = if (parquetDir.endsWith(separator)) parquetDir else parquetDir + separator
+    def getPartitionPath(parquetsDir: String) = {
+        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir + 
           asset + separator + 
           currency + separator + 
@@ -112,6 +114,28 @@ object Crypto {
             prediction = None
         ))
     }
+    
+    def encoder(ss: SparkSession): Encoder[Crypto] = {
+        import ss.implicits._
+        implicitly[Encoder[Crypto]]
+    }
+    
+    implicit class TryOps[T](val t: Try[T]) extends AnyVal {
+        def mapException(f: Throwable => Throwable): Try[T] = {
+            t.recoverWith({ case e => Failure(f(e)) })
+        }
+    }
+    
+    def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
+        Try {
+            ss.read.parquet(path).as[Crypto](encoder(ss))
+        }.mapException(e => new Exception("path is not a parquet", e)).toOption
+    }
+    
+    def getPartition(ss: SparkSession, parquetsDir: String, key: CryptoPartitionKey) = {
+        val path = key.getPartitionPath(parquetsDir)
+        getPartitionFromPath(ss, path)
+    }
 }
 
 case class Crypto
@@ -166,3 +190,5 @@ case class FlattenCrypto (
         }.substring(1)
 }
 
+
+    

@@ -21,12 +21,11 @@ object CSVFromParquetObj {
         
         val ds: Dataset[Crypto] = ss.read.parquet(args.parquetPath).as[Crypto]
         ds.toDF().show(false)
-        
-        val dsString: Dataset[String] = ds.map(_.flatten.toLine)
     
-        Sparks.csvFromDSString(dsString, args.csvpath)
+        Sparks.csvFromDSCrypto(ss, args.csvpath, ds)
     
         "status|SUCCESS"
     }
+    
     
 }

@@ -3,7 +3,6 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import java.io.File
 
 import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
-import com.minhdd.cryptos.scryptosbt.parquet.ParquetFromCSVObj.encoder
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object ToParquetsFromCSV {
@@ -30,9 +29,9 @@ object ToParquetsFromCSV {
         
     
         val ds: Option[Dataset[Crypto]] = if (args.api.toLowerCase == "ohlc") {
-            Some(dsString.flatMap(Crypto.parseOHLC)(encoder(ss)))
+            Some(dsString.flatMap(Crypto.parseOHLC)(Crypto.encoder(ss)))
         } else if (args.api.toLowerCase == "trades") {
-            Some(dsString.flatMap(Crypto.parseTrade)(encoder(ss)))
+            Some(dsString.flatMap(Crypto.parseTrade)(Crypto.encoder(ss)))
         } else None
         
         

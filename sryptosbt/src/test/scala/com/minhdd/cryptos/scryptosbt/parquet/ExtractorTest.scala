@@ -1,9 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import java.sql.Timestamp
-
-import com.minhdd.cryptos.scryptosbt.parquet.PartitionsIntegrator.getPartitionFromPath
-import com.minhdd.cryptos.scryptosbt.tools.Timestamps
+import Crypto.getPartitionFromPath
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 
@@ -24,14 +22,15 @@ class ExtractorTest extends FunSuite {
         )
         val ds: Dataset[Crypto] = 
             getPartitionFromPath(ss, "file://" + getClass.getResource("/parquets/parquet").getPath).get
+            
         val extractedCrypto: Crypto = Extractor.getOneDayCryptoValue(ss, ds, key)
     
         assert(extractedCrypto.partitionKey == key)
         assert(extractedCrypto.cryptoValue == CryptoValue(
-            datetime = Timestamps.getTimestamp("2018-08-29", "yyyy-MM-dd"),
-            value = 0D,
-            volume = 0D,
-            margin = Some(Margin(1D, -1D))
+            datetime = Timestamps.getTimestamp("2018-08-29", DateTimes.defaultFormat),
+            value = 0.19770672916666657,
+            volume = 658154.36368939,
+            margin = Some(Margin(0.203491, 0.192397))
         ))
     }
     

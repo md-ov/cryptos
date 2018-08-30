@@ -6,7 +6,7 @@ class TimestampsTest extends FunSuite {
     
     test("testGetTimestamp 1") {
         val date = "2017-05-08"
-        val ts = Timestamps.getTime(date)
+        val ts = DateTimes.getTime(date)
         assert(ts == 1494194400000L)
     }
     
