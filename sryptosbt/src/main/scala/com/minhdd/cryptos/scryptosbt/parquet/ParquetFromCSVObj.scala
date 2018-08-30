@@ -14,7 +14,7 @@ object ParquetFromCSVObj {
         ss.sparkContext.setLogLevel("WARN")
         println(args.csvpath)
         if (args.api.toLowerCase == "ohlc") {
-            ss.read.textFile("file:///" + args.csvpath)
+            ss.read.textFile(args.csvpath)
               .flatMap(Crypto.parseOHLC)(encoder(ss))
               .write.parquet(args.parquetPath)
         } else if (args.api.toLowerCase == "trades") {
