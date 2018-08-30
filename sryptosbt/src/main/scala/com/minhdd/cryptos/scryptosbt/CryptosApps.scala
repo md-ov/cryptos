@@ -20,7 +20,7 @@ case class ExtractToCsv(
                          csvpath: String,
                          startDay: String,
                          endDay: String,
-                         n: Int // number of elements for one day
+                         n: Option[Int] // number of elements for one day
                        ) extends CommandAppArgs
 
 case class ParquetFromCsv(

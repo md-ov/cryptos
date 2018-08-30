@@ -3,6 +3,7 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.ExtractToCsv
+import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object ExtractToCsvObj {
@@ -12,7 +13,7 @@ object ExtractToCsvObj {
         val month = d.substring(4,6)
         val day = d.substring(6,8)
         
-        val key = new CryptoPartitionKey(
+        val key = CryptoPartitionKey(
             asset = args.asset,
             currency = args.currency,
             provider = "KRAKEN",
@@ -25,6 +26,22 @@ object ExtractToCsvObj {
 //        val tradesDs2: Dataset[(Timestamp, Crypto)] = tradesDs.map(c => (c.cryptoValue.datetime, c))
         
         ???        
+    }
+    
+    def getOneDayValue(ss: SparkSession, d: String, parquetPath: String, key: CryptoPartitionKey): Crypto = {
+        Crypto(
+            partitionKey = key,
+            cryptoValue = CryptoValue(
+                datetime = Timestamps.getTimestamp(d, "yyyy-MM-dd"),
+                value = 0D,
+                volume = 0D,
+                margin = Some(Margin(1D, -1D))
+            ),
+            processingDt = Timestamps.now,
+            count = None,
+            tradeMode = None,
+            prediction = None
+        )
     }
     
     def run(args: ExtractToCsv, master: String): String = {

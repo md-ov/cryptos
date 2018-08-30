@@ -26,12 +26,21 @@ object Timestamps {
         new Timestamps(new Timestamp(timestamp), new DateTime(timestamp))
     }
     
-    def getTime(s: String): Long = {
-        getTime(s, "yyyy-MM-dd")
+    def getTime(date: String): Long = {
+        getTime(date, "yyyy-MM-dd")
     }
     
-    def getTime(s: String, format: String): Long = {
-        val date: Date = new SimpleDateFormat(format).parse(s)
+    def getTime(dateString: String, format: String): Long = {
+        val date: Date = new SimpleDateFormat(format).parse(dateString)
         date.getTime
+    }
+    
+    def now: Timestamp = {
+        new Timestamp(DateTime.now().getMillis)
+    }
+    
+    def getTimestamp(dateString: String, format: String): Timestamp = {
+        val time = getTime(dateString, format)
+        new Timestamp(time)
     }
 }

@@ -31,7 +31,13 @@ case class CryptoPartitionKey (
 case class CryptoValue (
     datetime : Timestamp,
     value: Double,
+    margin: Option[Margin],
     volume: Double                    
+)
+
+case class Margin (
+    superior: Double,
+    inferior: Double
 )
 
 case class CryptoPrediction (
@@ -51,20 +57,21 @@ object Crypto {
         val volume: String = splits.apply(timestampPosition+6)
         val count: String = splits.apply(timestampPosition+7)
         val ts: Timestamps = Timestamps(splits.apply(timestampPosition).toLong*1000)
-        val partitionKey = new CryptoPartitionKey(
+        val partitionKey = CryptoPartitionKey(
             asset = asset.toUpperCase,
             currency = currency.toUpperCase,
             provider = provider.toUpperCase,
             api = "OHLC",
             year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
         )
-        val processingDt = new Timestamp(DateTime.now().getMillis)
-        val cryptoValue = new CryptoValue(
+        val processingDt: Timestamp = Timestamps.now
+        val cryptoValue = CryptoValue(
             datetime = ts.timestamp,
             value = Numbers.toDouble(value),
-            volume = Numbers.toDouble(volume)
+            volume = Numbers.toDouble(volume),
+            margin = None
         )
-        Seq(new Crypto(
+        Seq(Crypto(
             partitionKey = partitionKey, 
             cryptoValue = cryptoValue, 
             tradeMode = None,
@@ -82,20 +89,21 @@ object Crypto {
         val volume: String = splits.apply(6)
         val ts: Timestamps = Timestamps((splits.apply(7).toDouble*1000).toLong)
         val tradeMode: String = splits.apply(8)
-        val partitionKey = new CryptoPartitionKey(
+        val partitionKey = CryptoPartitionKey(
             asset = asset.toUpperCase,
             currency = currency.toUpperCase,
             provider = provider.toUpperCase,
             api = "TRADES",
             year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
         )
-        val processingDt = new Timestamp(DateTime.now().getMillis)
-        val cryptoValue = new CryptoValue(
+        val processingDt = Timestamps.now
+        val cryptoValue = CryptoValue(
             datetime = ts.timestamp,
             value = Numbers.toDouble(value),
-            volume = Numbers.toDouble(volume)
+            volume = Numbers.toDouble(volume),
+            margin = None
         )
-        Seq(new Crypto(
+        Seq(Crypto(
             partitionKey = partitionKey,
             cryptoValue = cryptoValue,
             tradeMode = Some(tradeMode),
@@ -118,7 +126,7 @@ case class Crypto
     def flatten: FlattenCrypto = {
         import partitionKey._
         import cryptoValue._
-        new FlattenCrypto(
+        FlattenCrypto(
             asset =  asset,
             currency = currency,
             provider = provider,

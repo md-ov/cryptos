@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import org.scalatest.FunSuite
 
 class CryptoPartitionKeyTest extends FunSuite {
-    val cryptoPartitionKey = new CryptoPartitionKey(
+    val cryptoPartitionKey = CryptoPartitionKey(
         asset = "XLM",
         currency = "EUR",
         provider = "KRAKEN",
