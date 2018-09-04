@@ -29,7 +29,7 @@ class ExtractorTest extends FunSuite {
         assert(extractedCrypto.cryptoValue == CryptoValue(
             datetime = Timestamps.getTimestamp("2018-08-29", DateTimes.defaultFormat),
             value = 0.19770672916666657,
-            volume = 658154.36368939,
+            volume = 0,
             margin = Some(Margin(0.203491, 0.192397))
         ))
     }
