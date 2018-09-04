@@ -14,24 +14,25 @@ function getTsForKraken(myDate) {
     currency = argvJson.currency;
     pair = getPair(asset, currency);
     var since = getTsForKraken(argvJson.start).toString();
-    console.log(since);
+    var lastsince = since
     for (var i = 1; i <= argvJson.n; i++) {
+      lastsince = since
       try {
+        console.log(since)
         a = await krakenc.api('Trades', { pair : pair, since : since });
         var fileName = './out/trades/' + i + '.csv'
         var file = fs.createWriteStream(fileName);
         file.on('error', function(err) { console.log("error createWriteStream ") });
-        since = a.result.last;
-        console.log(since)
-
         a.result[pair].forEach(function(v) {
       		var dt = dateFormat(new Date(v[2]*1000), dateTimeFormat);
       		file.write(asset + csvSeparator + currency + csvSeparator + 'kraken' + csvSeparator + 'trades'
       		+ csvSeparator + dt + csvSeparator + v.join(csvSeparator) + returnCharacter);
       	});
       	file.end();
+        since = a.result.last;
         console.log(fileName + ' done');
       } catch(error) {
+        since = lastsince
         console.error("problem : "+ since);
         await sleep(10)
         console.log("sleep done")
