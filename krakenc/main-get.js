@@ -16,18 +16,25 @@ function getTsForKraken(myDate) {
     var since = getTsForKraken(argvJson.start).toString();
     console.log(since);
     for (var i = 1; i <= argvJson.n; i++) {
-      a = await krakenc.api('Trades', { pair : pair, since : since });
-      fileName = './out/trades/' + i + '.csv'
-      var file = fs.createWriteStream(fileName);
-      file.on('error', function(err) { console.log("error createWriteStream ") });
-      since = a.result.last;
-      console.log(since)
-      a.result[pair].forEach(function(v) {
-    		var dt = dateFormat(new Date(v[2]*1000), dateTimeFormat);
-    		file.write(asset + csvSeparator + currency + csvSeparator + 'kraken' + csvSeparator + 'trades'
-    		+ csvSeparator + dt + csvSeparator + v.join(csvSeparator) + returnCharacter);
-    	});
-    	file.end();
-      console.log(fileName + ' done');
+      try {
+        a = await krakenc.api('Trades', { pair : pair, since : since });
+        var fileName = './out/trades/' + i + '.csv'
+        var file = fs.createWriteStream(fileName);
+        file.on('error', function(err) { console.log("error createWriteStream ") });
+        since = a.result.last;
+        console.log(since)
+
+        a.result[pair].forEach(function(v) {
+      		var dt = dateFormat(new Date(v[2]*1000), dateTimeFormat);
+      		file.write(asset + csvSeparator + currency + csvSeparator + 'kraken' + csvSeparator + 'trades'
+      		+ csvSeparator + dt + csvSeparator + v.join(csvSeparator) + returnCharacter);
+      	});
+      	file.end();
+        console.log(fileName + ' done');
+      } catch(error) {
+        console.error("problem : "+ since);
+        await sleep(10)
+        console.log("sleep done")
+      }
     }
 })();

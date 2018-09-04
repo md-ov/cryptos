@@ -26,3 +26,8 @@ global.getPair = function(asset, currency) {
   if (asset.toLowerCase()  == 'eos' && currency.toLowerCase() == 'eur') return 'XXLMZEUR';
   else return '';
 }
+
+global.sleep = function(ms) {
+  console.log("sleep now for " + ms + " seconds")
+  return new Promise(resolve => setTimeout(resolve, ms*1000));
+}
