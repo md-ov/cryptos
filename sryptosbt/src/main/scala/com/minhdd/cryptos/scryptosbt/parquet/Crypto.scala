@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.parquet
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.tools.{Numbers, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Numbers, Timestamps}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 import scala.util.{Failure, Try}
@@ -16,6 +16,8 @@ case class CryptoPartitionKey (
     month: String,
     day: String                     
 ) {
+    def date(): String = DateTimes.getDate(year, month, day)
+    
     def getPartitionPath(parquetsDir: String) = {
         val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
