@@ -77,8 +77,17 @@ object ToParquetsFromCSV {
     }
     
     def nextSmallerDate(orderedDates: Seq[String], date: String): String = {
-        val toCheckDate: Date = DateTimes.toDate(date)
-        orderedDates.takeWhile(d => d == date || DateTimes.toDate(d).before(toCheckDate)).last
+        if (orderedDates.isEmpty) {
+            date
+        } else {
+            val first: String = orderedDates.head
+            val toCheckDate: Date = DateTimes.toDate(date)
+            if (date == first || toCheckDate.before(DateTimes.toDate(first))) {
+                first
+            } else {
+                orderedDates.takeWhile(DateTimes.toDate(_).before(toCheckDate)).last
+            }
+        }
     }
     
     def isDateOk(date: String, max: String, min: String): Boolean = {
