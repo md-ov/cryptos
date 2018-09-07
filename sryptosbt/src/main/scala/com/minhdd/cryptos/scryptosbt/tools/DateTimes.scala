@@ -22,12 +22,14 @@ object DateTimes {
         date.getTime
     }
     
+    def toDate(s: String) = defaultDateFormat.parse(s)
+    
     def getDate(year: String, month: String, day: String): String = {
         year + "-" + month + "-" + day
     }
     
     def getDates(startDate: String, endDate: String): Seq[String] = {
-        val date: Date = defaultDateFormat.parse(startDate)
+        val date: Date = toDate(startDate)
         val startTimestamp: Long = getTime(startDate)
         val endTimestamp: Long = getTime(endDate)
         val times: Seq[Long] = getTimes(Seq(), startTimestamp, oneDayTimestampDelta, endTimestamp)
