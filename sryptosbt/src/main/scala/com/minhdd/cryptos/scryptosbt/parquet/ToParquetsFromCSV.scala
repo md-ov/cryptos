@@ -110,9 +110,12 @@ object ToParquetsFromCSV {
     }
     
     def filterDatasets(firstDates: Seq[String], dss: Seq[(String, Dataset[Crypto])], key: CryptoPartitionKey): Dataset[Crypto] = {
-        dss
-          .filter(e => isDateOk(e._1, key.date(), nextSmallerDate(firstDates, key.date())))
-          .map(_._2)
+        val filterDate: String = key.date()
+        dss.indices
+          .filter(i => {
+              (i == dss.size - 1 || dss.apply(i + 1)._1 == filterDate) && isDateOk(dss.apply(i)._1, filterDate, nextSmallerDate(firstDates, filterDate))
+          })
+          .map(dss.apply(_)._2)
           .map(ds => ds.filter(_.partitionKey.equals(key))).reduce(_.union(_))
     }
     
