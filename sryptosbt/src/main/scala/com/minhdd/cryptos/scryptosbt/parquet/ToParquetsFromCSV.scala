@@ -109,14 +109,28 @@ object ToParquetsFromCSV {
             day = DateTimes.getDay(date)))
     }
     
-    def filterDatasets(firstDates: Seq[String], dss: Seq[(String, Dataset[Crypto])], key: CryptoPartitionKey): Dataset[Crypto] = {
-        val filterDate: String = key.date()
-        dss.indices
-          .filter(i => {
-              (i == dss.size - 1 || dss.apply(i + 1)._1 == filterDate) && isDateOk(dss.apply(i)._1, filterDate, nextSmallerDate(firstDates, filterDate))
-          })
-          .map(dss.apply(_)._2)
-          .map(ds => ds.filter(_.partitionKey.equals(key))).reduce(_.union(_))
+    def filterDatasets(firstDates: Seq[String], dss: Seq[(String, Dataset[Crypto])], filterKey: CryptoPartitionKey)
+    : Option[Dataset[Crypto]] = {
+        val filterDate: String = filterKey.date()
+        val seq: Seq[Dataset[Crypto]] = 
+            dss.indices
+              .filter(i => {
+                  (dss.apply(i)._1 == filterDate) || ((i < dss.size - 1) && (dss.apply(i + 1)._1 == filterDate))
+                  //                    isDateOk(dss.apply(i)._1, filterDate, nextSmallerDate(firstDates, filterDate))
+              })
+              .map(dss.apply(_)._2)
+        if (seq.isEmpty) None else {
+            val ds = seq.map(ds => ds.filter(_.partitionKey.equals(filterKey))).reduce((ds1, ds2) => {
+                if (ds2.count == 0) {
+                    ds1
+                } else if (ds1.count == 0) {
+                    ds2
+                } else {
+                    ds2.union(ds1)
+                }
+            })
+            Some(ds)
+        }
     }
     
     private def run(ss: SparkSession, orderedDatasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
@@ -126,22 +140,22 @@ object ToParquetsFromCSV {
             val orderedDatasetsWithFirstDate: Seq[(String, Dataset[Crypto])] = orderedDatasets.map(e => (e._1.date(), e._2))
             
             val firstDates: Seq[String] = orderedDatasetsWithFirstDate.map(_._1)
-            println(firstDates)
     
             val allKeys: Seq[CryptoPartitionKey] = getAllKeys(orderedDatasets)
     
             val newKeys: Seq[CryptoPartitionKey] =
                 allKeys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
-    
-            val newPartitions: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
-                newKeys.map(key => (key, filterDatasets(firstDates, orderedDatasetsWithFirstDate, key)))
+  
+            newKeys.foreach(key => {
+                val partition: Option[Dataset[Crypto]] = filterDatasets(firstDates, orderedDatasetsWithFirstDate, key)
+                if (partition.isDefined) {
+                    println("writing partition : " + key)
+                    partition.get.write.mode(SaveMode.Overwrite).parquet(key.getPartitionPath(parquetsDir))
+                } else {
+                    println("partition is empty : " + key)
+                }
+            })
             
-            newPartitions
-//              .filter(_._2.count() >= minimumNumberOfElementForOnePartition)
-              .foreach(partition => {
-                  println("writing partition : " + partition._1)
-                  partition._2.write.mode(SaveMode.Overwrite).parquet(partition._1.getPartitionPath(parquetsDir))
-              })
         }
     }
 }
