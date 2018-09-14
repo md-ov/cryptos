@@ -6,15 +6,6 @@ import com.minhdd.cryptos.scryptosbt.tools.DateTimes
 
 class ToParquetsFromCSVTest extends FunSuite {
 
-    test("testIsDateOk") {
-        val min = "2017-09-29"
-        val max = "2018-02-15"
-        assert(isDateOk("2017-11-13", max, min))
-        assert(isDateOk(min, max, min))
-        assert(isDateOk(max, max, min))
-        assert(!isDateOk("2017-09-28", max, min))
-        assert(!isDateOk("2018-02-16", max, min))
-    }
     
     test("date before after") {
         assert(DateTimes.toDate("2017-08-05").before(DateTimes.toDate("2017-08-06")))

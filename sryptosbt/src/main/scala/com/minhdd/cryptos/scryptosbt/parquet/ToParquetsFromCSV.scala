@@ -90,23 +90,23 @@ object ToParquetsFromCSV {
         }
     }
     
-    def isDateOk(date: String, max: String, min: String): Boolean = {
-        val toCheckDate: Date = DateTimes.toDate(date)
-        date == max || date == min || (toCheckDate.after(DateTimes.toDate(min)) && toCheckDate.before(DateTimes.toDate(max)))
-    }
-
     def getAllKeys(orderedDatasets: Seq[(CryptoPartitionKey, Dataset[Crypto])]): Seq[CryptoPartitionKey] = {
         val firstKey: CryptoPartitionKey = orderedDatasets.head._1
         val firstDate: String = firstKey.date()
         val lastDate: String = orderedDatasets.last._1.date()
     
-        
         val dates: Seq[String] = DateTimes.getDates(firstDate, lastDate)
-        
         dates.map(date => firstKey.copy(
             year = DateTimes.getYear(date),
             month = DateTimes.getMonth(date),
             day = DateTimes.getDay(date)))
+    }
+    
+    def dateBetween(min: String, toCheck: String, max: String): Boolean = {
+        toCheck == max || (
+          DateTimes.toDate(toCheck).before(DateTimes.toDate(max)) &&
+            DateTimes.toDate(min).before(DateTimes.toDate(toCheck))
+          )
     }
     
     def filterDatasets(firstDates: Seq[String], dss: Seq[(String, Dataset[Crypto])], filterKey: CryptoPartitionKey)
@@ -115,21 +115,16 @@ object ToParquetsFromCSV {
         val seq: Seq[Dataset[Crypto]] = 
             dss.indices
               .filter(i => {
-                  (dss.apply(i)._1 == filterDate) || ((i < dss.size - 1) && (dss.apply(i + 1)._1 == filterDate))
-                  //                    isDateOk(dss.apply(i)._1, filterDate, nextSmallerDate(firstDates, filterDate))
+                  val currentFirstDate = dss.apply(i)._1
+                  (currentFirstDate == filterDate) || 
+                    (i < dss.size - 1 && dateBetween(currentFirstDate, filterDate, dss.apply(i + 1)._1))
               })
               .map(dss.apply(_)._2)
-        if (seq.isEmpty) None else {
-            val ds = seq.map(ds => ds.filter(_.partitionKey.equals(filterKey))).reduce((ds1, ds2) => {
-                if (ds2.count == 0) {
-                    ds1
-                } else if (ds1.count == 0) {
-                    ds2
-                } else {
-                    ds2.union(ds1)
-                }
+        
+        if (seq.isEmpty) None else if (seq.size == 1) seq.headOption else {
+            seq.map(ds => ds.filter(_.partitionKey.equals(filterKey))).reduceOption((ds1, ds2) => {
+                ds1.union(ds2)
             })
-            Some(ds)
         }
     }
     
@@ -152,10 +147,12 @@ object ToParquetsFromCSV {
                     println("writing partition : " + key)
                     partition.get.write.mode(SaveMode.Overwrite).parquet(key.getPartitionPath(parquetsDir))
                 } else {
-                    println("partition is empty : " + key)
+                    println("---- partition is empty : " + key)
                 }
             })
             
+        } else {
+            println("no data")
         }
     }
 }

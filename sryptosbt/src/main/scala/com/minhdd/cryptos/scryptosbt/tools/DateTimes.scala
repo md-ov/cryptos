@@ -2,10 +2,15 @@ package com.minhdd.cryptos.scryptosbt.tools
 
 import java.text.SimpleDateFormat
 import java.util.Date
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+
 
 object DateTimes {
     val defaultFormat = "yyyy-MM-dd"
-    val oneDayTimestampDelta = 86400000
+    
+    val dtfOut: DateTimeFormatter = DateTimeFormat.forPattern(defaultFormat)
     
     val defaultDateFormat = new SimpleDateFormat(defaultFormat)
     
@@ -22,22 +27,19 @@ object DateTimes {
         date.getTime
     }
     
-    def toDate(s: String) = defaultDateFormat.parse(s)
+    def toDate(s: String): Date = defaultDateFormat.parse(s)
     
     def getDate(year: String, month: String, day: String): String = {
         year + "-" + month + "-" + day
     }
     
     def getDates(startDate: String, endDate: String): Seq[String] = {
-        val date: Date = toDate(startDate)
-        val startTimestamp: Long = getTime(startDate)
-        val endTimestamp: Long = getTime(endDate)
-        val times: Seq[Long] = getTimes(Seq(), startTimestamp, oneDayTimestampDelta, endTimestamp)
-        times.map(defaultDateFormat.format)
+        val dateTimes = getDates(Seq(), new DateTime(toDate(startDate)), new DateTime(toDate(endDate)))
+        dateTimes.map(dtfOut.print)
     }
     
-    private def getTimes(dates: Seq[Long], next: Long, delta: Long, end: Long): Seq[Long] = {
-        val newDates: Seq[Long] = dates :+ next
-        if (next == end) newDates else getTimes(newDates, next + delta, delta, end)
+    def getDates(dates: Seq[DateTime], next: DateTime, end: DateTime): Seq[DateTime] = {
+        val newDates: Seq[DateTime] = dates :+ next
+        if (next == end) newDates else getDates(newDates, next.plusDays(1), end )
     }
 }
