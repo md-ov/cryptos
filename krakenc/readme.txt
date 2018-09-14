@@ -18,6 +18,7 @@ node mainGetXLMEUR.js
 
 
 node main-get.js \{\"asset\":\"XLM\",\"currency\":\"EUR\",\"n\":3,\"start\":\"2017-05-08\"\}
+node main-get.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":10000,\"start\":\"2017-12-02\"\}
 start : date to start retrieve elements
 each request from kraken will give you 1000 elements, if you want to get 3000 elements n would be 3
 
@@ -27,3 +28,5 @@ XXBTZEUR
 XXLMZEUR
 BCHEUR
 EOSEUR
+
+
