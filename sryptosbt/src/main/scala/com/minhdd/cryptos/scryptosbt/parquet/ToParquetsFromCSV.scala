@@ -45,9 +45,11 @@ object ToParquetsFromCSV {
             def getNumber(fileName: String) = {
                 fileName.split('.').head.toInt
             }
+    
+            val fileList = getListOfFiles(args.inputDir)
             
             val orderedFileList: Seq[String] = 
-                getListOfFiles(args.inputDir)
+                fileList
                   .sortWith((file1, file2) => {
                       getNumber(file1.getName) < getNumber(file2.getName)
                   })
@@ -69,7 +71,7 @@ object ToParquetsFromCSV {
             } else Nil
     
             run(ss, dsCryptos, args.parquetsDir, args.minimum)
-    
+            println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
             "status|SUCCESS"
         } else {
             "status|ERROR|api"
@@ -121,10 +123,14 @@ object ToParquetsFromCSV {
               })
               .map(dss.apply(_)._2)
         
-        if (seq.isEmpty) None else if (seq.size == 1) seq.headOption else {
-            seq.map(ds => ds.filter(_.partitionKey.equals(filterKey))).reduceOption((ds1, ds2) => {
-                ds1.union(ds2)
-            })
+        if (seq.isEmpty) {
+            None
+        } else if (seq.size == 1) {
+            Some(seq.head.filter(_.partitionKey.equals(filterKey)))
+        } else {
+            seq
+              .map(ds => ds.filter(_.partitionKey.equals(filterKey)))
+              .reduceOption((ds1, ds2) => ds1.union(ds2))
         }
     }
     

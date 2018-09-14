@@ -7,7 +7,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 
 class ParquetsValidator 
-//  extends FunSuite 
+  extends FunSuite 
 {
     
     val ss: SparkSession = SparkSession.builder().appName("test").master("local[*]").getOrCreate()
@@ -34,10 +34,10 @@ class ParquetsValidator
         val allDs: Seq[Dataset[Crypto]] = allDirs.flatMap(getPartitionFromPath(ss,_))
         allDs.map(_.count()).sum
     }
-//    test("test") {
-    def test() {
-        val allLine: Long = countParquetsLine("D:\\ws\\cryptos\\data\\parquets-save")
-        assert(allLine == 2903546L)
+    test("test") {
+//    def test() {
+        val allLine: Long = countParquetsLine("D:\\ws\\cryptos\\data\\parquets\\BCH")
+        assert(allLine == 2496545L) // 2498766 =? 2496 * 1000 + 545
     }
     
 }
