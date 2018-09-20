@@ -24,6 +24,7 @@ global.getPair = function(asset, currency) {
   if (asset.toLowerCase()  == 'xbt' && currency.toLowerCase() == 'eur') return 'XXBTZEUR';
   if (asset.toLowerCase()  == 'bch' && currency.toLowerCase() == 'eur') return 'BCHEUR';
   if (asset.toLowerCase()  == 'eos' && currency.toLowerCase() == 'eur') return 'XXLMZEUR';
+  if (asset.toLowerCase()  == 'bch' && currency.toLowerCase() == 'xbt') return 'BCHXBT';
   else return '';
 }
 
