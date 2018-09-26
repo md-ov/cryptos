@@ -26,8 +26,10 @@ case class ExtractToCsv(
 case class Sampler(
                          master: String,
                          parquetsDir: String,
+                         csvpath: String,
                          asset: String,
-                         currency: String
+                         currency: String,
+                         delta: Double
                        ) extends CommandAppArgs
 
 case class ParquetFromCsv(
