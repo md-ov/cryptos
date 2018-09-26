@@ -15,7 +15,8 @@ node xpercent.js \{\"vol\":0.1,\"x\":10\}
 
 node mainCleanOut.js
 node mainGetXLMEUR.js
-
+node main-get-o.js \{\"asset\":\"XLM\",\"currency\":\"EUR\"\}
+interval : 1 (default), 5, 15, 30, 60, 240, 1440, 10080, 21600
 
 node main-get.js \{\"asset\":\"XLM\",\"currency\":\"EUR\",\"n\":3,\"start\":\"2017-05-08\"\}
 node main-get.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":10000,\"start\":\"2018-01-10\"\}
@@ -29,5 +30,3 @@ XXLMZEUR
 BCHEUR
 EOSEUR
 BCHXBT
-
-
