@@ -31,14 +31,17 @@ case class CryptoPartitionKey (
         path
     }
     
-    def getOHLCPath(parquetsDir: String) = {
+    def getOHLCPath(parquetsDir: String): String = {
+        getOHLCParquetPath(parquetsDir, asset, currency)
+    }
+    
+    def getOHLCParquetPath(parquetsDir: String, asset: String, currency: String): String = {
         val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir +
           asset.toUpperCase + separator +
           currency.toUpperCase + separator +
-          api.toUpperCase + separator +
-          "parquet"
+          "OHLC" + separator + "parquet"
         path
     }
     

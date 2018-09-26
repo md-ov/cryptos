@@ -28,6 +28,9 @@ class CryptoPartitionKeyTest extends FunSuite {
         val path = cryptoPartitionKey.getPartitionPath("file:///D:\\ws\\cryptos\\data\\parquets\\parquet")
         assert (path == "file:///D:\\ws\\cryptos\\data\\parquets\\parquet\\XLM\\EUR\\2018\\08\\20\\KRAKEN\\OHLC\\parquet")
     }
-
-
+    
+    test("getOHLCPath for windows") {
+        val path = cryptoPartitionKey.getOHLCPath("file:///D:\\ws\\cryptos\\data\\parquets\\parquet")
+        assert (path == "file:///D:\\ws\\cryptos\\data\\parquets\\parquet\\XLM\\EUR\\OHLC\\parquet")
+    }
 }
