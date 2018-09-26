@@ -34,10 +34,5 @@ class ParquetsValidator
         val allDs: Seq[Dataset[Crypto]] = allDirs.flatMap(getPartitionFromPath(ss,_))
         allDs.map(_.count()).sum
     }
-    test("test") {
-//    def test() {
-        val allLine: Long = countParquetsLine("D:\\ws\\cryptos\\data\\parquets\\BCH")
-        assert(allLine == 2496545L) // 2498766 =? 2496 * 1000 + 545
-    }
     
 }
