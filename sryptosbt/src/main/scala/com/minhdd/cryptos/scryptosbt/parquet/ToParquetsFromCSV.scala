@@ -6,7 +6,7 @@ import java.util.Date
 import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto.getPartitionFromPath
 import com.minhdd.cryptos.scryptosbt.tools.DateTimes
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, KeyValueGroupedDataset, SaveMode, SparkSession}
 
 import scala.io.Source
 
@@ -38,16 +38,23 @@ object ToParquetsFromCSV {
     
     def run(args: ToParquetsFromCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
-        if (apiLowercased == "ohlc" || apiLowercased == "trades") {
-            val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
-            ss.sparkContext.setLogLevel("WARN")
-    
+        val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
+        ss.sparkContext.setLogLevel("WARN")
+        if (apiLowercased == "ohlc") {
+            val fileList: Seq[String] = getListOfFiles(args.inputDir).map(_.getAbsolutePath)
+            val dss: Seq[(CryptoPartitionKey, Dataset[String])] = 
+                fileList.map(filePath => (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
+            val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] = dss.map(e => {
+                val ds = e._2.flatMap(Crypto.parseOHLC)(Crypto.encoder(ss))
+                (e._1, ds)
+            })
+            runOHLC(ss, dsCryptos, args.parquetsDir, args.minimum)
+            "status|SUCCESS"
+        } else if (apiLowercased == "trades") {
             def getNumber(fileName: String) = {
                 fileName.split('.').head.toInt
             }
-    
             val fileList = getListOfFiles(args.inputDir)
-            
             val orderedFileList: Seq[String] = 
                 fileList
                   .sortWith((file1, file2) => {
@@ -58,19 +65,13 @@ object ToParquetsFromCSV {
             val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = orderedFileList.map(filePath => 
                 (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
     
-            val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] = if (apiLowercased == "ohlc") {
-                orderedDatasets.map(e => {
-                    val ds = e._2.flatMap(Crypto.parseOHLC)(Crypto.encoder(ss))
-                    (e._1, ds)
-                })
-            } else if (apiLowercased == "trades") {
+            val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
                 orderedDatasets.map(e => {
                     val ds = e._2.flatMap(Crypto.parseTrade)(Crypto.encoder(ss))
                     (e._1, ds)
                 })
-            } else Nil
     
-            run(ss, dsCryptos, args.parquetsDir, args.minimum)
+            runTrades(ss, dsCryptos, args.parquetsDir, args.minimum)
             println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
             "status|SUCCESS"
         } else {
@@ -134,19 +135,49 @@ object ToParquetsFromCSV {
         }
     }
     
-    private def run(ss: SparkSession, orderedDatasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
-                    minimumNumberOfElementForOnePartition: Long): Unit = {
-        if (orderedDatasets.nonEmpty) {
+    private def runOHLC(ss: SparkSession, datasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
+                          minimumNumberOfElementForOnePartition: Long): Unit = {
+        type AssetCurrency = (String, String)
+        if (datasets.nonEmpty) {
             
-            val orderedDatasetsWithFirstDate: Seq[(String, Dataset[Crypto])] = orderedDatasets.map(e => (e._1.date(), e._2))
+            val datasetsWithAssetCurrency: Seq[(AssetCurrency, Dataset[Crypto])] = datasets.map(e => {
+                val key = e._1
+                val asset = key.asset
+                val currency = key.currency
+                ((asset, currency), e._2)
+            })
+            
+            val groupedDatasets: Map[AssetCurrency, Seq[Dataset[Crypto]]] = 
+                datasetsWithAssetCurrency.groupBy(_._1).mapValues(_.map(_._2))
+    
+            groupedDatasets.foreach(map => {
+                val dss: Option[Dataset[Crypto]] = map._2.reduceOption(_.union(_))
+                if (dss.isDefined) {
+                    val dssGet = dss.get
+                    val key = dssGet.head().partitionKey
+                    val parquetPath = key.getOHLCPath(parquetsDir)
+                    println("writing partition : " + parquetPath)
+                    dssGet.write.mode(SaveMode.Overwrite).parquet(parquetPath)
+                }
+            })
+        } else {
+            println("no data")
+        }
+    }
+    
+    private def runTrades(ss: SparkSession, datasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
+                    minimumNumberOfElementForOnePartition: Long): Unit = {
+        if (datasets.nonEmpty) {
+            
+            val orderedDatasetsWithFirstDate: Seq[(String, Dataset[Crypto])] = datasets.map(e => (e._1.date(), e._2))
             
             val firstDates: Seq[String] = orderedDatasetsWithFirstDate.map(_._1)
-    
-            val allKeys: Seq[CryptoPartitionKey] = getAllKeys(orderedDatasets)
+            val allKeys: Seq[CryptoPartitionKey] = getAllKeys(datasets)
+            
     
             val newKeys: Seq[CryptoPartitionKey] =
                 allKeys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
-  
+    
             newKeys.foreach(key => {
                 val partition: Option[Dataset[Crypto]] = filterDatasets(firstDates, orderedDatasetsWithFirstDate, key)
                 if (partition.isDefined) {
