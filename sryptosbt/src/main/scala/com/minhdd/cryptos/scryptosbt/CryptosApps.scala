@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
-import com.minhdd.cryptos.scryptosbt.predict.Predictor
+import com.minhdd.cryptos.scryptosbt.predict.{Predictor, SamplerObj}
 import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV}
 
 sealed trait CommandAppArgs
@@ -21,6 +21,13 @@ case class ExtractToCsv(
                          startDay: String,
                          endDay: String,
                          n: Option[Int] // number of elements for one day
+                       ) extends CommandAppArgs
+
+case class Sampler(
+                         master: String,
+                         parquetsDir: String,
+                         asset: String,
+                         currency: String
                        ) extends CommandAppArgs
 
 case class ParquetFromCsv(
@@ -62,6 +69,7 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
             case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
             case args: ExtractToCsv => ExtractToCsvObj.run(args, getMaster(args.master))
+            case args: Sampler => SamplerObj.run(args, getMaster(args.master))
     
         })
     }
