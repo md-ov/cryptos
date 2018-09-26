@@ -32,17 +32,7 @@ case class CryptoPartitionKey (
     }
     
     def getOHLCPath(parquetsDir: String): String = {
-        getOHLCParquetPath(parquetsDir, asset, currency)
-    }
-    
-    def getOHLCParquetPath(parquetsDir: String, asset: String, currency: String): String = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
-        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
-        val path = fullParquetDir +
-          asset.toUpperCase + separator +
-          currency.toUpperCase + separator +
-          "OHLC" + separator + "parquet"
-        path
+        CryptoPartitionKey.getOHLCParquetPath(parquetsDir, asset, currency)
     }
     
 }
@@ -61,6 +51,16 @@ object CryptoPartitionKey {
             month = getFusionValue(keys.map(_.month).distinct),
             day = getFusionValue(keys.map(_.day).distinct)
         )
+    }
+    
+    def getOHLCParquetPath(parquetsDir: String, asset: String, currency: String): String = {
+        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
+        val path = fullParquetDir +
+          asset.toUpperCase + separator +
+          currency.toUpperCase + separator +
+          "OHLC" + separator + "parquet"
+        path
     }
 }
 
