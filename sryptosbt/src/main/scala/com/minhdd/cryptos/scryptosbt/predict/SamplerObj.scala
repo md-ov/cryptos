@@ -21,7 +21,7 @@ object SamplerObj {
     }
     
     def run(args: Sampler, master: String): Unit = {
-        val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
+        val ss: SparkSession = SparkSession.builder().appName("sampler").master(master).getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
