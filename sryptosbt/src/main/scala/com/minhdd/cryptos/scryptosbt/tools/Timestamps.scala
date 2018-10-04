@@ -20,6 +20,9 @@ case class Timestamps(timestamp: Timestamp, datetime: DateTime) {
 }
 
 object Timestamps {
+    
+    val oneDayTimestampDelta = 86400000 
+    
     def apply(timestamp: Long): Timestamps = {
         new Timestamps(new Timestamp(timestamp), new DateTime(timestamp))
     }
