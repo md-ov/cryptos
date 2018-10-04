@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.math
 
-import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object Derivative {
     def derive(i: Seq[Double], j: Seq[Double]): Seq[Double] = {
@@ -78,5 +79,16 @@ object DerivativeDatasetDoubleDouble {
             })
             r.toIterator
         })(encoder(ss))
+    }
+    
+    def deriveWithWindow(d: Dataset[DD], ss: SparkSession) = {
+        import org.apache.spark.sql.expressions.Window
+        val window = Window.orderBy("_1")
+        import org.apache.spark.sql.functions.{lag, lead}
+        
+        d.withColumn("derive", 
+            (lead("_2", 1).over(window) - lag("_2", 1).over(window))
+              /(lead("_1", 1).over(window) - lag("_1", 1).over(window))
+        ).collect().map(_.getAs[Double]("derive")).toSeq
     }
 }
