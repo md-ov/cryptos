@@ -8,36 +8,40 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 object DerivativeCrypto {
     def toX(c: Crypto) = c.cryptoValue.datetime.getTime.toDouble / 1000000
     def toY(c: Crypto) = c.cryptoValue.value
-    def encoder(ss: SparkSession): Encoder[AnalyticsCrypto] = {
+    def encoder(ss: SparkSession): Encoder[(Crypto, Double)] = {
         import ss.implicits._
-        implicitly[Encoder[AnalyticsCrypto]]
+        implicitly[Encoder[(Crypto, Double)]]
     }
     
     def deriveWithWindow(d: Dataset[Crypto], ss: SparkSession): DataFrame = {
-        val first = d.first()
         val deriveColumnName = "derive"
         val datetimeColumnName = "datetime"
+        val valueColumnName = "value"
+        val first = d.first()
+        
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetimeColumnName)
+        
         import org.apache.spark.sql.functions.{lag, lead, col}
         import ss.implicits._
+        
         d.map(c => (c, c.cryptoValue.datetime.getTime.toDouble / 1000000))
           .withColumnRenamed("_2", datetimeColumnName)
           .withColumnRenamed("_1", "crypto")
-          .withColumn("value", col("crypto.cryptoValue.value"))
+          .withColumn(valueColumnName, col("crypto.cryptoValue.value"))
           .withColumn(deriveColumnName,
-            (lead("value", 1).over(window) - lag("value", 1).over(window))
+            (lead(valueColumnName, 1).over(window) - lag(valueColumnName, 1).over(window))
               /
                (lead(datetimeColumnName, 1).over(window) - lag(datetimeColumnName, 1).over(window))
         )
     }
     
-    def derive(d: Dataset[Crypto], ss: SparkSession): Dataset[AnalyticsCrypto] =
-        d.mapPartitions(iterator => new Iterator[AnalyticsCrypto]{
+    def derive(d: Dataset[Crypto], ss: SparkSession): Dataset[(Crypto, Double)] =
+        d.mapPartitions(iterator => new Iterator[(Crypto, Double)]{
             var previous: Option[Crypto] = None
             var actual: Option[Crypto] = if (iterator.hasNext) Some(iterator.next) else None
             override def hasNext: Boolean = actual.isDefined
-            override def next(): AnalyticsCrypto = {
+            override def next(): (Crypto, Double) = {
                 val actualGet: Crypto = actual.get
                 val nextt: Option[Crypto] = if (iterator.hasNext) Some(iterator.next) else None
                 val derived: Double =
@@ -61,7 +65,7 @@ object DerivativeCrypto {
                         (toY(nextGet) - toY(previousGet)) / (toX(nextGet) - toX(previousGet))
                     }
                 
-                AnalyticsCrypto(actualGet, derived)
+                (actualGet, derived)
             }
         })(encoder(ss))
 }
