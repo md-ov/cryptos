@@ -12,22 +12,32 @@ object Explorate {
     val minDeltaValue = 350
     val cryptoValueColumnName = "crypto.cryptoValue.value"
     val datetimeColumnName = "crypto.cryptoValue.datetime"
+    val volumeColumnName = "crypto.cryptoValue.volume"
     
     class CustomSum extends UserDefinedAggregateFunction {
         override def inputSchema: org.apache.spark.sql.types.StructType =
-            StructType(StructField("value", DoubleType) :: Nil)
+            StructType(StructField("toMark", BooleanType) :: Nil)
         
         override def bufferSchema: StructType = StructType(
-            StructField("value", LongType) :: Nil
+            StructField("value", LongType) :: StructField("counter", LongType) :: Nil
         )
         override def dataType: DataType = LongType
         override def deterministic: Boolean = true
         override def initialize(buffer: MutableAggregationBuffer): Unit = {
-            buffer(0) = 0L
+            buffer(0) = 0L // la valeur de sortie
+            buffer(1) = 0L // le compteur
         }
         override def update(buffer: MutableAggregationBuffer, input: Row): Unit = {
-            val value2 = input.getAs[Double](0)
-            if (value2 == 0) buffer(0) = 0L else buffer(0) = buffer.getLong(0) + 1
+            if (buffer(1) != buffer(0)) {
+                buffer(0) = 0L
+                buffer(1) = 0L
+            }
+            buffer(1) = buffer.getLong(1) + 1
+            if (input.getAs[Boolean](0)) {  
+                 
+            } else {  
+                buffer(0) = buffer.getLong(0) + 1 
+            }
         }
         
         override def merge(buffer: MutableAggregationBuffer, buffer2: Row): Unit = {
@@ -59,6 +69,7 @@ object Explorate {
         val window = Window.orderBy(datetimeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
     
         import org.apache.spark.sql.functions.{max, min, col, when}
+        import org.apache.spark.sql.functions.{lit, struct}
     
         val evolutionColumnName = "evolution"
         val evolutionNullValue = "-"
@@ -77,28 +88,30 @@ object Explorate {
 //          .select(datetimeColumnName, "value", "variation", "evolution", "analytics.derive")
 //          .show(1000, false)
     
-        val w = Window.orderBy(datetimeColumnName)
+        val w = Window.orderBy(datetimeColumnName, volumeColumnName)
         
-        val binaryEvolution = when($"evolution" === evolutionNullValue, 1).otherwise(0)
-        val persistenceColumnName = "numberOfStableDay"
+        val binaryEvolution = when($"evolution" === evolutionNullValue, false).otherwise(true)
+        val numberOfStableDayColumnName = "numberOfStableDay"
         val customSum = new CustomSum()
-        val persistence: Column = customSum(binaryEvolution).over(w)
-
-        val ccc: DataFrame = aaa.withColumn(persistenceColumnName, persistence)
-        
+        val ccc: DataFrame = aaa
+          .withColumn("importantChange", binaryEvolution)
+          .withColumn(numberOfStableDayColumnName, customSum(binaryEvolution).over(w))
 //        ccc
-//          .select(datetimeColumnName, "value", "variation", evolutionColumnName, "derive", persistenceColumnName)
+//          .select(datetimeColumnName, "value", "variation", evolutionColumnName, "derive", numberOfStableDayColumnName)
 //          .show(2, false)
     
-        import org.apache.spark.sql.functions.{lit, struct}
         val ddd = ccc
           .withColumn("secondDerive", lit(0))
-          .withColumn("importantChange", when($"evolution" === evolutionNullValue, false).otherwise(true))
+          
           .withColumn("analytics", 
-              struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"evolution"))
+              struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"variation", $"evolution"))
           .select("crypto", "analytics").as[AnalyticsCrypto]
     
-        ddd.show(1000, false)
+        ddd
+          .select("crypto.cryptoValue.datetime","analytics.*")
+          .filter($"importantChange" === true)
+          .filter($"numberOfStableDay" !== 0)
+          .show(1000, false)
     }
     
     
