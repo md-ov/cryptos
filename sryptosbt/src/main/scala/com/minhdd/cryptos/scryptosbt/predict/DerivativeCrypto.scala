@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.predict
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoValue, Margin}
-import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object DerivativeCrypto {
     def toX(c: Crypto) = c.cryptoValue.datetime.getTime.toDouble / 1000000
@@ -13,27 +13,23 @@ object DerivativeCrypto {
         implicitly[Encoder[AnalyticsCrypto]]
     }
     
-    def deriveWithWindow(d: Dataset[Crypto], ss: SparkSession): Dataset[AnalyticsCrypto] = {
+    def deriveWithWindow(d: Dataset[Crypto], ss: SparkSession): DataFrame = {
         val first = d.first()
         val deriveColumnName = "derive"
-        val datetimeColumnName = "cryptoValue.datetime"
-        val valueColumnName = "cryptoValue.value"
+        val datetimeColumnName = "datetime"
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetimeColumnName)
-        import org.apache.spark.sql.functions.{lag, lead}
-        d.withColumn(deriveColumnName,
-            (lead(valueColumnName, 1).over(window) - lag(valueColumnName, 1).over(window))
-              /(lead(datetimeColumnName, 1).over(window) - lag(datetimeColumnName, 1).over(window))
-        ).map(row => {
-            val derived = row.getAs[Double](deriveColumnName)
-            val crypto = first.copy(cryptoValue = CryptoValue(
-                datetime = row.getAs[Timestamp](datetimeColumnName),
-                value = row.getAs[Double](valueColumnName),
-                margin = row.getAs[Option[Margin]]("cryptoValue.margin"),
-                volume = row.getAs[Double]("cryptoValue.volume")
-            ))
-            AnalyticsCrypto(crypto, derived)
-        })(encoder(ss))
+        import org.apache.spark.sql.functions.{lag, lead, col}
+        import ss.implicits._
+        d.map(c => (c, c.cryptoValue.datetime.getTime.toDouble / 1000000))
+          .withColumnRenamed("_2", datetimeColumnName)
+          .withColumnRenamed("_1", "crypto")
+          .withColumn("value", col("crypto.cryptoValue.value"))
+          .withColumn(deriveColumnName,
+            (lead("value", 1).over(window) - lag("value", 1).over(window))
+              /
+               (lead(datetimeColumnName, 1).over(window) - lag(datetimeColumnName, 1).over(window))
+        )
     }
     
     def derive(d: Dataset[Crypto], ss: SparkSession): Dataset[AnalyticsCrypto] =
@@ -65,7 +61,7 @@ object DerivativeCrypto {
                         (toY(nextGet) - toY(previousGet)) / (toX(nextGet) - toX(previousGet))
                     }
                 
-                return AnalyticsCrypto(actualGet, derived)
+                AnalyticsCrypto(actualGet, derived)
             }
         })(encoder(ss))
 }
