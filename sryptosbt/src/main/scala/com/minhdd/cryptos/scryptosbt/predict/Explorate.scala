@@ -4,32 +4,27 @@ import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Timestamps}
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object Explorate {
     
     val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
     val minDeltaValue = 350
-
     val datetime = "datetime"
     
     class CustomSum extends UserDefinedAggregateFunction {
         override def inputSchema: org.apache.spark.sql.types.StructType =
             StructType(StructField("toMark", BooleanType) :: Nil)
-        
         override def bufferSchema: StructType = StructType(
             StructField("value", LongType) :: StructField("counter", LongType) :: Nil
         )
-        
         override def dataType: DataType = LongType
-        
         override def deterministic: Boolean = true
         
         override def initialize(buffer: MutableAggregationBuffer): Unit = {
             buffer(0) = 0L // la valeur de sortie
             buffer(1) = 0L // le compteur
         }
-        
         override def update(buffer: MutableAggregationBuffer, input: Row): Unit = {
             if (buffer(1) != buffer(0)) {
                 buffer(0) = 0L
@@ -47,7 +42,6 @@ object Explorate {
             println("merge buffer " + buffer(0))
             println("merge row" + buffer.getAs[Long](0))
         }
-        
         override def evaluate(buffer: Row): Any = {
             buffer.getLong(0)
         }
@@ -77,7 +71,7 @@ object Explorate {
         
         import org.apache.spark.sql.expressions.Window
         
-        val window = Window.orderBy(datetimeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
+        val window = Window.orderBy(datetimeColumnName, volumeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
         
         import org.apache.spark.sql.functions.{max, min, col, when, struct}
         
@@ -106,11 +100,7 @@ object Explorate {
         val ccc: DataFrame = aaa
           .withColumn("importantChange", binaryEvolution)
           .withColumn(numberOfStableDayColumnName, customSum(binaryEvolution).over(w))
-        //        ccc
-        //          .select(datetimeColumnName, "value", "variation", evolutionColumnName, "derive", numberOfStableDayColumnName)
-        //          .show(2, false)
-        
-              
+
         val cce = DataFrames.derive(ccc, cryptoValueColumnName, datetime, "derive")
         val ddd = DataFrames.derive(cce, "derive", datetime, "secondDerive")
           .withColumn("analytics",
