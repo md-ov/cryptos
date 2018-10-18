@@ -1,7 +1,5 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
-import java.sql.Timestamp
-
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoValue, Margin}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
@@ -12,30 +10,7 @@ object DerivativeCrypto {
         import ss.implicits._
         implicitly[Encoder[(Crypto, Double)]]
     }
-    
-    def deriveWithWindow(d: Dataset[Crypto], ss: SparkSession): DataFrame = {
-        val deriveColumnName = "derive"
-        val datetimeColumnName = "datetime"
-        val valueColumnName = "value"
-        val first = d.first()
-        
-        import org.apache.spark.sql.expressions.Window
-        val window = Window.orderBy(datetimeColumnName)
-        
-        import org.apache.spark.sql.functions.{lag, lead, col}
-        import ss.implicits._
-        
-        d.map(c => (c, c.cryptoValue.datetime.getTime.toDouble / 1000000))
-          .withColumnRenamed("_2", datetimeColumnName)
-          .withColumnRenamed("_1", "crypto")
-          .withColumn(valueColumnName, col("crypto.cryptoValue.value"))
-          .withColumn(deriveColumnName,
-            (lead(valueColumnName, 1).over(window) - lag(valueColumnName, 1).over(window))
-              /
-               (lead(datetimeColumnName, 1).over(window) - lag(datetimeColumnName, 1).over(window))
-        )
-    }
-    
+     
     def derive(d: Dataset[Crypto], ss: SparkSession): Dataset[(Crypto, Double)] =
         d.mapPartitions(iterator => new Iterator[(Crypto, Double)]{
             var previous: Option[Crypto] = None
