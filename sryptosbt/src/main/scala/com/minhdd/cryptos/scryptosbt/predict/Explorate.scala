@@ -54,7 +54,7 @@ object Explorate {
         ss.sparkContext.setLogLevel("WARN")
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath("file:///D:\\ws\\cryptos\\data\\parquets", "XBT", "EUR")
         val ds: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
-        val analyticsCryptoDS: DataFrame = DerivativeCrypto.deriveWithWindow(ds, ss)
+        val dsWithDerive: DataFrame = DerivativeCrypto.deriveWithWindow(ds, ss)
         import ss.implicits._
         
         val twoCryptos: Array[Crypto] = ds.take(2)
@@ -73,7 +73,7 @@ object Explorate {
     
         val evolutionColumnName = "evolution"
         val evolutionNullValue = "-"
-        val aaa: DataFrame = analyticsCryptoDS
+        val aaa: DataFrame = dsWithDerive
           .withColumn("value", col(cryptoValueColumnName))
           .withColumn("max", max("value").over(window))
           .withColumn("min", min("value").over(window))
