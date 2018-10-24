@@ -12,15 +12,15 @@ function getTsForKraken(myDate) {
 (async () => {
     asset = argvJson.asset;
     currency = argvJson.currency;
+    since = argvJson.since;
     pair = getPair(asset, currency);
     intervals = [1, 5, 15, 30, 60, 240, 1440, 10080, 21600];
-
     for (var i= 0; i < intervals.length; i++) {
       interval = intervals[i];
       try {
         console.log(interval);
 
-        a = await krakenc.api('OHLC', { pair : pair, interval : interval});
+        a = await krakenc.api('OHLC', { pair : pair, interval : interval, since : since});
         var fileName = './out/' + pair + interval + '.csv'
         var file = fs.createWriteStream(fileName);
         file.on('error', function(err) { console.log("error createWriteStream ") });
