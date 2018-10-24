@@ -21,7 +21,7 @@ function getTsForKraken(myDate) {
         console.log(interval);
 
         a = await krakenc.api('OHLC', { pair : pair, interval : interval, since : since});
-        var fileName = './out/' + pair + interval + '.csv'
+        var fileName = './out/' + pair +since+ interval + '.csv'
         var file = fs.createWriteStream(fileName);
         file.on('error', function(err) { console.log("error createWriteStream ") });
         a.result[pair].forEach(function(v) {
