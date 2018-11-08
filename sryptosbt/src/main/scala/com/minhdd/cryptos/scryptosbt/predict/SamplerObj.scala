@@ -97,7 +97,7 @@ object SamplerObj {
               .groupByKey().mapValues(g => oneCrypto(g.toSeq))
               .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
         
-        ss.createDataset(sampled)
+        ss.createDataset(sampled)(Crypto.encoder(ss))
         
     }
 
