@@ -1,7 +1,9 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
@@ -41,5 +43,9 @@ object DateTimes {
     def getDates(dates: Seq[DateTime], next: DateTime, end: DateTime): Seq[DateTime] = {
         val newDates: Seq[DateTime] = dates :+ next
         if (next == end) newDates else getDates(newDates, next.plusDays(1), end )
+    }
+    
+    def fromTimestamp(timestamp: Timestamp): DateTime= {
+        new DateTime(timestamp)
     }
 }

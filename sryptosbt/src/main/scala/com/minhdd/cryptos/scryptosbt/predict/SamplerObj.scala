@@ -1,13 +1,19 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
+import java.sql.Timestamp
+import java.util
+
 import com.minhdd.cryptos.scryptosbt.Sampler
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
-import com.minhdd.cryptos.scryptosbt.tools.{Sparks, Timestamps}
-import org.apache.spark.sql.{Dataset, SparkSession}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
+import org.apache.spark.api.java.function.MapGroupsFunction
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Dataset, KeyValueGroupedDataset, SparkSession}
+import org.joda.time.DateTime
 
 object SamplerObj {
     
-    def oneCrypto(cryptos: Seq[Crypto]) = {
+    def oneCrypto(cryptos: Seq[Crypto]): Crypto = {
         val first = cryptos.head
         val count = cryptos.size
         if (count == 1) first.copy(processingDt = Timestamps.now) else {
@@ -72,4 +78,27 @@ object SamplerObj {
             }
         )
     }
+    
+    def getAdjustedDatetime(numberOfMinutesBetweenTwoElement: Int)(dateTime: DateTime): DateTime = {
+        val minutes = dateTime.getMinuteOfHour
+        val delta: Int = minutes % numberOfMinutesBetweenTwoElement
+        dateTime.minusMinutes(delta)
+    }
+    
+    def sampling(ss: SparkSession, ds: Dataset[Crypto], numberOfMinutesBetweenTwoElement: Int = 15): Dataset[Crypto]= {
+//        val timestampsDelta: Int = Timestamps.oneDayTimestampDelta * numberOfMinutesBetweenTwoElement / (24*60)
+        val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
+//        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
+        
+        def adjustTimestamp(ts: Timestamp) = adjustDatetime(DateTimes.fromTimestamp(ts))
+    
+        val sampled: RDD[Crypto] = 
+            ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
+              .groupByKey().mapValues(g => oneCrypto(g.toSeq))
+              .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
+        
+        ss.createDataset(sampled)
+        
+    }
+
 }

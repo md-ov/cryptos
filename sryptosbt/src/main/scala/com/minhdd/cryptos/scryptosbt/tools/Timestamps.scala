@@ -31,6 +31,10 @@ object Timestamps {
         new Timestamp(DateTime.now().getMillis)
     }
     
+    def fromDatetime(dt: DateTime) = {
+        new Timestamp(dt.getMillis)
+    }
+    
     def getTimestamp(dateString: String, format: String): Timestamp = {
         val time = DateTimes.getTime(dateString, format)
         new Timestamp(time)
