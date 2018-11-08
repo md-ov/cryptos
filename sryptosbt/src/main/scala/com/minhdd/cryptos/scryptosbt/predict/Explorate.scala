@@ -8,7 +8,9 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object Explorate {
     
-    val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
+//    val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
+    val numberOfMinutesBetweenTwoElement = 15
+    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15)
     val minDeltaValue = 150
     val datetime = "datetime"
     
@@ -52,7 +54,10 @@ object Explorate {
         ss.sparkContext.setLogLevel("WARN")
         import ss.implicits._
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath("file:///D:\\ws\\cryptos\\data\\parquets", "XBT", "EUR")
-        val ds: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
+//        val ds: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
+        val dsFromPath: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
+        val ds = SamplerObj.sampling(ss, dsFromPath)
+        
         val dsWithDatetime =
             ds
               .map(c => (c, c.cryptoValue.datetime.getTime.toDouble / 1000000))
@@ -62,12 +67,6 @@ object Explorate {
         val cryptoValueColumnName = "crypto.cryptoValue.value"
         val datetimeColumnName = "crypto.cryptoValue.datetime"
         val volumeColumnName = "crypto.cryptoValue.volume"
-        
-        val twoCryptos: Array[Crypto] = ds.take(2)
-        val deltaTimeOfTwoCrypto: Long =
-            twoCryptos.apply(1).cryptoValue.datetime.getTime - twoCryptos.head.cryptoValue.datetime.getTime
-        
-        val numberOfCryptoOnOneWindow: Int = (maximumDeltaTime / deltaTimeOfTwoCrypto).toInt
         
         import org.apache.spark.sql.expressions.Window
         
@@ -109,11 +108,12 @@ object Explorate {
         
         val eee: DataFrame = ddd
           .select("analytics.*", datetimeColumnName, cryptoValueColumnName)
-          //          .filter($"importantChange" === true)
-          //          .filter($"numberOfStableDay" !== 0)
-//          .show(10, false)
     
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\1", eee)
+        eee
+//          .filter($"importantChange" === true)
+//              .filter($"numberOfStableDay" !== 0)
+              .show(1000, false)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\4", eee)
     }
     
     

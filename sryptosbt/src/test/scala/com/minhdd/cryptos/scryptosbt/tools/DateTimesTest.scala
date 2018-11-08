@@ -16,5 +16,12 @@ class DateTimesTest extends FunSuite {
         val dates = DateTimes.getDates(start, end)
         assert(dates.size == 3)
     }
+    
+    test("get timestamp") {
+        val start = Timestamps.getTimestamp("2018-03-24", "yyyy-MM-dd")
+        val end = Timestamps.getTimestamp("2018-03-29", "yyyy-MM-dd")
+        val tss = DateTimes.getTimestamps(start, end, 60*24)
+        tss.foreach(println)
+    }
 
 }

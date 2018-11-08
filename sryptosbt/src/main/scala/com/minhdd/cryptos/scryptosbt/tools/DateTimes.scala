@@ -40,12 +40,23 @@ object DateTimes {
         dateTimes.map(dtfOut.print)
     }
     
-    def getDates(dates: Seq[DateTime], next: DateTime, end: DateTime): Seq[DateTime] = {
+    def getTimestamps(startDate: Timestamp, endDate: Timestamp, minutesGap: Int): Seq[Timestamp] = {
+        val dateTimes = getDates(Seq(), new DateTime(startDate), new DateTime(endDate), minutesGap)
+        dateTimes.map(Timestamps.fromDatetime)
+    }
+    
+    private def getDates(dates: Seq[DateTime], next: DateTime, end: DateTime): Seq[DateTime] = {
         val newDates: Seq[DateTime] = dates :+ next
         if (next == end) newDates else getDates(newDates, next.plusDays(1), end )
     }
     
-    def fromTimestamp(timestamp: Timestamp): DateTime= {
+    private def getDates(dates: Seq[DateTime], next: DateTime, end: DateTime, minutesGap: Int): Seq[DateTime] = {
+        val newDates: Seq[DateTime] = dates :+ next
+        val nextNext = next.plusMinutes(minutesGap)
+        if (nextNext.isAfter(end) || nextNext == end) newDates else getDates(newDates, nextNext, end, minutesGap)
+    }
+    
+    def fromTimestamp(timestamp: Timestamp): DateTime = {
         new DateTime(timestamp)
     }
 }

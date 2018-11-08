@@ -8,7 +8,8 @@ import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, Crypto
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
 import org.apache.spark.api.java.function.MapGroupsFunction
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Dataset, KeyValueGroupedDataset, SparkSession}
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.{Dataset, Encoder, KeyValueGroupedDataset, SparkSession}
 import org.joda.time.DateTime
 
 object SamplerObj {
@@ -85,6 +86,23 @@ object SamplerObj {
         dateTime.minusMinutes(delta)
     }
     
+    case class CryptoAndNextDatetime(crypto: Crypto, nextdt: Timestamp)
+    case class CryptoWrapper(crypto: Crypto)
+    def encoderCryptoWrapper(ss: SparkSession): Encoder[CryptoWrapper] = {
+        import ss.implicits._
+        implicitly[Encoder[CryptoWrapper]]
+    }
+    def encoderCryptoAndNextDatetime(ss: SparkSession): Encoder[CryptoAndNextDatetime] = {
+        import ss.implicits._
+        implicitly[Encoder[CryptoAndNextDatetime]]
+    }
+    
+    def fill(crypto: Crypto, datetime: Timestamp, nextdt: Timestamp, numberOfMinutesBetweenTwoElement: Int): Seq[Crypto] = {
+        val tss = DateTimes.getTimestamps(datetime, nextdt, numberOfMinutesBetweenTwoElement)
+        val cryptoValue = crypto.cryptoValue
+        tss.map(ts => crypto.copy(cryptoValue = cryptoValue.copy(datetime = ts)))
+    }
+    
     def sampling(ss: SparkSession, ds: Dataset[Crypto], numberOfMinutesBetweenTwoElement: Int = 15): Dataset[Crypto]= {
 //        val timestampsDelta: Int = Timestamps.oneDayTimestampDelta * numberOfMinutesBetweenTwoElement / (24*60)
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
@@ -92,13 +110,35 @@ object SamplerObj {
         
         def adjustTimestamp(ts: Timestamp) = adjustDatetime(DateTimes.fromTimestamp(ts))
     
-        val sampled: RDD[Crypto] = 
+        val groupedAndTransformed: RDD[Crypto] = 
             ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
               .groupByKey().mapValues(g => oneCrypto(g.toSeq))
               .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
+    
+        val wrapped: RDD[CryptoWrapper] = groupedAndTransformed.map(c => CryptoWrapper(c))
         
-        ss.createDataset(sampled)(Crypto.encoder(ss))
+        val datetimeColumnName = "crypto.cryptoValue.datetime"
+        val volumeColumnName = "crypto.cryptoValue.volume"
+        val window = Window.orderBy(datetimeColumnName, volumeColumnName)
+        import org.apache.spark.sql.functions.lead
+        val groupedAndTransformedDataSet: Dataset[CryptoWrapper] = ss.createDataset(wrapped)(encoderCryptoWrapper(ss))
         
+        val dsss: Dataset[CryptoAndNextDatetime] = 
+            groupedAndTransformedDataSet
+            .withColumn("nextdt", lead(datetimeColumnName, 1).over(window))
+                .as[CryptoAndNextDatetime](encoderCryptoAndNextDatetime(ss))
+    
+        val finalDs: Dataset[Crypto] = 
+            dsss.flatMap(cryptoAndNextDatetime => 
+            fill(crypto = cryptoAndNextDatetime.crypto, 
+                datetime = cryptoAndNextDatetime.crypto.cryptoValue.datetime, 
+                nextdt = cryptoAndNextDatetime.nextdt, 
+                numberOfMinutesBetweenTwoElement = numberOfMinutesBetweenTwoElement))(Crypto.encoder(ss))
+            
+        
+        dsss.show(100, false)
+    
+        finalDs
     }
 
 }
