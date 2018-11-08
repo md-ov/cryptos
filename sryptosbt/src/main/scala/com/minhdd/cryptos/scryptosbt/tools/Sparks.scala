@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.tools
 
 import com.minhdd.cryptos.scryptosbt.parquet.CSVFromParquetObj.merge
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Sparks {
     def csvFromDSString(dsString: Dataset[String], csvPath: String) = {
@@ -23,5 +23,9 @@ object Sparks {
         import ss.implicits._
         val dsString: Dataset[String] = ds.map(_.flatten.toLine())
         csvFromDSString(dsString, csvPath)
+    }
+    
+    def csvFromDataframe(csvPath: String, df: DataFrame) = {
+        df.coalesce(1).write.option("delimiter", ";").csv(csvPath)
     }
 }
