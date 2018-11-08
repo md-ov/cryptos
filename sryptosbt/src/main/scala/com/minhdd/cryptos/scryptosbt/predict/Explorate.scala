@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks, Timestamps}
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
@@ -9,7 +9,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 object Explorate {
     
     val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
-    val minDeltaValue = 350
+    val minDeltaValue = 150
     val datetime = "datetime"
     
     class CustomSum extends UserDefinedAggregateFunction {
@@ -107,11 +107,13 @@ object Explorate {
               struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"variation", $"evolution"))
           .as[AnalyticsCrypto]
         
-        ddd
+        val eee: DataFrame = ddd
           .select("analytics.*", datetimeColumnName, cryptoValueColumnName)
           //          .filter($"importantChange" === true)
           //          .filter($"numberOfStableDay" !== 0)
-          .show(1000, false)
+//          .show(10, false)
+    
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\1", eee)
     }
     
     
