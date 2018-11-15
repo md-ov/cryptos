@@ -52,3 +52,9 @@ cryptos-apps extract-to-csv
 cryptos-apps extract-to-csv --master local --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --asset xlm --currency eur --csvpath D:\\ws\\cryptos\\data\\fromparquet\\extract --start-day 2017-05-02 --end-day 2017-05-06
 
 cryptos-apps sampler --master local --asset xlm --currency eur --delta 20 --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --csvpath D:\\ws\\cryptos\\data\\fromparquet\\sampling
+
+
+
+2018-11-15
+la donnée est mal présentée dans le fichiers brut (ohlc, trades) à cause du formatter dans global.js
+mais bien parsé par integrateur de parquet en utilisant le timestamp
