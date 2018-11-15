@@ -1,12 +1,15 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
+import java.util.Locale
+
 import org.joda.time.DateTime
 import org.scalatest.FunSuite
+import org.joda.time.format.DateTimeFormat
 
 class SamplerObjTest extends FunSuite {
     
     test("adjusted") {
-        import org.joda.time.format.DateTimeFormat
+        
         
         val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")
         
@@ -15,6 +18,13 @@ class SamplerObjTest extends FunSuite {
         val adjusted = SamplerObj.getAdjustedDatetime(15)(datetime)
         
         assert(formatter.print(adjusted) == "2018-10-24 17:30")
+    }
+    
+    test("adjust second") {
+        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS")
+        val datetime: DateTime = DateTime.parse("2017-08-01 18:00:00.616", formatter)
+        val adjusted = SamplerObj.adjustSecond(datetime)
+        assert(formatter.print(adjusted) == "2017-08-01 18:00:00.000")
     }
     
 }

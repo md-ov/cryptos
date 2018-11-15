@@ -1,16 +1,15 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
 import java.sql.Timestamp
-import java.util
 
 import com.minhdd.cryptos.scryptosbt.Sampler
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
-import org.apache.spark.api.java.function.MapGroupsFunction
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{Dataset, Encoder, KeyValueGroupedDataset, SparkSession}
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 object SamplerObj {
     
@@ -103,12 +102,17 @@ object SamplerObj {
         tss.map(ts => crypto.copy(cryptoValue = cryptoValue.copy(datetime = ts)))
     }
     
+    def adjustSecond(dt: DateTime): DateTime = {
+        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm'Z'")
+        DateTime.parse(formatter.print(dt), formatter)
+    }
+    
     def sampling(ss: SparkSession, ds: Dataset[Crypto], numberOfMinutesBetweenTwoElement: Int = 15): Dataset[Crypto]= {
 //        val timestampsDelta: Int = Timestamps.oneDayTimestampDelta * numberOfMinutesBetweenTwoElement / (24*60)
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
 //        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
         
-        def adjustTimestamp(ts: Timestamp) = adjustDatetime(DateTimes.fromTimestamp(ts))
+        def adjustTimestamp(ts: Timestamp) = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
     
         val groupedAndTransformed: RDD[Crypto] = 
             ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
@@ -134,9 +138,6 @@ object SamplerObj {
                 datetime = cryptoAndNextDatetime.crypto.cryptoValue.datetime, 
                 nextdt = cryptoAndNextDatetime.nextdt, 
                 numberOfMinutesBetweenTwoElement = numberOfMinutesBetweenTwoElement))(Crypto.encoder(ss))
-            
-        
-        dsss.show(100, false)
     
         finalDs
     }

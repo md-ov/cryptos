@@ -62,6 +62,16 @@ object CryptoPartitionKey {
           "OHLC" + separator + "parquet"
         path
     }
+    
+    def getTRADESParquetPath(parquetsDir: String, asset: String, currency: String): String = {
+        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
+        val path = fullParquetDir +
+          asset.toUpperCase + separator +
+          currency.toUpperCase + separator +
+          "TRADES" 
+        path
+    }
 }
 
 case class CryptoValue (
@@ -163,6 +173,16 @@ object Crypto {
     def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
         Try {
             ss.read.parquet(path).as[Crypto](encoder(ss))
+        }.mapException(e => new Exception("path is not a parquet", e)).toOption
+    }
+    
+    def getPartitionsUniFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
+        import com.minhdd.cryptos.scryptosbt.tools.Files
+        Try {
+            val allPartitionsPath: Seq[String] = Files.getAllDir(path)
+            val ds: Dataset[Crypto] = allPartitionsPath.map(p => ss.read.parquet("file:///"+p).as[Crypto](encoder(ss)))
+              .reduce(_.union(_))
+            ds
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     

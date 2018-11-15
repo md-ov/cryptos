@@ -6,7 +6,7 @@ import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAg
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
-object Explorate {
+object ExplorateOHLC {
     
 //    val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
     val numberOfMinutesBetweenTwoElement = 15
