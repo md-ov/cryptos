@@ -12,7 +12,8 @@
   "contributors": [],
   "dependencies": {
     "dateformat": "^3.0.3",
-    "kraken-api": "file:npm-kraken-api-master"
+    "kraken-api": "file:npm-kraken-api-master",
+    "line-reader": "^0.4.0"
   },
   "main": "main.js",
   "engines": {

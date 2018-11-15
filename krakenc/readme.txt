@@ -16,6 +16,7 @@ node xpercent.js \{\"vol\":0.1,\"x\":10\}
 node mainCleanOut.js
 node mainGetXLMEUR.js
 node main-get-o.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"since\":\"1540373460\"\}
+node main-get-o-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\"}   //automatique get ohlc avec le since persisté
 interval : 1 (default), 5, 15, 30, 60, 240, 1440, 10080, 21600
 
 node main-get.js \{\"asset\":\"XLM\",\"currency\":\"EUR\",\"n\":3,\"start\":\"2017-05-08\"\}
