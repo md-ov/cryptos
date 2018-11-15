@@ -37,8 +37,7 @@ cryptos-apps to-parquets-from-csv
 --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets 
 --minimum 500
 
-cryptos-apps to-parquets-from-csv --master local --api trades --input-dir D:\\ws\\cryptos\\data\\trades --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 500
-
+cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir D:\\ws\\cryptos\\data\\ohlc\\xbt --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 500
 
 cryptos-apps extract-to-csv 
 --master local 
