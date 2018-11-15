@@ -5,7 +5,7 @@ const KrakenClient = require('kraken-api');
 
 global.krakenclient = new KrakenClient(keys.key, keys.secret);
 
-global.dateTimeFormat = "yyyy-mm-dd'T'hh:MM:ssZ"
+global.dateTimeFormat = "yyyy-mm-dd'T'HH:MM:ssZ"
 
 var coins = {}
 coins.XBT = "XBT"
