@@ -37,6 +37,8 @@ cryptos-apps to-parquets-from-csv
 --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets 
 --minimum 500
 
+cryptos-apps to-parquets-from-csv --master local --api trades --input-dir D:\\ws\\cryptos\\data\\trades\\xbt-until-17-12-01 --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 1
+
 cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir D:\\ws\\cryptos\\data\\ohlc\\xbt --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 500
 
 cryptos-apps extract-to-csv 
@@ -57,3 +59,9 @@ cryptos-apps sampler --master local --asset xlm --currency eur --delta 20 --parq
 2018-11-15
 la donnée est mal présentée dans le fichiers brut (ohlc, trades) à cause du formatter dans global.js
 mais bien parsé par integrateur de parquet en utilisant le timestamp
+
+
+
+
+
+sh get-kraken.sh
