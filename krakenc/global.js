@@ -17,6 +17,7 @@ coins.BCH = "BCH"
 
 global.coins = coins
 global.csvSeparator = ";"
+global.dataSeparator = ";"
 global.returnCharacter = "\n"
 
 global.getPair = function(asset, currency) {
@@ -31,4 +32,8 @@ global.getPair = function(asset, currency) {
 global.sleep = function(ms) {
   console.log("sleep now for " + ms + " seconds")
   return new Promise(resolve => setTimeout(resolve, ms*1000));
+}
+
+global.getLastSince = function(line) {
+  return line.split(";")[0]
 }

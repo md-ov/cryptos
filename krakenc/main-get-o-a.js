@@ -5,12 +5,6 @@ const fs = require('fs');const dateFormat = require('dateformat');
 var argvJson = {}; try {  argvJson = JSON.parse(process.argv[2]);
 } catch(error) { console.error("not a valid json argument"); }
 
-var dataSeparator = ";"
-
-function getLastSince(line) {
-  return line.split(dataSeparator)[0]
-}
-
 asset = argvJson.asset;
 currency = argvJson.currency;
 pair = getPair(asset, currency);
@@ -26,6 +20,7 @@ var lastSince = 0;
       since = getLastSince(line);
     }
   });
+  await sleep(2)
   for (var i= 0; i < intervals.length; i++) {
     interval = intervals[i];
     try {
