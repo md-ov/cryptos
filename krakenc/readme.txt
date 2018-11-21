@@ -25,6 +25,9 @@ start : date to start retrieve elements
 each request from kraken will give you 1000 elements, if you want to get 3000 elements n would be 3
 
 
+
+node main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
+
 interesting pairs:
 XXBTZEUR
 XXLMZEUR
