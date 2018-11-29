@@ -108,36 +108,37 @@ object SamplerObj {
     }
     
     def sampling(ss: SparkSession, ds: Dataset[Crypto], numberOfMinutesBetweenTwoElement: Int = 15): Dataset[Crypto]= {
-//        val timestampsDelta: Int = Timestamps.oneDayTimestampDelta * numberOfMinutesBetweenTwoElement / (24*60)
+        //        val timestampsDelta: Int = Timestamps.oneDayTimestampDelta * numberOfMinutesBetweenTwoElement / (24*60)
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
-//        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
+        //        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
         
         def adjustTimestamp(ts: Timestamp) = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
-    
-        val groupedAndTransformed: RDD[Crypto] = 
-            ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
-              .groupByKey().mapValues(g => oneCrypto(g.toSeq))
-              .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
-    
-        val wrapped: RDD[CryptoWrapper] = groupedAndTransformed.map(c => CryptoWrapper(c))
+        import ss.implicits._
+        val cryptoWithAdjustedTimestamp: Dataset[(Timestamp, Crypto)] =
+            ds.map(c => (Timestamps.fromDatetime(adjustTimestamp(c.cryptoValue.datetime)), c))
+        val deduped: Dataset[(Timestamp, Crypto)] = cryptoWithAdjustedTimestamp.dropDuplicates("_1")
+        val dedupedCryptoDataset: Dataset[Crypto] =
+            deduped.map{case (t, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = t))}
         
+        val wrapped: Dataset[CryptoWrapper] = dedupedCryptoDataset.map(c => CryptoWrapper(c))(encoderCryptoWrapper(ss))
+
         val datetimeColumnName = "crypto.cryptoValue.datetime"
         val volumeColumnName = "crypto.cryptoValue.volume"
         val window = Window.orderBy(datetimeColumnName, volumeColumnName)
-        import org.apache.spark.sql.functions.lead
-        val groupedAndTransformedDataSet: Dataset[CryptoWrapper] = ss.createDataset(wrapped)(encoderCryptoWrapper(ss))
-        
-        val dsss: Dataset[CryptoAndNextDatetime] = 
-            groupedAndTransformedDataSet
-            .withColumn("nextdt", lead(datetimeColumnName, 1).over(window))
-                .as[CryptoAndNextDatetime](encoderCryptoAndNextDatetime(ss))
     
-        val finalDs: Dataset[Crypto] = 
-            dsss.flatMap(cryptoAndNextDatetime => 
-            fill(crypto = cryptoAndNextDatetime.crypto, 
-                datetime = cryptoAndNextDatetime.crypto.cryptoValue.datetime, 
-                nextdt = cryptoAndNextDatetime.nextdt, 
-                numberOfMinutesBetweenTwoElement = numberOfMinutesBetweenTwoElement))(Crypto.encoder(ss))
+        import org.apache.spark.sql.functions.lead
+    
+        val dsss: Dataset[CryptoAndNextDatetime] =
+            wrapped
+              .withColumn("nextdt", lead(datetimeColumnName, 1).over(window))
+              .as[CryptoAndNextDatetime](encoderCryptoAndNextDatetime(ss))
+    
+        val finalDs: Dataset[Crypto] =
+            dsss.flatMap(cryptoAndNextDatetime =>
+                fill(crypto = cryptoAndNextDatetime.crypto,
+                    datetime = cryptoAndNextDatetime.crypto.cryptoValue.datetime,
+                    nextdt = cryptoAndNextDatetime.nextdt,
+                    numberOfMinutesBetweenTwoElement = numberOfMinutesBetweenTwoElement))(Crypto.encoder(ss))
     
         finalDs
     }

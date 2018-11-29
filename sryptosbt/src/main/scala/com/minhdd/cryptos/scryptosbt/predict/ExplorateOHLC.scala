@@ -112,8 +112,8 @@ object ExplorateOHLC {
         eee
 //          .filter($"importantChange" === true)
 //              .filter($"numberOfStableDay" !== 0)
-              .show(1000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\7", eee)
+//              .show(1000, false)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\11", eee)
     }
     
     
