@@ -150,7 +150,6 @@ object ExplorateOHLC {
                 }
             }
         } else {
-            println("one vide")
             Iterator[Seq[AnalyticsCrypto]]()
         }
     }
