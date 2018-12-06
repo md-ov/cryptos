@@ -110,11 +110,13 @@ object ExplorateTRADES {
         val eee: DataFrame = ddd
           .select("analytics.*", datetimeColumnName, cryptoValueColumnName)
 
+        eee.show(false)
+        
 //        eee
 //          .filter($"importantChange" === true)
 //          .filter($"numberOfStableDay" !== 0)
 //          .show(1000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\10", eee)
+//        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\10", eee)
     }
     
     

@@ -49,6 +49,8 @@ object ExplorateOHLC {
         }
     }
     
+    
+    
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("explorate").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
@@ -109,12 +111,48 @@ object ExplorateOHLC {
         val eee: DataFrame = ddd
           .select("analytics.*", datetimeColumnName, cryptoValueColumnName)
     
-        eee
+//        eee.filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
 //          .filter($"importantChange" === true)
 //              .filter($"numberOfStableDay" !== 0)
 //              .show(1000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\11", eee)
+//        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\11", eee)
+        val numberOfPartition: Int = ddd.rdd.getNumPartitions
+        println(numberOfPartition)
+        val fff: Dataset[AnalyticsSegment] = ddd.mapPartitions(iterator => split(iterator)).map(AnalyticsSegment(_))
+        import org.apache.spark.sql.functions.sum
+        val numberOfElement: Long = ddd.count()
+        println(numberOfElement)
+        val numberOfSegment: Long = fff.count()
+        println(numberOfSegment)
+        val sumOfSize: Long = fff.agg(sum("numberOfElement")).first().getLong(0)
+        println (sumOfSize)
+        assert(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)
+        
     }
     
+    def split(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
+        if (iterator.hasNext) {
+            new Iterator[Seq[AnalyticsCrypto]] {
+                var first: AnalyticsCrypto = iterator.next
+                override def hasNext: Boolean = iterator.hasNext
+                override def next(): Seq[AnalyticsCrypto] = {
+                    var nextSeq: Seq[AnalyticsCrypto] = Seq(first)
+                    var importantChange: Option[Boolean] = None
+                    while (iterator.hasNext && (importantChange.isEmpty || !importantChange.get)) {
+                        val actual = iterator.next()
+                        importantChange = actual.analytics.importantChange
+                        nextSeq = nextSeq :+ actual
+                        if (importantChange.isDefined && importantChange.get) {
+                            first = actual
+                        }
+                    }
+                    nextSeq
+                }
+            }
+        } else {
+            println("one vide")
+            Iterator[Seq[AnalyticsCrypto]]()
+        }
+    }
     
 }
