@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.DataFrames
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
@@ -10,7 +10,7 @@ object ExplorateOHLC {
     
 //    val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
     val numberOfMinutesBetweenTwoElement = 15
-    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15)
+    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15) // sampling every 15 minutes, 4 cryptos on one window
     val minDeltaValue = 150
     val datetime = "datetime"
     
