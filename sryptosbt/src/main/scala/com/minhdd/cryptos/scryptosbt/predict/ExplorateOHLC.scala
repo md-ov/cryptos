@@ -128,6 +128,12 @@ object ExplorateOHLC {
         println (sumOfSize)
         assert(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)
         
+        val ggg: Dataset[Seq[AnalyticsSegment]] = fff.mapPartitions(iterator => splitSegments(iterator))
+        ggg.map(_.map(s => s.beginEvolution + "-" + s.endEvolution ).reduce(_ + " | " + _))
+          .filter(_.size > 4).show(10000, false)
+        println("aaa")
+        
+        
     }
     
     def split(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
@@ -154,4 +160,30 @@ object ExplorateOHLC {
         }
     }
     
+    def splitSegments(iterator: Iterator[AnalyticsSegment]): Iterator[Seq[AnalyticsSegment]] = {
+        if (iterator.hasNext) {
+            new Iterator[Seq[AnalyticsSegment]] {
+                var first: AnalyticsSegment = iterator.next
+                override def hasNext: Boolean = iterator.hasNext
+                override def next(): Seq[AnalyticsSegment] = {
+                    var nextSeq: Seq[AnalyticsSegment] = Seq(first)
+                    var last = first
+                    var continuation = true
+                    while (iterator.hasNext && continuation) {
+                        val actual = iterator.next()
+                        nextSeq = nextSeq :+ actual
+                        if (last.endEvolution == actual.beginEvolution && actual.sameEvolution) {
+                            last = actual
+                        } else {
+                            first = actual
+                            continuation = false
+                        }
+                    }
+                    nextSeq
+                }
+            }
+        } else {
+            Iterator[Seq[AnalyticsSegment]]()
+        }
+    }
 }
