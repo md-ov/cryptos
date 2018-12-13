@@ -126,13 +126,19 @@ object ExplorateOHLC {
         println(numberOfSegment)
         val sumOfSize: Long = fff.agg(sum("numberOfElement")).first().getLong(0)
         println (sumOfSize)
-        assert(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)
+        if (!(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)) {
+            println("not equal ! ")   
+        }
         
         val ggg: Dataset[Seq[AnalyticsSegment]] = fff.mapPartitions(iterator => splitSegments(iterator))
-        ggg.map(_.map(s => s.beginEvolution + "-" + s.endEvolution ).reduce(_ + " | " + _))
-          .filter(_.size > 4).show(10000, false)
-        println("aaa")
+//        ggg.map(_.map(s => s.beginEvolution + "-" + s.endEvolution ).reduce(_ + " | " + _)).show(10000, false)
+//        println("aaa")
         
+        ggg
+          .map(seq => RegularSegment(seq))
+          .select("beginTimestamp", "beginValue", "endTimestamp", "endValue", "days", "pattern")
+          .sort("beginTimestamp")
+          .show(10000, false)
         
     }
     
