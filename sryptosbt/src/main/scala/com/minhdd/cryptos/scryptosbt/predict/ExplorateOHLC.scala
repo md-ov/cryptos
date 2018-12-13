@@ -52,97 +52,109 @@ object ExplorateOHLC {
     
     
     def main(args: Array[String]): Unit = {
-        val ss: SparkSession = SparkSession.builder().appName("explorate").master("local[*]").getOrCreate()
+        val ss: SparkSession = SparkSession.builder().appName("exploration OHLC").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         import ss.implicits._
-        val parquetPath = CryptoPartitionKey.getOHLCParquetPath("file:///D:\\ws\\cryptos\\data\\parquets", "XBT", "EUR")
-//        val ds: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
-        val dsFromPath: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
-        val ds = SamplerObj.sampling(ss, dsFromPath)
         
-        val dsWithDatetime =
-            ds
+        val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
+            parquetsDir = "file:///D:\\ws\\cryptos\\data\\parquets", 
+            asset = "XBT", 
+            currency = "EUR")
+        
+        val dsOfCrypto: Dataset[Crypto] = Crypto.getPartitionFromPath(ss, parquetPath).get
+        
+        val sampledDataSet = SamplerObj.sampling(ss, dsOfCrypto)
+        
+        val dfWithDatetimeAndWrappedCrypto: DataFrame =
+            sampledDataSet
               .map(c => (c, c.cryptoValue.datetime.getTime.toDouble / 1000000))
-              .withColumnRenamed("_2", datetime)
               .withColumnRenamed("_1", "crypto")
-    
+              .withColumnRenamed("_2", datetime)
+              
         val cryptoValueColumnName = "crypto.cryptoValue.value"
         val datetimeColumnName = "crypto.cryptoValue.datetime"
         val volumeColumnName = "crypto.cryptoValue.volume"
+        val evolutionNullValue = "-"
         
         import org.apache.spark.sql.expressions.Window
-        
         val window = Window.orderBy(datetimeColumnName, volumeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
-        
         import org.apache.spark.sql.functions.{max, min, col, when, struct}
         
-        val evolutionColumnName = "evolution"
-        val evolutionNullValue = "-"
-        val aaa: DataFrame = dsWithDatetime
+        val dfWithAnalyticsColumns: DataFrame = dfWithDatetimeAndWrappedCrypto
           .withColumn("value", col(cryptoValueColumnName))
           .withColumn("max", max("value").over(window))
           .withColumn("min", min("value").over(window))
-          .withColumn("variation",
-              max(cryptoValueColumnName).over(window) - min(cryptoValueColumnName).over(window))
-          .withColumn(evolutionColumnName,
-              when($"min" === $"value" && $"variation" > minDeltaValue, "down")
+          .withColumn("variation", max(cryptoValueColumnName).over(window) - min(cryptoValueColumnName).over(window))
+          
+          val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn("evolution", 
+                when($"min" === $"value" && $"variation" > minDeltaValue, "down")
                 .when($"max" === $"value" && $"variation" > minDeltaValue, "up")
                 .otherwise(evolutionNullValue))
-        //          .filter("evolution != '-'")
-        //          .filter(($"evolution" === "up" && $"derive" < 0) || ($"evolution" === "down" && $"derive" > 0))
-        //          .select(datetimeColumnName, "value", "variation", "evolution", "analytics.derive")
-        //          .show(1000, false)
         
-        val w = Window.orderBy(datetimeColumnName, volumeColumnName)
+//          dfWithEvolutionUpOrDown.filter("evolution != '-'")
+//          .filter(($"evolution" === "up" && $"derive" < 0) || ($"evolution" === "down" && $"derive" > 0))
+//          .select(datetimeColumnName, "value", "variation", "evolution", "analytics.derive")
+//          .show(1000, false)
         
         val binaryEvolution = when($"evolution" === evolutionNullValue, false).otherwise(true)
-        val numberOfStableDayColumnName = "numberOfStableDay"
+        val dfWithImportantChanges: DataFrame = dfWithEvolutionUpOrDown.withColumn("importantChange", binaryEvolution)
+    
+        val w = Window.orderBy(datetimeColumnName, volumeColumnName)
         val customSum = new CustomSum()
-        val ccc: DataFrame = aaa
-          .withColumn("importantChange", binaryEvolution)
+        val numberOfStableDayColumnName = "numberOfStableDay"
+        val dfWithNumberOfStableDay: DataFrame = dfWithImportantChanges
           .withColumn(numberOfStableDayColumnName, customSum(binaryEvolution).over(w))
 
-        val cce = DataFrames.derive(ccc, cryptoValueColumnName, datetime, "derive")
-        val ddd = DataFrames.derive(cce, "derive", datetime, "secondDerive")
-          .withColumn("analytics",
-              struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"variation", $"evolution"))
-          .as[AnalyticsCrypto]
+        val dfWithDerive = DataFrames.derive(
+            df = dfWithNumberOfStableDay, 
+            yColumn = cryptoValueColumnName, 
+            xColumn = datetime, 
+            newCol = "derive")
         
-        val eee: DataFrame = ddd
-          .select("analytics.*", datetimeColumnName, cryptoValueColumnName)
-    
+        val dfWithSecondDerive: DataFrame = 
+            DataFrames.derive(
+                df = dfWithDerive, 
+                yColumn = "derive", 
+                xColumn = datetime, 
+                newCol = "secondDerive")
+              
+        val analyticsCrypto = dfWithSecondDerive.withColumn("analytics",
+              struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"variation", $"evolution"))
+            .as[AnalyticsCrypto]
+        
+//        val eee: DataFrame = analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName)
 //        eee.filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
 //          .filter($"importantChange" === true)
 //              .filter($"numberOfStableDay" !== 0)
 //              .show(1000, false)
 //        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\11", eee)
-        val numberOfPartition: Int = ddd.rdd.getNumPartitions
+        
+        val segments: Dataset[AnalyticsSegment] =
+            analyticsCrypto.mapPartitions(splitAnalyticsCryptos).map(AnalyticsSegment(_))
+        
+        //verification
+        val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)
-        val fff: Dataset[AnalyticsSegment] = ddd.mapPartitions(iterator => split(iterator)).map(AnalyticsSegment(_))
         import org.apache.spark.sql.functions.sum
-        val numberOfElement: Long = ddd.count()
+        val numberOfElement: Long = analyticsCrypto.count()
         println(numberOfElement)
-        val numberOfSegment: Long = fff.count()
+        val numberOfSegment: Long = segments.count()
         println(numberOfSegment)
-        val sumOfSize: Long = fff.agg(sum("numberOfElement")).first().getLong(0)
+        val sumOfSize: Long = segments.agg(sum("numberOfElement")).first().getLong(0)
         println (sumOfSize)
         if (!(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)) {
             println("not equal ! ")   
         }
         
-        val ggg: Dataset[Seq[AnalyticsSegment]] = fff.mapPartitions(iterator => splitSegments(iterator))
-//        ggg.map(_.map(s => s.beginEvolution + "-" + s.endEvolution ).reduce(_ + " | " + _)).show(10000, false)
-//        println("aaa")
-        
-        ggg
-          .map(seq => RegularSegment(seq))
+        val regularTrends: DataFrame = segments.mapPartitions(splitSegments).map(RegularSegment(_))
           .select("beginTimestamp", "beginValue", "endTimestamp", "endValue", "days", "pattern")
           .sort("beginTimestamp")
-          .show(10000, false)
+    
+        regularTrends.show(10000, false)
         
     }
     
-    def split(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
+    def splitAnalyticsCryptos(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
         if (iterator.hasNext) {
             new Iterator[Seq[AnalyticsCrypto]] {
                 var first: AnalyticsCrypto = iterator.next
