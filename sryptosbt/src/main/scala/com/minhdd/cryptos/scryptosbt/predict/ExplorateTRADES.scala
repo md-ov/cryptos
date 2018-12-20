@@ -53,8 +53,7 @@ object ExplorateTRADES {
         val ss: SparkSession = SparkSession.builder().appName("explorate").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         import ss.implicits._
-        val parquetPath = CryptoPartitionKey.getTRADESParquetPath("D:\\ws\\cryptos\\data\\parquets", "BCH", 
-            "EUR")
+        val parquetPath = CryptoPartitionKey.getTRADESParquetPath("D:\\ws\\cryptos\\data\\parquets", "XBT", "EUR")
     
         val dsFromPath: Dataset[Crypto] = Crypto.getPartitionsUniFromPath(ss, parquetPath).get
         val ds: Dataset[Crypto] = SamplerObj.sampling(ss, dsFromPath)
@@ -116,7 +115,7 @@ object ExplorateTRADES {
 //          .filter($"importantChange" === true)
 //          .filter($"numberOfStableDay" !== 0)
 //          .show(1000, false)
-//        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\10", eee)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\15", eee)
     }
     
     

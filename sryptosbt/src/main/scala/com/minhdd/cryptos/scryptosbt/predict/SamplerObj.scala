@@ -5,9 +5,8 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.Sampler
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.{Dataset, Encoder, KeyValueGroupedDataset, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
@@ -97,9 +96,11 @@ object SamplerObj {
     }
     
     def fill(crypto: Crypto, datetime: Timestamp, nextdt: Timestamp, numberOfMinutesBetweenTwoElement: Int): Seq[Crypto] = {
-        val tss = DateTimes.getTimestamps(datetime, nextdt, numberOfMinutesBetweenTwoElement)
-        val cryptoValue = crypto.cryptoValue
-        tss.map(ts => crypto.copy(cryptoValue = cryptoValue.copy(datetime = ts)))
+        if (nextdt == null) Seq(crypto) else {
+            val tss: Seq[Timestamp] = DateTimes.getTimestamps(datetime, nextdt, numberOfMinutesBetweenTwoElement)
+            val cryptoValue = crypto.cryptoValue
+            tss.map(ts => crypto.copy(cryptoValue = cryptoValue.copy(datetime = ts)))
+        }
     }
     
     def adjustSecond(dt: DateTime): DateTime = {
