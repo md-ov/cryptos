@@ -32,8 +32,10 @@ object AnalyticsSegment {
 case class RegularSegment(
                            begin : AnalyticsSegment,
                            end : AnalyticsSegment,
-                           beginTimestamp : Timestamp,
-                           endTimestamp : Timestamp,
+                           beginTimestamp1 : Timestamp,
+                           beginTimestamp2 : Timestamp,
+                           endTimestamp1 : Timestamp,
+                           endTimestamp2 : Timestamp,
                            beginValue : Double,
                            endValue : Double,
                            segments : Seq[AnalyticsSegment],
@@ -44,16 +46,18 @@ object RegularSegment {
     def apply(segments: Seq[AnalyticsSegment]): RegularSegment = {
         val beginSegment = segments.head
         val endSegment = segments.last
-        val beginTimestamp = beginSegment.begin.crypto.cryptoValue.datetime
+        val beginTimestamp1 = beginSegment.begin.crypto.cryptoValue.datetime
+        val beginTimestamp2 = beginSegment.end.crypto.cryptoValue.datetime
         val beginValue = beginSegment.begin.crypto.cryptoValue.value
-        val endTimestamp = endSegment.begin.crypto.cryptoValue.datetime
+        val endTimestamp1 = endSegment.begin.crypto.cryptoValue.datetime
+        val endTimestamp2 = endSegment.end.crypto.cryptoValue.datetime
         val endValue = endSegment.begin.crypto.cryptoValue.value
-        val days = (endTimestamp.getTime - beginTimestamp.getTime) / 86400000
+        val days = (endTimestamp1.getTime - beginTimestamp2.getTime) / 86400000
         val pattern = 
             beginSegment.beginEvolution + " - " + beginSegment.endEvolution + 
               " | " + beginSegment.endEvolution + " | " + 
           endSegment.beginEvolution + " - " + endSegment.endEvolution
-        new RegularSegment(beginSegment, endSegment, beginTimestamp, endTimestamp, beginValue, endValue, segments, 
-            days, pattern)
+        new RegularSegment(beginSegment, endSegment, beginTimestamp1, beginTimestamp2, 
+            endTimestamp1, endTimestamp2, beginValue, endValue, segments, days, pattern)
     }
 }

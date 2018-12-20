@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
-import com.minhdd.cryptos.scryptosbt.tools.DataFrames
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
@@ -132,7 +132,20 @@ object ExplorateOHLC {
         val segments: Dataset[AnalyticsSegment] =
             analyticsCrypto.mapPartitions(splitAnalyticsCryptos).map(AnalyticsSegment(_))
         
-        //verification
+        val segmentsDF: DataFrame = 
+            segments
+              .withColumn("begindt", $"begin.crypto.cryptoValue.datetime")
+              .withColumn("beginvalue", $"begin.crypto.cryptoValue.value")
+              .withColumn("enddt", $"end.crypto.cryptoValue.datetime")
+              .withColumn("endvalue", $"end.crypto.cryptoValue.value")
+                .select(
+                    "begindt", "enddt", "beginvalue", "endvalue", 
+                    "beginEvolution",
+                    "endEvolution",
+                    "sameEvolution", "numberOfElement")
+    
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\2", segmentsDF)
+        
         val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)
         import org.apache.spark.sql.functions.sum
@@ -145,13 +158,13 @@ object ExplorateOHLC {
         if (!(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)) {
             println("not equal ! ")   
         }
-        
+
         val regularTrends: DataFrame = segments.mapPartitions(splitSegments).map(RegularSegment(_))
-          .select("beginTimestamp", "beginValue", "endTimestamp", "endValue", "days", "pattern")
-          .sort("beginTimestamp")
-    
-        regularTrends.show(10000, false)
-        
+          .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2",
+              "beginValue", "endValue", "days", "pattern")
+          .sort("beginTimestamp1")
+
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\regulartrends\\1", regularTrends)
     }
     
     def splitAnalyticsCryptos(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
