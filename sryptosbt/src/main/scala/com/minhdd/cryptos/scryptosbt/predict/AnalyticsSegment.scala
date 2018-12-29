@@ -5,8 +5,10 @@ import java.sql.Timestamp
 case class AnalyticsSegment(
     begin: AnalyticsCrypto,
     beginEvolution: String,
+    beginVariation: Double,
     end: AnalyticsCrypto,
     endEvolution: String,
+    endVariation: Double,
     sameEvolution: Boolean,
     numberOfElement: Int)
 
@@ -15,14 +17,18 @@ object AnalyticsSegment {
         val headC = seq.head
         val endC = seq.last
         val beginEvolution = headC.analytics.evolution.get
+        val beginVariation = headC.analytics.variation.get
         val endEvolution = endC.analytics.evolution.get
+        val endVariation = endC.analytics.variation.get
         val sameEvolution = beginEvolution == endEvolution
         
         new AnalyticsSegment(
             begin = headC,
             beginEvolution = beginEvolution,
+            beginVariation = beginVariation,
             end = endC,
             endEvolution = endEvolution,
+            endVariation = endVariation,
             sameEvolution = sameEvolution,
             numberOfElement = seq.size
         )
@@ -40,7 +46,8 @@ case class RegularSegment(
                            endValue : Double,
                            segments : Seq[AnalyticsSegment],
                            days : Long,
-                           pattern: String)
+                           pattern: String,
+                           evolution: String)
 
 object RegularSegment {
     def apply(segments: Seq[AnalyticsSegment]): RegularSegment = {
@@ -58,6 +65,6 @@ object RegularSegment {
               " | " + beginSegment.endEvolution + " | " + 
           endSegment.beginEvolution + " - " + endSegment.endEvolution
         new RegularSegment(beginSegment, endSegment, beginTimestamp1, beginTimestamp2, 
-            endTimestamp1, endTimestamp2, beginValue, endValue, segments, days, pattern)
+            endTimestamp1, endTimestamp2, beginValue, endValue, segments, days, pattern, beginSegment.endEvolution)
     }
 }
