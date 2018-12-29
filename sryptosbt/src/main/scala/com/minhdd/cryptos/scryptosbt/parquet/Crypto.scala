@@ -23,7 +23,8 @@ case class CryptoPartitionKey (
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir + 
           asset.toUpperCase + separator + 
-          currency.toUpperCase + separator + 
+          currency.toUpperCase + separator +
+          provider.toUpperCase + separator +
           year + separator + month + separator + day + separator + 
           provider.toUpperCase + separator +
           api.toUpperCase + separator +
