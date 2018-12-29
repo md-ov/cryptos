@@ -122,12 +122,12 @@ object ExplorateOHLC {
               struct($"derive", $"secondDerive", $"numberOfStableDay", $"importantChange", $"variation", $"evolution"))
             .as[AnalyticsCrypto]
         
-//        val eee: DataFrame = analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName)
+        val eee: DataFrame = analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName)
 //        eee.filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
 //          .filter($"importantChange" === true)
 //              .filter($"numberOfStableDay" !== 0)
 //              .show(1000, false)
-//        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\11", eee)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\ohlc\\181229", eee)
         
         val segments: Dataset[AnalyticsSegment] =
             analyticsCrypto.mapPartitions(splitAnalyticsCryptos).map(AnalyticsSegment(_))
@@ -140,11 +140,11 @@ object ExplorateOHLC {
               .withColumn("endvalue", $"end.crypto.cryptoValue.value")
                 .select(
                     "begindt", "enddt", "beginvalue", "endvalue", 
-                    "beginEvolution",
-                    "endEvolution",
+                    "beginEvolution", "beginVariation", 
+                    "endEvolution", "endVariation",
                     "sameEvolution", "numberOfElement")
     
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\2", segmentsDF)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\181229", segmentsDF)
         
         val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)
@@ -161,10 +161,10 @@ object ExplorateOHLC {
 
         val regularTrends: DataFrame = segments.mapPartitions(splitSegments).map(RegularSegment(_))
           .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2",
-              "beginValue", "endValue", "days", "pattern")
+              "beginValue", "endValue", "days", "pattern", "evolution")
           .sort("beginTimestamp1")
 
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\regulartrends\\1", regularTrends)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\regulartrends\\181229", regularTrends)
     }
     
     def splitAnalyticsCryptos(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
