@@ -24,7 +24,7 @@ case class CryptoPartitionKey (
         val path = fullParquetDir + 
           asset.toUpperCase + separator + 
           currency.toUpperCase + separator +
-          provider.toUpperCase + separator +
+          api.toUpperCase + separator +
           year + separator + month + separator + day + separator + 
           provider.toUpperCase + separator +
           api.toUpperCase + separator +
