@@ -123,15 +123,18 @@ object ExplorateOHLC {
             .as[AnalyticsCrypto]
         
         val eee: DataFrame = analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName)
-//        eee.filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
+        
+        
+//        eee
+        // .filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
 //          .filter($"importantChange" === true)
 //              .filter($"numberOfStableDay" !== 0)
-//              .show(1000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\ohlc\\181229", eee)
+//              .show(10000, false)
+//        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\ohlc\\181229", eee)
         
         val segments: Dataset[AnalyticsSegment] =
             analyticsCrypto.mapPartitions(splitAnalyticsCryptos).map(AnalyticsSegment(_))
-        
+
         val segmentsDF: DataFrame = 
             segments
               .withColumn("begindt", $"begin.crypto.cryptoValue.datetime")
@@ -143,9 +146,9 @@ object ExplorateOHLC {
                     "beginEvolution", "beginVariation", 
                     "endEvolution", "endVariation",
                     "sameEvolution", "numberOfElement")
-    
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\181229", segmentsDF)
-        
+
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\181231", segmentsDF)
+
         val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)
         import org.apache.spark.sql.functions.sum
@@ -164,24 +167,27 @@ object ExplorateOHLC {
               "beginValue", "endValue", "days", "pattern", "evolution")
           .sort("beginTimestamp1")
 
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\regulartrends\\181229", regularTrends)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\regulartrends\\181231", regularTrends)
     }
     
     def splitAnalyticsCryptos(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {
         if (iterator.hasNext) {
             new Iterator[Seq[AnalyticsCrypto]] {
-                var first: AnalyticsCrypto = iterator.next
+                var last: AnalyticsCrypto = iterator.next
                 override def hasNext: Boolean = iterator.hasNext
                 override def next(): Seq[AnalyticsCrypto] = {
-                    var nextSeq: Seq[AnalyticsCrypto] = Seq(first)
-                    var importantChange: Option[Boolean] = None
-                    while (iterator.hasNext && (importantChange.isEmpty || !importantChange.get)) {
+                    var nextSeq: Seq[AnalyticsCrypto] = Seq(last)
+                    var cut = false
+                    while (iterator.hasNext && !cut) {
                         val actual = iterator.next()
-                        importantChange = actual.analytics.importantChange
                         nextSeq = nextSeq :+ actual
-                        if (importantChange.isDefined && importantChange.get) {
-                            first = actual
+                        if (actual.crypto.cryptoValue.value != last.crypto.cryptoValue.value) {
+                            val importantChange = actual.analytics.importantChange
+                            if (importantChange.isDefined && importantChange.get) {
+                                cut = true
+                            }
                         }
+                        last = actual
                     }
                     nextSeq
                 }
