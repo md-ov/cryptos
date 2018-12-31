@@ -115,7 +115,7 @@ object ExplorateTRADES {
 //          .filter($"importantChange" === true)
 //          .filter($"numberOfStableDay" !== 0)
 //          .show(1000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\15", eee)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\trades\\20181231", eee)
     }
     
     
