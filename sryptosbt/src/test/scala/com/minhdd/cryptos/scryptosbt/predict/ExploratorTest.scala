@@ -4,7 +4,7 @@ import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, Crypto
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.scalatest.FunSuite
 
-class ExplorateOHLCTest extends FunSuite {
+class ExploratorTest extends FunSuite {
     test("splitAnalyticsCryptos") {
         val partitionKey = CryptoPartitionKey("", "", "","","","","")
         val cryptoValue1 = CryptoValue(
@@ -75,7 +75,7 @@ class ExplorateOHLCTest extends FunSuite {
             analyticsCrypto1, analyticsCrypto2, analyticsCrypto3,
           analyticsCrypto1Seq2, analyticsCrypto2Seq2, analyticsCrypto3Seq2)
         
-        val splitted = ExplorateOHLC.splitAnalyticsCryptos(iterator).toSeq
+        val splitted = Explorates.splitAnalyticsCryptos(iterator).toSeq
         
         splitted.foreach(l => {
             println("------")
