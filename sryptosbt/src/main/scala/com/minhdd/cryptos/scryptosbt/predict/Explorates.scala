@@ -3,8 +3,8 @@ package com.minhdd.cryptos.scryptosbt.predict
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction}
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction, Window}
+import org.apache.spark.sql.functions.{col, when}
 import org.apache.spark.sql.types.{BooleanType, DataType, LongType, StructField, StructType}
 
 object Explorates {
@@ -151,12 +151,16 @@ object Explorates {
         if (!(numberOfElement + numberOfSegment - numberOfPartition == sumOfSize)) {
             println("not equal ! ")
         }
+    
+        val window = Window.orderBy("beginTimestamp1").rowsBetween(Long.MinValue, 0)
         
         val regularTrends: DataFrame = segments.mapPartitions(splitSegments).map(RegularSegment(_))
-          .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2",
-              "beginValue", "endValue", "days", "pattern", "evolution")
-          .sort("beginTimestamp1")
-        
+          .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2", "beginValue", "endValue", "days", "pattern", "evolution")
+            .withColumn("days-with-sign", 
+                when(col("evolution") === "up", col("days")).otherwise(col("days") * -1)
+            )
+            .withColumn("cumdays", sum(col("days-with-sign")).over(window))
+    
         Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\trends\\" + outputDir, regularTrends)
     }
     
@@ -229,6 +233,6 @@ object Explorates {
         val sampledDataSet: Dataset[Crypto] = SamplerObj.sampling(ss, dsOfCrypto)
         val analyticsCrypto: Dataset[AnalyticsCrypto] = toAnalytics(ss, sampledDataSet)
         toSegmentsAndTrends(ss, analyticsCrypto, outputDir)
-        printAnalyticsCrypto(analyticsCrypto, outputDir)
+//        printAnalyticsCrypto(analyticsCrypto, outputDir)
     }
 }
