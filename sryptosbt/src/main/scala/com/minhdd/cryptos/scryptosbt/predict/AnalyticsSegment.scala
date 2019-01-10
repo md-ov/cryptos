@@ -2,6 +2,8 @@ package com.minhdd.cryptos.scryptosbt.predict
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.tools.Statistics
+
 case class AnalyticsSegment(
     begin: AnalyticsCrypto,
     beginEvolution: String,
@@ -44,10 +46,18 @@ case class RegularSegment(
                            endTimestamp2 : Timestamp,
                            beginValue : Double,
                            endValue : Double,
+                           beginVariation: Double,
+                           endVariation: Double,
                            segments : Seq[AnalyticsSegment],
                            days : Long,
+                           numberOfSegment: Int,
                            pattern: String,
-                           evolution: String)
+                           evolution: String,
+                           ecartTypeVariations: Double)
+
+
+
+
 
 object RegularSegment {
     def apply(segments: Seq[AnalyticsSegment]): RegularSegment = {
@@ -64,7 +74,20 @@ object RegularSegment {
             beginSegment.beginEvolution + " - " + beginSegment.endEvolution + 
               " | " + beginSegment.endEvolution + " | " + 
           endSegment.beginEvolution + " - " + endSegment.endEvolution
-        new RegularSegment(beginSegment, endSegment, beginTimestamp1, beginTimestamp2, 
-            endTimestamp1, endTimestamp2, beginValue, endValue, segments, days, pattern, beginSegment.endEvolution)
+        val variations: Seq[Double] = segments.map(s => s.beginVariation)
+        val ecartTypeVariations = Statistics.standardDeviation(variations)
+        new RegularSegment(
+            begin = beginSegment, end = endSegment, 
+            beginTimestamp1 = beginTimestamp1, beginTimestamp2 = beginTimestamp2, 
+            endTimestamp1 = endTimestamp1, endTimestamp2 = endTimestamp2, 
+            beginValue = beginValue, endValue = endValue, 
+            beginVariation = beginSegment.beginVariation,
+            endVariation = endSegment.beginVariation,
+            segments = segments, 
+            numberOfSegment = segments.size,
+            days = days, 
+            pattern = pattern, 
+            evolution = beginSegment.endEvolution, 
+            ecartTypeVariations = ecartTypeVariations)
     }
 }

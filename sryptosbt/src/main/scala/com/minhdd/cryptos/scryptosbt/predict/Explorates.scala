@@ -155,7 +155,9 @@ object Explorates {
         val window = Window.orderBy("beginTimestamp1").rowsBetween(Long.MinValue, 0)
         
         val regularTrends: DataFrame = segments.mapPartitions(splitSegments).map(RegularSegment(_))
-          .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2", "beginValue", "endValue", "days", "pattern", "evolution")
+          .select("beginTimestamp1", "beginTimestamp2", "endTimestamp1", "endTimestamp2", "beginValue", "endValue", 
+              "days", "pattern", "evolution", "numberOfSegment", "beginVariation", "endVariation", 
+              "ecartTypeVariations")
             .withColumn("days-with-sign", 
                 when(col("evolution") === "up", col("days")).otherwise(col("days") * -1)
             )
