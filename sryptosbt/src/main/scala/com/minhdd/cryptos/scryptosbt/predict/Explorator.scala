@@ -22,8 +22,8 @@ object Explorator {
         val ss: SparkSession = SparkSession.builder().appName("exploration").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
     
-//        run(ss, tradesCryptoDs(ss), outputDir = "trades-190105before1803")
-      run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190109-4")
+        run(ss, tradesCryptoDs(ss), outputDir = "trades-190120-5")
+//      run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190120")
 
     }
 }
