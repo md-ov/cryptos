@@ -15,6 +15,7 @@ object Explorates {
     val datetime = "datetime"
     val cryptoValueColumnName = "crypto.cryptoValue.value"
     val datetimeColumnName = "crypto.cryptoValue.datetime"
+    val volumeColumnName = "crypto.cryptoValue.volume"
     
     class CustomSum extends UserDefinedAggregateFunction {
         override def inputSchema: org.apache.spark.sql.types.StructType =
@@ -168,7 +169,7 @@ object Explorates {
     
     def printAnalyticsCrypto(analyticsCrypto: Dataset[AnalyticsCrypto], outputDir: String) = {
         val selectedAnalytics: DataFrame =
-            analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName)
+            analyticsCrypto.select("analytics.*", datetimeColumnName, cryptoValueColumnName, volumeColumnName)
         //        selectedAnalytics
         // .filter($"crypto.cryptoValue.datetime" > "2017").show(100000, false)
         //          .filter($"importantChange" === true)
