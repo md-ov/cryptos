@@ -1,13 +1,24 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{Binarizer, StringIndexer, VectorAssembler}
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, StringType, StructField, StructType, TimestampType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions._
 
-object MLSegments {
+
+object MLSegmentsRandomForrest {
+    
+    val rf = new RandomForestRegressor()
+      .setLabelCol("label")
+      .setSeed(27)
+    rf.setNumTrees(2)
+    rf.setMaxDepth(10)
+    
+    val ml = rf
+    
+    
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
@@ -26,12 +37,26 @@ object MLSegments {
                 StructField("size", IntegerType, nullable = false)
             )
         )
-        
-        val df: DataFrame = 
+    
+        val df1: DataFrame =
             ss.read
               .option("sep", ";")
               .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-5")
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-1")
+        
+        val df2: DataFrame = 
+            ss.read
+              .option("sep", ";")
+              .schema(csvSchema)
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-3")
+        
+        val df = df1.union(df2)
+    
+//        val df1: DataFrame =
+//            ss.read
+//              .option("sep", ";")
+//              .schema(csvSchema)
+//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-5")
         
 //        df.show(4, false)
         df.printSchema()
@@ -50,13 +75,7 @@ object MLSegments {
           .setInputCols(Array("begin-value", "begin-evo", "begin-variation"))
           .setOutputCol("features")
         
-        val rf = new RandomForestRegressor()
-          .setLabelCol("label")
-          .setSeed(27)
-        rf.setNumTrees(2)
-        rf.setMaxDepth(10)
-        
-        val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, rf))
+        val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, ml))
 
         val pipelineModel = pipeline.fit(trainDF)
 //        
@@ -65,14 +84,35 @@ object MLSegments {
         val binarizer = new Binarizer()
           .setInputCol("prediction")
           .setOutputCol("predict")
-          .setThreshold(0.5)
+          .setThreshold(0.53)
     
         val binaryResultDf = binarizer.transform(resultDF)
     
-        binaryResultDf.show(2,false)
+//        binaryResultDf.show(2,false)
     
-//        val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
-//        println(s"Accuracy: ${evaluator.evaluate(resultDF)}")
-        binaryResultDf.groupBy("label", "predict").count().show(4,false)
+        binaryResultDf.groupBy("label", "predict").count().show(10,false)
+    
+        binaryResultDf
+          .filter(col("predict") === 1)
+          .filter(col("label") === 0)
+          .show(100, false)
+    
+        binaryResultDf
+          .filter(col("predict") === 0)
+          .filter(col("label") === 1)
+          .show(100, false)
+    
+        binaryResultDf
+          .filter(col("predict") === 1)
+          .filter(col("label") === 1)
+          .filter(!(col("begin-evolution") === col("end-evolution")))
+          .show(100, false)
+
+        binaryResultDf
+          .filter(col("predict") === 0)
+          .filter(col("label") === 0)
+          .filter(!(col("begin-evolution") === col("end-evolution")))
+          .show(100, false)
+
     }
 }
