@@ -1,8 +1,10 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml
 
 import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.{Binarizer, StringIndexer, VectorAssembler}
 import org.apache.spark.ml.regression.GBTRegressor
+import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -14,6 +16,35 @@ object MLSegmentsGBTRegressor {
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
         val ml = gbt
+
+        val paramGrid = new ParamGridBuilder()
+            .addGrid(gbt.maxIter, Array(5, 10, 20, 50))
+            .build()
+
+        val indexerBegin = new StringIndexer()
+            .setInputCol("begin-evolution")
+            .setOutputCol("begin-evo")
+
+        val indexerEnd = new StringIndexer()
+            .setInputCol("end-evolution")
+            .setOutputCol("label")
+
+        val vectorAssembler = new VectorAssembler()
+            .setInputCols(Array("begin-value", "begin-evo", "begin-variation"))
+            .setOutputCol("features")
+
+        val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, ml))
+
+        val evaluator = new RegressionEvaluator()
+            .setLabelCol("label")
+            .setPredictionCol("prediction")
+
+        val cv = new CrossValidator()
+            .setEstimator(pipeline)
+            .setEvaluator(evaluator)
+            .setEstimatorParamMaps(paramGrid)
+            .setNumFolds(3)
+            .setSeed(27)
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
@@ -66,20 +97,8 @@ object MLSegmentsGBTRegressor {
 
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
 
-        val indexerBegin = new StringIndexer()
-          .setInputCol("begin-evolution")
-          .setOutputCol("begin-evo")
         
-        val indexerEnd = new StringIndexer()
-          .setInputCol("end-evolution")
-          .setOutputCol("label")
-        
-        val vectorAssembler = new VectorAssembler()
-          .setInputCols(Array("begin-value", "begin-evo", "begin-variation"))
-          .setOutputCol("features")
-        
-        val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, ml))
-        val model = pipeline.fit(trainDF)
+        val model = cv.fit(trainDF)
         
         val resultDF = model.transform(testDF)
 
