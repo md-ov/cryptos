@@ -236,6 +236,6 @@ object Explorates {
         val sampledDataSet: Dataset[Crypto] = SamplerObj.sampling(ss, dsOfCrypto)
         val analyticsCrypto: Dataset[AnalyticsCrypto] = toAnalytics(ss, sampledDataSet)
         toSegmentsAndTrends(ss, analyticsCrypto, outputDir)
-//        printAnalyticsCrypto(analyticsCrypto, outputDir)
+        printAnalyticsCrypto(analyticsCrypto, outputDir)
     }
 }
