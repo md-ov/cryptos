@@ -8,7 +8,7 @@ object Explorator {
     
     def tradesCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
-            parquetsDir = "D:\\ws\\cryptos\\data\\parquets-small-before1803", asset = "XBT", currency = "EUR")
+            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
         Crypto.getPartitionsUniFromPath(ss, parquetPath).get
     }
     
@@ -19,10 +19,13 @@ object Explorator {
     }
     
     def main(args: Array[String]): Unit = {
-        val ss: SparkSession = SparkSession.builder().appName("exploration").master("local[*]").getOrCreate()
+        val ss: SparkSession = SparkSession.builder()
+          .config("spark.driver.maxResultSize", "2g")
+          .appName("exploration")
+          .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
     
-        run(ss, tradesCryptoDs(ss), outputDir = "trades-190206-before")
+        run(ss, tradesCryptoDs(ss), outputDir = "trades-190206")
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190129-2")
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = "all-190294")
 

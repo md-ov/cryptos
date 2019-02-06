@@ -37,29 +37,29 @@ object MLSegmentsGBTRegressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
 
-//              val df: DataFrame =
-//                    ss.read
-//                      .option("sep", ";")
-//                      .schema(csvSchema)
-//                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-from")
-//                          .filter(!(col("begin-evolution") === "-"))
-//                          .filter(!(col("end-evolution") === "-"))
+              val df: DataFrame =
+                    ss.read
+                      .option("sep", ";")
+                      .schema(csvSchema)
+                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206")
+                          .filter(!(col("begin-evolution") === "-"))
+                          .filter(!(col("end-evolution") === "-"))
     
-        val df1: DataFrame =
-            ss.read
-              .option("sep", ";")
-              .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-before")
-
-        val df2: DataFrame =
-            ss.read
-              .option("sep", ";")
-              .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-from")
-
-        val df = df1.union(df2)
-          .filter(!(col("begin-evolution") === "-"))
-          .filter(!(col("end-evolution") === "-"))
+//        val df1: DataFrame =
+//            ss.read
+//              .option("sep", ";")
+//              .schema(csvSchema)
+//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-before")
+//
+//        val df2: DataFrame =
+//            ss.read
+//              .option("sep", ";")
+//              .schema(csvSchema)
+//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-from")
+//
+//        val df = df1.union(df2)
+//          .filter(!(col("begin-evolution") === "-"))
+//          .filter(!(col("end-evolution") === "-"))
 
         //        val df1: DataFrame =
         //            ss.read
@@ -80,7 +80,7 @@ object MLSegmentsGBTRegressor {
         val binarizer = new Binarizer()
             .setInputCol("prediction")
             .setOutputCol("predict")
-            .setThreshold(0.46)
+            .setThreshold(0.5)
 
         val binaryResultDf = binarizer.transform(resultDF)
 
@@ -124,6 +124,9 @@ object MLSegmentsGBTRegressor {
           .filter(col("label") === 0)
           .filter(!(col("begin-evolution") === col("end-evolution")))
           .show(100, false)
+    
+    
+        println(binaryResultDf.filter(!(col("begin-evolution") === col("end-evolution"))).count())
 
     }
 }
