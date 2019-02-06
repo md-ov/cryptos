@@ -8,9 +8,12 @@ case class AnalyticsSegment(
     begin: AnalyticsCrypto,
     beginEvolution: String,
     beginVariation: Double,
+    beginVolume: Double,
     end: AnalyticsCrypto,
     endEvolution: String,
     endVariation: Double,
+    endVolume: Double,
+    standardDeviationVolume: Double,                  
     sameEvolution: Boolean,
     numberOfElement: Int)
 
@@ -20,17 +23,23 @@ object AnalyticsSegment {
         val endC = seq.last
         val beginEvolution = headC.analytics.evolution.get
         val beginVariation = headC.analytics.variation.get
+        val beginVolume = headC.crypto.cryptoValue.volume
         val endEvolution = endC.analytics.evolution.get
         val endVariation = endC.analytics.variation.get
+        val endVolume = endC.crypto.cryptoValue.volume
         val sameEvolution = beginEvolution == endEvolution
+        val standardDeviationVolume = Statistics.standardDeviation(seq.map(_.crypto.cryptoValue.volume))
         
         new AnalyticsSegment(
             begin = headC,
             beginEvolution = beginEvolution,
             beginVariation = beginVariation,
+            beginVolume = beginVolume,
             end = endC,
             endEvolution = endEvolution,
             endVariation = endVariation,
+            endVolume = endVolume,
+            standardDeviationVolume = standardDeviationVolume,
             sameEvolution = sameEvolution,
             numberOfElement = seq.size
         )

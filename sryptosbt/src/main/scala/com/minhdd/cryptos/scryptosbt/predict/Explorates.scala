@@ -134,8 +134,9 @@ object Explorates {
               .withColumn("endvalue", col("end.crypto.cryptoValue.value"))
               .select(
                   "begindt", "enddt", "beginvalue", "endvalue",
-                  "beginEvolution", "beginVariation",
-                  "endEvolution", "endVariation",
+                  "beginEvolution", "beginVariation", "beginVolume",
+                  "endEvolution", "endVariation", "endVolume",
+                  "standardDeviationVolume",
                   "sameEvolution", "numberOfElement")
         
         Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\" + outputDir, segmentsDF)
@@ -236,6 +237,6 @@ object Explorates {
         val sampledDataSet: Dataset[Crypto] = SamplerObj.sampling(ss, dsOfCrypto)
         val analyticsCrypto: Dataset[AnalyticsCrypto] = toAnalytics(ss, sampledDataSet)
         toSegmentsAndTrends(ss, analyticsCrypto, outputDir)
-        printAnalyticsCrypto(analyticsCrypto, outputDir)
+//        printAnalyticsCrypto(analyticsCrypto, outputDir)
     }
 }

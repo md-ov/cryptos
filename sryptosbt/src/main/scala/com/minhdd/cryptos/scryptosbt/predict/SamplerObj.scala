@@ -5,6 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.Sampler
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import org.joda.time.DateTime
@@ -13,11 +14,19 @@ import org.joda.time.format.DateTimeFormat
 object SamplerObj {
     
     def oneCrypto(cryptos: Seq[Crypto]): Crypto = {
+        val allCount: Int = cryptos.map(_.count.getOrElse(0)).sum
+        val totalVolume: Double = cryptos.map(_.cryptoValue.volume).sum
+//        val averageVolume: Double = totalVolume / allCount
+        
         val first = cryptos.head
         val count = cryptos.size
         if (count == 1) first.copy(processingDt = Timestamps.now) else {
             val cryptoValue: CryptoValue = cryptos.map(_.cryptoValue).sortWith(_.value > _.value).apply(count / 2)
-            first.copy(cryptoValue = cryptoValue, processingDt = Timestamps.now)
+            first.copy(
+                cryptoValue = cryptoValue.copy(volume = totalVolume), 
+                tradeMode = None,
+                count = Option(allCount), 
+                processingDt = Timestamps.now)
         }
     }
     def toSeparate(deltaValue: Double)(first: Crypto, last: Crypto, next: Crypto): Boolean = {
@@ -113,34 +122,48 @@ object SamplerObj {
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
         //        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
         
-        def adjustTimestamp(ts: Timestamp) = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
+        def adjustTimestamp(ts: Timestamp): DateTime = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
         import ss.implicits._
-        val cryptoWithAdjustedTimestamp: Dataset[(Timestamp, Crypto)] =
-            ds.map(c => (Timestamps.fromDatetime(adjustTimestamp(c.cryptoValue.datetime)), c))
-        val deduped: Dataset[(Timestamp, Crypto)] = cryptoWithAdjustedTimestamp.dropDuplicates("_1")
-        val dedupedCryptoDataset: Dataset[Crypto] =
-            deduped.map{case (t, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = t))}
+    
+        val groupedAndTransformed: RDD[Crypto] =
+            ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
+              .groupByKey().mapValues(g => oneCrypto(g.toSeq))
+              .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
+    
+    
+        ///// dedup
+
+//        val cryptoWithAdjustedTimestamp: Dataset[(Timestamp, Crypto)] =
+//            ds.map(c => (Timestamps.fromDatetime(adjustTimestamp(c.cryptoValue.datetime)), c))
+//        val deduped: Dataset[(Timestamp, Crypto)] = cryptoWithAdjustedTimestamp.dropDuplicates("_1")
+//        val dedupedCryptoDataset: Dataset[Crypto] =
+//            deduped.map{case (t, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = t))}
+
+        //////
+
+        val wrapped: Dataset[CryptoWrapper] = groupedAndTransformed.map(c => CryptoWrapper(c)).toDS()
         
-        val wrapped: Dataset[CryptoWrapper] = dedupedCryptoDataset.map(c => CryptoWrapper(c))(encoderCryptoWrapper(ss))
+        
+//        (encoderCryptoWrapper(ss))
 
         val datetimeColumnName = "crypto.cryptoValue.datetime"
         val volumeColumnName = "crypto.cryptoValue.volume"
         val window = Window.orderBy(datetimeColumnName, volumeColumnName)
-    
+
         import org.apache.spark.sql.functions.lead
-    
+
         val dsss: Dataset[CryptoAndNextDatetime] =
             wrapped
               .withColumn("nextdt", lead(datetimeColumnName, 1).over(window))
               .as[CryptoAndNextDatetime](encoderCryptoAndNextDatetime(ss))
-    
+
         val finalDs: Dataset[Crypto] =
             dsss.flatMap(cryptoAndNextDatetime =>
                 fill(crypto = cryptoAndNextDatetime.crypto,
                     datetime = cryptoAndNextDatetime.crypto.cryptoValue.datetime,
                     nextdt = cryptoAndNextDatetime.nextdt,
                     numberOfMinutesBetweenTwoElement = numberOfMinutesBetweenTwoElement))(Crypto.encoder(ss))
-    
+
         finalDs
     }
 

@@ -4,34 +4,21 @@ import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{Binarizer, StringIndexer, VectorAssembler}
 import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
+import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 
 
 object MLSegmentsGBTRegressor2 {
     
     def main(args: Array[String]): Unit = {
         val gbt = new GBTRegressor()
-        gbt.setSeed(273).setMaxIter(5)
+        gbt.setSeed(273).setMaxIter(10)
         val ml = gbt
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
 
-        val csvSchema = StructType(
-            List(
-                StructField("t1", TimestampType, nullable = false),
-                StructField("t2", TimestampType, nullable = false),
-                StructField("begin-value", DoubleType, nullable = false),
-                StructField("end-value", DoubleType, nullable = false),
-                StructField("begin-evolution", StringType, nullable = true),
-                StructField("begin-variation", DoubleType, nullable = false),
-                StructField("end-evolution", StringType, nullable = true),
-                StructField("end-variation", DoubleType, nullable = false),
-                StructField("same", BooleanType, nullable = false),
-                StructField("size", IntegerType, nullable = false)
-            )
-        )
 
 //        val df: DataFrame =
 //            ss.read
@@ -45,13 +32,13 @@ object MLSegmentsGBTRegressor2 {
             ss.read
               .option("sep", ";")
               .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-1")
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190126before1803")
 
         val df2: DataFrame = 
             ss.read
               .option("sep", ";")
               .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-3")
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190129-from")
 
         val df = df1.union(df2)
                   .filter(!(col("begin-evolution") === "-"))
@@ -66,20 +53,8 @@ object MLSegmentsGBTRegressor2 {
         df.show(4, false)
         df.printSchema()
 
-        val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
+        val Array(trainDF, testDF) = df.randomSplit(Array(0.8, 0.2), seed=42)
 
-        val indexerBegin = new StringIndexer()
-          .setInputCol("begin-evolution")
-          .setOutputCol("begin-evo")
-        
-        val indexerEnd = new StringIndexer()
-          .setInputCol("end-evolution")
-          .setOutputCol("label")
-        
-        val vectorAssembler = new VectorAssembler()
-          .setInputCols(Array("begin-value", "begin-evo", "begin-variation"))
-          .setOutputCol("features")
-        
         val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, ml))
         val model = pipeline.fit(trainDF)
         
@@ -88,7 +63,7 @@ object MLSegmentsGBTRegressor2 {
         val binarizer = new Binarizer()
             .setInputCol("prediction")
             .setOutputCol("predict")
-            .setThreshold(0.5)
+            .setThreshold(0.6)
 
         val binaryResultDf = binarizer.transform(resultDF)
 

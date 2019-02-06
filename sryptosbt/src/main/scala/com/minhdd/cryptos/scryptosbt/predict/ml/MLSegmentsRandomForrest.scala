@@ -2,12 +2,12 @@ package com.minhdd.cryptos.scryptosbt.predict.ml
 
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature.{Binarizer, StringIndexer, VectorAssembler}
+import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 
 
 object MLSegmentsRandomForrest {
@@ -20,45 +20,18 @@ object MLSegmentsRandomForrest {
         rf.setMaxDepth(10)
 
         val paramGrid = new ParamGridBuilder()
-            .addGrid(rf.maxDepth, Array(2, 5, 10, 20))
-            .addGrid(rf.numTrees, Array(10, 20, 50))
+            .addGrid(rf.maxDepth, Array(2, 5, 10, 20, 30))
+            .addGrid(rf.numTrees, Array(10, 20, 50, 100, 200))
             .build()
 
         val ml = rf
-
-        val csvSchema = StructType(
-            List(
-                StructField("t1", TimestampType, nullable = false),
-                StructField("t2", TimestampType, nullable = false),
-                StructField("begin-value", DoubleType, nullable = false),
-                StructField("end-value", DoubleType, nullable = false),
-                StructField("begin-evolution", StringType, nullable = true),
-                StructField("begin-variation", DoubleType, nullable = false),
-                StructField("end-evolution", StringType, nullable = true),
-                StructField("end-variation", DoubleType, nullable = false),
-                StructField("same", BooleanType, nullable = false),
-                StructField("size", IntegerType, nullable = false)
-            )
-        )
-
-        val indexerBegin = new StringIndexer()
-            .setInputCol("begin-evolution")
-            .setOutputCol("begin-evo")
-
-        val indexerEnd = new StringIndexer()
-            .setInputCol("end-evolution")
-            .setOutputCol("label")
-
-        val vectorAssembler = new VectorAssembler()
-            .setInputCols(Array("begin-value", "begin-evo", "begin-variation"))
-            .setOutputCol("features")
 
         val pipeline = new Pipeline().setStages(Array(indexerBegin, indexerEnd, vectorAssembler, ml))
 
         val binarizer = new Binarizer()
             .setInputCol("prediction")
             .setOutputCol("predict")
-            .setThreshold(0.53)
+            .setThreshold(0.44)
 
         val evaluator = new RegressionEvaluator()
             .setLabelCol("label")
@@ -76,35 +49,39 @@ object MLSegmentsRandomForrest {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
 
-        val df: DataFrame =
-            ss.read
-                .option("sep", ";")
-                .schema(csvSchema)
-                .csv("/home/mdao/Downloads/segments.csv")
-                .filter(!(col("begin-evolution") === "-"))
-                .filter(!(col("end-evolution") === "-"))
+//        val df: DataFrame =
+//            ss.read
+//                .option("sep", ";")
+//                .schema(csvSchema)
+//                .csv("/home/mdao/Downloads/segments.csv")
+//                .filter(!(col("begin-evolution") === "-"))
+//                .filter(!(col("end-evolution") === "-"))
         
 //        val df1: DataFrame =
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-1")
-//        
+//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190126before1803")
+//
 //        val df2: DataFrame = 
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-3")
-//        
+//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190129-from")
+//
 //        val df = df1.union(df2)
+//          .filter(!(col("begin-evolution") === "-"))
+//          .filter(!(col("end-evolution") === "-"))
     
-//        val df1: DataFrame =
-//            ss.read
-//              .option("sep", ";")
-//              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-5")
+        val df: DataFrame =
+            ss.read
+              .option("sep", ";")
+              .schema(csvSchema)
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\ohlc-190129-2")
+                  .filter(!(col("begin-evolution") === "-"))
+                  .filter(!(col("end-evolution") === "-"))
         
-//        df.show(4, false)
+        df.show(4, false)
         df.printSchema()
     
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
@@ -112,6 +89,7 @@ object MLSegmentsRandomForrest {
         val pipelineModel = pipeline.fit(trainDF)
 
         val cvModel = cv.fit(trainDF)
+        
 //        
         binarizer
             .transform(pipelineModel.transform(testDF))
