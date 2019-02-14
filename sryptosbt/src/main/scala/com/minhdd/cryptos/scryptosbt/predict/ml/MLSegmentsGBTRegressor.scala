@@ -41,7 +41,7 @@ object MLSegmentsGBTRegressor {
                     ss.read
                       .option("sep", ";")
                       .schema(csvSchema)
-                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190213")
+                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190215")
                           .filter(!(col("begin-evolution") === "-"))
                           .filter(!(col("end-evolution") === "-"))
     
@@ -75,12 +75,15 @@ object MLSegmentsGBTRegressor {
         
         val model = cv.fit(trainDF)
         
-        val resultDF = model.transform(testDF)
+        val resultDF: DataFrame = model.transform(testDF)
+        
+        resultDF.select("begin-evolution", "same", "label", "prediction")
+          .write.csv("D:\\ws\\cryptos\\data\\mlresults\\5.txt")
 
         val binarizer = new Binarizer()
             .setInputCol("prediction")
             .setOutputCol("predict")
-            .setThreshold(0.5)
+            .setThreshold(0.68)
 
         val binaryResultDf = binarizer.transform(resultDF)
 
