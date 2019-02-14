@@ -41,7 +41,7 @@ object MLSegmentsGBTRegressor {
                     ss.read
                       .option("sep", ";")
                       .schema(csvSchema)
-                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206")
+                      .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190213")
                           .filter(!(col("begin-evolution") === "-"))
                           .filter(!(col("end-evolution") === "-"))
     

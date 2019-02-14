@@ -25,8 +25,8 @@ object Explorator {
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
     
-        run(ss, tradesCryptoDs(ss), outputDir = "trades-190206")
-//        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190129-2")
+        run(ss, tradesCryptoDs(ss), outputDir = "trades-190213")
+//        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190213")
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = "all-190294")
 
     }

@@ -34,7 +34,7 @@ object MLSegmentsDecisionTree {
             ss.read
               .option("sep", ";")
               .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\ohlc-190129-2")
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190213")
     
         df.printSchema()
     
