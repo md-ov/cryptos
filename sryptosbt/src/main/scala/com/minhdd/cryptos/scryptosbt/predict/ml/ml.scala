@@ -18,7 +18,22 @@ object ml {
             StructField("end-volume", DoubleType, nullable = false),
             StructField("standard-deviation-volume", DoubleType, nullable = false),
             StructField("same", BooleanType, nullable = false),
-            StructField("size", IntegerType, nullable = false)
+            StructField("size", IntegerType, nullable = false),
+            StructField("average-volume", DoubleType, nullable = false),
+            StructField("average-variation", DoubleType, nullable = false),
+            StructField("standard-deviation-variation", DoubleType, nullable = false),
+            StructField("average-derive", DoubleType, nullable = false),
+            StructField("standard-deviation-derive", DoubleType, nullable = false),
+            StructField("average-second-derive", DoubleType, nullable = false),
+            StructField("standard-deviation-second-derive", DoubleType, nullable = false),
+            StructField("average-count", DoubleType, nullable = false),
+            StructField("standard-deviation-count", DoubleType, nullable = false),
+            StructField("begin-count", DoubleType, nullable = false),
+            StructField("ohlc-begin-volume", DoubleType, nullable = false),
+            StructField("begin-derive", DoubleType, nullable = true),
+            StructField("end-derive", DoubleType, nullable = true),
+            StructField("begin-second-derive", DoubleType, nullable = true),
+            StructField("end-second-derive", DoubleType, nullable = true)
         )
     )
     
@@ -31,7 +46,14 @@ object ml {
       .setOutputCol("label")
     
     val vectorAssembler = new VectorAssembler()
-      .setInputCols(Array("begin-value", "begin-evo", "begin-variation", "begin-volume", "standard-deviation-volume", "size" ))
+      .setInputCols(Array(
+          "begin-value", "begin-evo", "begin-variation", "begin-volume", "begin-count", 
+          "ohlc-begin-volume", "begin-derive", "begin-second-derive",
+          "size", "average-derive", "standard-deviation-derive", "average-second-derive", "standard-deviation-second-derive"
+//          "standard-deviation-volume", "average-volume",
+//          "average-variation", "standard-deviation-variation", 
+//          "average-count", "standard-deviation-count"
+      ))
       .setOutputCol("features")
     
 }
