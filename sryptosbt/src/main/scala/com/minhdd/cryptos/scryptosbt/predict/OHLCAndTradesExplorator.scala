@@ -60,6 +60,15 @@ object Segment {
             standardDeviationCount = Statistics.standardDeviation(seq.map(_.count.toDouble))
         )
     }
+    
+    def segments(seq: Seq[BeforeSplit]): Seq[Segment] = {
+        def size = seq.size
+        (2 to size).map(i => {
+            val s = seq.take(i)
+            Segment(s)
+        })
+    }
+
 }
 object OHLCAndTradesExplorator {
     val numberOfMinutesBetweenTwoElement = 15
@@ -136,12 +145,12 @@ object OHLCAndTradesExplorator {
     
         val beforeSplit: Dataset[BeforeSplit] = dfWithSecondDerive.as[BeforeSplit]
     
-        val segments: Dataset[Segment] = beforeSplit.mapPartitions(split).map(Segment(_))
-        segments.show(5, false)
-    
+//        val segments: Dataset[Segment] = beforeSplit.mapPartitions(split).map(Segment(_))
+        val expandedSegments: Dataset[Segment] = beforeSplit.mapPartitions(split).flatMap(Segment.segments)
+//        segments.show(5, false)
     
         val segmentsDF: DataFrame =
-            segments
+            expandedSegments
               .withColumn("begindt", col("begin.datetime"))
               .withColumn("enddt", col("end.datetime"))
               .withColumn("beginvalue", col("begin.value"))
@@ -172,6 +181,7 @@ object OHLCAndTradesExplorator {
                   "beginderive", "endderive", "beginsecondderive", "endsecondderive"
               )
     
+        println(segmentsDF.count())
         Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\" + outputDir, segmentsDF)
     }
     

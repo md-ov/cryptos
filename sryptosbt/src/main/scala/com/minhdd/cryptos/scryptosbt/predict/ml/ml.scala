@@ -44,6 +44,7 @@ object ml {
     val indexerEnd = new StringIndexer()
       .setInputCol("end-evolution")
       .setOutputCol("label")
+      .setHandleInvalid("keep")
     
     val vectorAssembler = new VectorAssembler()
       .setInputCols(Array(
