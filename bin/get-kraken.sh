@@ -10,3 +10,4 @@ mv /d/ws/cryptos/cryptos/krakenc/out/*.csv D:\\ws\\cryptos\\data\\ohlc\\xbt
 rm -r /d/ws/cryptos/data/parquets/XBT/EUR/OHLC/parquet
 cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir D:\\ws\\cryptos\\data\\ohlc\\xbt --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 500
 cryptos-apps to-parquets-from-csv --master local --api trades --input-dir D:\\ws\\cryptos\\data\\trades\\xbt-before-$now --parquets-dir file:///D:\\ws\\cryptos\\data\\parquets --minimum 1
+cmd
