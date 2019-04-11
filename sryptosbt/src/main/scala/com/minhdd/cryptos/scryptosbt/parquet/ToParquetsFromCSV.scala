@@ -62,7 +62,8 @@ object ToParquetsFromCSV {
                   })
                 .map(_.getAbsolutePath)
             
-            val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = orderedFileList.map(filePath => 
+            val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = 
+                orderedFileList.filter(firstLine(_).nonEmpty).map(filePath => 
                 (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
     
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
