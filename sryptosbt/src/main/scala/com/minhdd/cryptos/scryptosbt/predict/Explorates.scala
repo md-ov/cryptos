@@ -236,7 +236,7 @@ object Explorates {
     def run(ss:SparkSession, dsOfCrypto: Dataset[Crypto], outputDir: String) = {
         val sampledDataSet: Dataset[Crypto] = SamplerObj.sampling(ss, dsOfCrypto)
         val analyticsCrypto: Dataset[AnalyticsCrypto] = toAnalytics(ss, sampledDataSet)
-//        toSegmentsAndTrends(ss, analyticsCrypto, outputDir)
-        printAnalyticsCrypto(analyticsCrypto, outputDir)
+        toSegmentsAndTrends(ss, analyticsCrypto, outputDir)
+//        printAnalyticsCrypto(analyticsCrypto, outputDir)
     }
 }
