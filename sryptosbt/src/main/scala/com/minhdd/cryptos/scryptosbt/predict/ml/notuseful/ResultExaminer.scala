@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.predict.ml
+package com.minhdd.cryptos.scryptosbt.predict.ml.notuseful
 
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.SparkSession

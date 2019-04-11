@@ -1,12 +1,11 @@
-package com.minhdd.cryptos.scryptosbt.predict.ml
+package com.minhdd.cryptos.scryptosbt.predict.ml.notuseful
 
+import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.feature.{Binarizer, StringIndexer, VectorAssembler}
+import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.sql.functions._
-import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 
 
 object MLSegmentsGBTRegressor2 {

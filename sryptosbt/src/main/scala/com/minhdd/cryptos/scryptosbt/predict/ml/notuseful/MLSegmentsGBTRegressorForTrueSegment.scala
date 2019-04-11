@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.predict.ml
+package com.minhdd.cryptos.scryptosbt.predict.ml.notuseful
 
 import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
 import org.apache.spark.ml.Pipeline
@@ -31,7 +31,7 @@ object MLSegmentsGBTRegressorForTrueSegment {
         val df: DataFrame =
             ss.read
               .option("sep", ";").schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190221")
+              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190321")
               .filter(!(col("begin-evolution") === "-"))
               .filter(!(col("end-evolution") === "-"))
 
