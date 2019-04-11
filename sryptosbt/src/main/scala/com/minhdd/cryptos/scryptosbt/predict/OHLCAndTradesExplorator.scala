@@ -40,14 +40,13 @@ case class Segment (
                    )
 
 object Segment {
-    def apply(seq: Seq[BeforeSplit]): Segment = {
+    def apply(seq: Seq[BeforeSplit], last: BeforeSplit): Segment = {
         val begin = seq.head
-        val end = seq.last
         new Segment(
             begin = begin,
-            end = end,
+            end = last,
             numberOfElement = seq.size,
-            sameEvolution = begin.evolution == end.evolution,
+            sameEvolution = begin.evolution == last.evolution,
             standardDeviationVolume = Statistics.standardDeviation(seq.map(_.volume)),
             averageVolume = Statistics.avg(seq.map(_.volume)),
             averageVariation = Statistics.avg(seq.map(_.variation)),
@@ -65,7 +64,7 @@ object Segment {
         def size = seq.size
         (2 to size).map(i => {
             val s = seq.take(i)
-            Segment(s)
+            Segment(s, seq.last)
         })
     }
 
