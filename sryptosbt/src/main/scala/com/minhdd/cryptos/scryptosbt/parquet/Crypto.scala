@@ -177,13 +177,13 @@ object Crypto {
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     
-    def getPartitionsUniFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
+    def getPartitionsUniFromPath(ss: SparkSession, prefix: String, path: String): Option[Dataset[Crypto]] = {
         import com.minhdd.cryptos.scryptosbt.tools.Files
         Try {
             val allPartitionsPath: Seq[String] = Files.getAllDir(path)
-            val ds: Dataset[Crypto] = allPartitionsPath.map(p => ss.read.parquet("file:///"+p).as[Crypto](encoder(ss)))
-              .reduce(_.union(_))
-            ds
+            val allPaths = allPartitionsPath.map(prefix + _)
+//            allPaths.foreach(println)
+            allPaths.map(ss.read.parquet(_).as[Crypto](encoder(ss))).reduce(_.union(_))
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     

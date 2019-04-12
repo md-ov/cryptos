@@ -9,7 +9,7 @@ object Explorator {
     def tradesCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
             parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
-        Crypto.getPartitionsUniFromPath(ss, parquetPath).get
+        Crypto.getPartitionsUniFromPath(ss, "file:///", parquetPath).get
     }
     
     def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
@@ -25,9 +25,10 @@ object Explorator {
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
     
-        run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
+//        run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
-//        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = "all-190407")
+        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
+          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190407")
 
     }
     
