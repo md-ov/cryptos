@@ -88,6 +88,45 @@ object OHLCAndTradesExplorator {
     val derive = "derive"
     val numberOfStableDayColumnName = "numberOfStableDay"
     
+    def expansion(ss: SparkSession, beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]]) = {
+        import ss.implicits._
+        val expandedSegments: Dataset[Segment] = beforeSplitsSeqDataset.flatMap(Segment.segments)
+        //        segments.show(5, false)
+    
+        val segmentsDF: DataFrame =
+            expandedSegments
+              .withColumn("begindt", col("begin.datetime"))
+              .withColumn("enddt", col("end.datetime"))
+              .withColumn("beginvalue", col("begin.value"))
+              .withColumn("endvalue", col("end.value"))
+              .withColumn("beginderive", col("begin.derive"))
+              .withColumn("endderive", col("end.derive"))
+              .withColumn("beginsecondderive", col("begin.secondDerive"))
+              .withColumn("endsecondderive", col("end.secondDerive"))
+              .withColumn("beginEvolution", col("begin.evolution"))
+              .withColumn("endEvolution", col("end.evolution"))
+              .withColumn("beginVariation", col("begin.variation"))
+              .withColumn("endVariation", col("end.variation"))
+              .withColumn("beginVolume", col("begin.volume"))
+              .withColumn("endVolume", col("end.volume"))
+              .withColumn("beginCount", col("begin.count"))
+              .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
+              .select(
+                  "begindt", "enddt", "beginvalue", "endvalue",
+                  "beginEvolution", "beginVariation", "beginVolume",
+                  "endEvolution", "endVariation", "endVolume",
+                  "standardDeviationVolume",
+                  "sameEvolution", "numberOfElement", "averageVolume",
+                  "averageVariation", "standardDeviationVariation",
+                  "averageDerive", "standardDeviationDerive",
+                  "averageSecondDerive", "standardDeviationSecondDerive",
+                  "averageCount", "standardDeviationCount",
+                  "beginCount", "ohlcBeginVolume",
+                  "beginderive", "endderive", "beginsecondderive", "endsecondderive"
+              )
+        segmentsDF
+    }
+    
     
     def explorate(ss:SparkSession, ohlc: Dataset[Crypto], trades: Dataset[Crypto], outputDir: String): Unit = {
         import ss.implicits._
@@ -142,46 +181,16 @@ object OHLCAndTradesExplorator {
                 xColumn = datetime,
                 newCol = "secondDerive")
     
-        val beforeSplit: Dataset[BeforeSplit] = dfWithSecondDerive.as[BeforeSplit]
+        val beforeSplits: Dataset[BeforeSplit] = dfWithSecondDerive.as[BeforeSplit]
+        val beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]] = beforeSplits.mapPartitions(split)
+        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)
     
-//        val segments: Dataset[Segment] = beforeSplit.mapPartitions(split).map(Segment(_))
-        val expandedSegments: Dataset[Segment] = beforeSplit.mapPartitions(split).flatMap(Segment.segments)
-//        segments.show(5, false)
-    
-        val segmentsDF: DataFrame =
-            expandedSegments
-              .withColumn("begindt", col("begin.datetime"))
-              .withColumn("enddt", col("end.datetime"))
-              .withColumn("beginvalue", col("begin.value"))
-              .withColumn("endvalue", col("end.value"))
-              .withColumn("beginderive", col("begin.derive"))
-              .withColumn("endderive", col("end.derive"))
-              .withColumn("beginsecondderive", col("begin.secondDerive"))
-              .withColumn("endsecondderive", col("end.secondDerive"))
-              .withColumn("beginEvolution", col("begin.evolution"))
-              .withColumn("endEvolution", col("end.evolution"))
-              .withColumn("beginVariation", col("begin.variation"))
-              .withColumn("endVariation", col("end.variation"))
-              .withColumn("beginVolume", col("begin.volume"))
-              .withColumn("endVolume", col("end.volume"))
-              .withColumn("beginCount", col("begin.count"))
-              .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
-              .select(
-                  "begindt", "enddt", "beginvalue", "endvalue",
-                  "beginEvolution", "beginVariation", "beginVolume",
-                  "endEvolution", "endVariation", "endVolume",
-                  "standardDeviationVolume",
-                  "sameEvolution", "numberOfElement", "averageVolume", 
-                  "averageVariation", "standardDeviationVariation",
-                  "averageDerive", "standardDeviationDerive",
-                  "averageSecondDerive", "standardDeviationSecondDerive",
-                  "averageCount", "standardDeviationCount",
-                  "beginCount", "ohlcBeginVolume",
-                  "beginderive", "endderive", "beginsecondderive", "endsecondderive"
-              )
-    
-        println(segmentsDF.count())
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\" + outputDir, segmentsDF)
+        val trainingSegments = expansion(ss, trainingdf)
+        val crossValidationSegments = expansion(ss, crossValidationdf)
+        val testSegments = expansion(ss, testingdf)
+        Sparks.csvFromDataframe(outputDir + "\\training", trainingSegments)
+        Sparks.csvFromDataframe(outputDir + "\\crossvalidation", crossValidationSegments)
+        Sparks.csvFromDataframe(outputDir + "\\test", testSegments)
     }
     
     def split(iterator: Iterator[BeforeSplit]): Iterator[Seq[BeforeSplit]] = {
