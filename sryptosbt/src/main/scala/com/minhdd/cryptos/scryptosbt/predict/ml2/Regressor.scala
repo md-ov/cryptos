@@ -1,20 +1,19 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
-import com.minhdd.cryptos.scryptosbt.predict.ml.ExpansionSegmentsTransformer
-import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{predict, prediction, label}
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature.Binarizer
-import org.apache.spark.ml.regression.GBTRegressor
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.sql.{DataFrame, SparkSession}
-
 object Regressor {
     def main(args: Array[String]): Unit = {
         t()
     }
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
+        import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
+        import org.apache.spark.ml.Pipeline
+        import org.apache.spark.ml.evaluation.RegressionEvaluator
+        import org.apache.spark.ml.feature.Binarizer
+        import org.apache.spark.ml.regression.GBTRegressor
+        import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+        import org.apache.spark.sql.{DataFrame, SparkSession}
+        
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame = ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\beforesplits")
@@ -32,7 +31,7 @@ object Regressor {
         val model = cv.fit(trainDF)
         val result = model.transform(testDF)
         result.show(false)
-        result.write.csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
+        result.write.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
         
         
         val binarizerForSegmentDetection = new Binarizer()
