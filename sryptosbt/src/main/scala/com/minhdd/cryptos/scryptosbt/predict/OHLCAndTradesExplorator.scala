@@ -183,14 +183,15 @@ object OHLCAndTradesExplorator {
     
         val beforeSplits: Dataset[BeforeSplit] = dfWithSecondDerive.as[BeforeSplit]
         val beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]] = beforeSplits.mapPartitions(split)
-        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)
-    
-        val trainingSegments = expansion(ss, trainingdf)
-        val crossValidationSegments = expansion(ss, crossValidationdf)
-        val testSegments = expansion(ss, testingdf)
-        Sparks.csvFromDataframe(outputDir + "\\training", trainingSegments)
-        Sparks.csvFromDataframe(outputDir + "\\crossvalidation", crossValidationSegments)
-        Sparks.csvFromDataframe(outputDir + "\\test", testSegments)
+        beforeSplitsSeqDataset.write.parquet(outputDir+ "\\beforesplits") 
+//        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)
+//    
+//        val trainingSegments: DataFrame = expansion(ss, trainingdf)
+//        val crossValidationSegments = expansion(ss, crossValidationdf)
+//        val testSegments = expansion(ss, testingdf)
+//        Sparks.csvFromDataframe(outputDir + "\\training", trainingSegments)
+//        Sparks.csvFromDataframe(outputDir + "\\crossvalidation", crossValidationSegments)
+//        Sparks.csvFromDataframe(outputDir + "\\test", testSegments)
     }
     
     def split(iterator: Iterator[BeforeSplit]): Iterator[Seq[BeforeSplit]] = {

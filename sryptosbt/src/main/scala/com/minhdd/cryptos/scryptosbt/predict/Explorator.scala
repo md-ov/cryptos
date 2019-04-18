@@ -28,7 +28,7 @@ object Explorator {
 //        run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
         OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
-          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190407")
+          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190418")
 
     }
     
