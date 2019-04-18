@@ -1,8 +1,12 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
+import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
+import org.apache.spark.ml.feature.Binarizer
+import org.apache.spark.sql.SparkSession
+
 object Regressor {
     def main(args: Array[String]): Unit = {
-        t()
+        results()
     }
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
@@ -32,12 +36,10 @@ object Regressor {
         val result = model.transform(testDF)
         result.show(false)
         result.write.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
-        
-        
+
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
           .setOutputCol(predict)
-    
     
         for (i <- 2 to 9) {
             binarizerForSegmentDetection.setThreshold(i/10)
@@ -46,6 +48,22 @@ object Regressor {
             counts.show()
         } 
         
+    }
+    
+    def results(): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        val df = ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
+        df.show(false)
+        for (i <- Seq(0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)) {
+            val binarizerForSegmentDetection = new Binarizer()
+              .setInputCol(prediction)
+              .setOutputCol(predict)
+              .setThreshold(i)
+            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
+            val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
+            counts.show()
+        }
     }
     
     
