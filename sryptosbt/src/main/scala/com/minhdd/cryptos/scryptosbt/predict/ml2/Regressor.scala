@@ -97,4 +97,9 @@ object Regressor {
             0
         }
     }
+    
+    
+    def getThreshold(df: DataFrame): Double = {
+        1D
+    }
 }
