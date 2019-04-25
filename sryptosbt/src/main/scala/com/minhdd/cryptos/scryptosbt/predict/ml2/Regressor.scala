@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
 import org.apache.spark.ml.feature.Binarizer
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Regressor {
     def main(args: Array[String]): Unit = {
@@ -53,18 +53,48 @@ object Regressor {
     def results(): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
+        import org.apache.spark.sql.functions._
         val df = ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
-        df.show(false)
-        for (i <- Seq(0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)) {
+//        df.select("label", "prediction").show(false)
+//        println("-----min-----max------")
+//        df.agg(min("prediction"), max("prediction")).show(false)
+//        println("-----stats------")
+//        val stats: Array[Double] = df.stat.approxQuantile("prediction", Array(0.1D, 0.2D, 0.3D, 0.4D, 0.5D, 0.6D, 0.7D, 0.8D, 0.9D), 0.00001)
+//        stats.foreach(println)
+        println("-----binarizers------")
+        for (i <- Seq(1.01897137, 1.01897139, 1.0189714, 1.02, 1.021)) {
             val binarizerForSegmentDetection = new Binarizer()
               .setInputCol(prediction)
               .setOutputCol(predict)
               .setThreshold(i)
             val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
             val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
+            val truePositif: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
+            val falsePositif: Long = extractThridValueWithTwoFilter(counts, 0, 1.0)
+            val falseNegative: Long = extractThridValueWithTwoFilter(counts, 1, 0.0)
+            val trueNegative: Long = extractThridValueWithTwoFilter(counts, 0, 0.0)
             counts.show()
+            val total = truePositif + falsePositif + falseNegative + trueNegative
+            val rate1 = truePositif.toDouble / (truePositif + falsePositif)
+            println("rate true positif : " + rate1)
+            val rate2 = trueNegative.toDouble / (falseNegative + trueNegative)
+            println("rate trueNegative : " + rate2)
+            println("rate potisif : " + (truePositif + falsePositif).toDouble/total)
+            println("rate true :" + (truePositif + trueNegative).toDouble/total)
+            println(i)
+            println("----------------------------------------------------------------")
         }
     }
     
     
+    private def extractThridValueWithTwoFilter(counts: DataFrame, labelValue: Int, predictValue: Double): Long = {
+        import org.apache.spark.sql.functions._
+        val row = counts.filter(col("label") === labelValue).filter(col("predict") === predictValue)
+        
+        if (row.count() == 1) {
+            row.first().getAs[Long](2)
+        } else {
+            0
+        }
+    }
 }
