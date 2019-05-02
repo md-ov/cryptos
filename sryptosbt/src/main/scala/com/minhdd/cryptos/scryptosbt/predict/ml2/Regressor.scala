@@ -106,7 +106,28 @@ object Regressor {
         }
     }
     
+    private def getRates(s: Seq[Double], df: DataFrame) = {
+        s.map(t=>{
+            val counts: DataFrame = getCountsDf(df, t)
+            val truePositive: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
+            val falsePositive: Long = extractThridValueWithTwoFilter(counts, 0, 1.0)
+            val falseNegative: Long = extractThridValueWithTwoFilter(counts, 1, 0.0)
+            val trueNegative: Long = extractThridValueWithTwoFilter(counts, 0, 0.0)
+            val total = truePositive + falsePositive + falseNegative + trueNegative
+            val rate1 = truePositive.toDouble / (truePositive + falsePositive)
+            val rate2 = trueNegative.toDouble / (falseNegative + trueNegative)
+            val rate3 = (truePositive + falsePositive).toDouble/total
+            val rate4 = (truePositive + trueNegative).toDouble/total
+            (t, Rates(rate1, rate2, rate3, rate4))
+        })
+    }
+    
     def getThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.8): Double = {
+        val centeredThreshold = getCenteredThreshold(ss, df)
+        getAdjustedThreshold(ss, df, centeredThreshold, minimumTruePositiveRate)
+    }
+    
+    def getCenteredThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.82): Double = {
         import ss.implicits._
         import org.apache.spark.sql.functions._
         val minmaxDf: DataFrame = df.agg(min(prediction), max(prediction))
@@ -114,27 +135,26 @@ object Regressor {
         val maxValue: Double = minmaxDf.map(_.getDouble(1)).first()
         val diff: Double = maxValue - minValue
         val samplingThresholds: Seq[Int] = 0 until 40
-        val rates: Seq[(Double, Rates)] = 
-            samplingThresholds.map(s => minValue + (s * (diff/(samplingThresholds.length - 1)))).map(t=>{
-                val counts: DataFrame = getCountsDf(df, t)
-                val truePositif: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
-                val falsePositif: Long = extractThridValueWithTwoFilter(counts, 0, 1.0)
-                val falseNegative: Long = extractThridValueWithTwoFilter(counts, 1, 0.0)
-                val trueNegative: Long = extractThridValueWithTwoFilter(counts, 0, 0.0)
-                val total = truePositif + falsePositif + falseNegative + trueNegative
-                val rate1 = truePositif.toDouble / (truePositif + falsePositif)
-                val rate2 = trueNegative.toDouble / (falseNegative + trueNegative)
-                val rate3 = (truePositif + falsePositif).toDouble/total
-                val rate4 = (truePositif + trueNegative).toDouble/total
-                (t, Rates(rate1, rate2, rate3, rate4))
-            })
+        val thresholds: Seq[Double] = 
+            samplingThresholds.map(s => minValue + (s * (diff/(samplingThresholds.length - 1))))
         
-        val filteredRate = rates
+        val rates = getRates(thresholds, df)
+        
+        bestRate(minimumTruePositiveRate, rates)
+    }
+    
+    private def bestRate(minimumTruePositiveRate: Double, rates: Seq[(Double, Rates)]) = {
+        rates
           .filter(_._2.truePositive > minimumTruePositiveRate)
-          .maxBy(_._2.trueRate)
-        
-        println(filteredRate)
-        
-        filteredRate._1
+          .maxBy(_._2.trueRate)._1
+    }
+    
+    def getAdjustedThreshold(ss: SparkSession, df: DataFrame, centeredThreshold: Double,
+                             minimumTruePositiveRate: Double): Double = {
+        val epsilon = 0.001
+        val thresholds = (-30 until 30).map(e => centeredThreshold + e*epsilon)
+        val rates = getRates(thresholds, df)
+        rates.foreach(println)
+        bestRate(minimumTruePositiveRate, rates)
     }
 }
