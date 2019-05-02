@@ -4,6 +4,8 @@ import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, p
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
+
 object Regressor {
     val segmentDirectory = "all-190502"
     def main(args: Array[String]): Unit = {
@@ -104,7 +106,7 @@ object Regressor {
         }
     }
     
-    def getThreshold(ss: SparkSession, df: DataFrame): Double = {
+    def getThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.8): Double = {
         import ss.implicits._
         import org.apache.spark.sql.functions._
         val minmaxDf: DataFrame = df.agg(min(prediction), max(prediction))
@@ -112,7 +114,7 @@ object Regressor {
         val maxValue: Double = minmaxDf.map(_.getDouble(1)).first()
         val diff: Double = maxValue - minValue
         val samplingThresholds: Seq[Int] = 0 until 40
-        val rates: Seq[(Double, Double, Double, Double, Double)] = 
+        val rates: Seq[(Double, Rates)] = 
             samplingThresholds.map(s => minValue + (s * (diff/(samplingThresholds.length - 1)))).map(t=>{
                 val counts: DataFrame = getCountsDf(df, t)
                 val truePositif: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
@@ -124,10 +126,15 @@ object Regressor {
                 val rate2 = trueNegative.toDouble / (falseNegative + trueNegative)
                 val rate3 = (truePositif + falsePositif).toDouble/total
                 val rate4 = (truePositif + trueNegative).toDouble/total
-                (t, rate1, rate2, rate3, rate4)
+                (t, Rates(rate1, rate2, rate3, rate4))
             })
         
-        rates.foreach(println)
-        1D
+        val filteredRate = rates
+          .filter(_._2.truePositive > minimumTruePositiveRate)
+          .maxBy(_._2.trueRate)
+        
+        println(filteredRate)
+        
+        filteredRate._1
     }
 }
