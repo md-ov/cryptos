@@ -9,7 +9,7 @@ case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, 
 object Regressor {
     val segmentDirectory = "all-190502"
     def main(args: Array[String]): Unit = {
-        t()
+        distribution()
     }
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
@@ -50,6 +50,47 @@ object Regressor {
             val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
             counts.show()
         } 
+        
+    }
+    
+    def distribution(): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        import org.apache.spark.sql.functions._
+        val segmentDirectory = "all-190427"
+        val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+          .setThreshold(1.019)
+        val segmentDetectionBinaryResults: DataFrame = binarizerForSegmentDetection.transform(df)
+        val notok = segmentDetectionBinaryResults.filter(!(col(predict) === col(label)))
+        val notokPositive = 
+            segmentDetectionBinaryResults.filter(!(col(predict) === col(label))).filter(col(predict) === 1.0)
+        val notokNegative = segmentDetectionBinaryResults.filter(!(col(predict) === col(label))).filter(col(predict) 
+          === 0.0)
+        val okPositive = segmentDetectionBinaryResults.filter(col(predict) === col(label)).filter(col(predict) === 1.0)
+        val okNegative = segmentDetectionBinaryResults.filter(col(predict) === col(label)).filter(col(predict) === 0.0)
+        
+        val pers: Array[Double] = notok.stat.approxQuantile("numberOfElement", 
+            Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), 0.00001)
+    
+        println("notokPositive")
+        notokPositive.groupBy("numberOfElement").count().orderBy("numberOfElement").show(1000, false)
+        println("notokNegative")
+        notokNegative
+          .withColumn("numberElement100", (col("numberOfElement")/100).cast("integer"))
+          .groupBy("numberElement100")
+          .count().orderBy("numberElement100")
+          .show(1000, false)
+        
+        println("okPositive")
+        okPositive.groupBy("numberOfElement").count().orderBy("numberOfElement").show(1000, false)
+        println("okNegative")
+        okNegative.withColumn("numberElement10", (col("numberOfElement")/10).cast("integer"))
+          .groupBy("numberElement10")
+          .count().orderBy("numberElement10")
+          .show(1000, false)
         
     }
     
@@ -152,9 +193,10 @@ object Regressor {
     
     def getAdjustedThreshold(ss: SparkSession, df: DataFrame, centeredThreshold: Double,
                              minimumTruePositiveRate: Double): (Double, Rates) = {
-        val epsilon = 0.001
-        val thresholds = (-30 until 30).map(e => centeredThreshold + e*epsilon)
+        val epsilon = 0.0005
+        val thresholds = (-60 until 60).map(e => centeredThreshold + e*epsilon)
         val rates = getRates(thresholds, df)
+        rates.foreach(println)
         bestRate(minimumTruePositiveRate, rates)
     }
 }
