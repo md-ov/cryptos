@@ -5,8 +5,9 @@ import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Regressor {
+    val segmentDirectory = "all-190502"
     def main(args: Array[String]): Unit = {
-        results()
+        t()
     }
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
@@ -20,7 +21,7 @@ object Regressor {
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\beforesplits")
+        val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
@@ -35,7 +36,7 @@ object Regressor {
         val model = cv.fit(trainDF)
         val result = model.transform(testDF)
         result.show(false)
-        result.write.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
+        result.write.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
 
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
@@ -54,7 +55,7 @@ object Regressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         import org.apache.spark.sql.functions._
-        val df = ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\result")
+        val df = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
 //        df.select("label", "prediction").show(false)
 //        println("-----min-----max------")
 //        df.agg(min("prediction"), max("prediction")).show(false)
@@ -63,12 +64,7 @@ object Regressor {
 //        stats.foreach(println)
         println("-----binarizers------")
         for (i <- Seq(1.01897137, 1.01897139, 1.0189714, 1.02, 1.021)) {
-            val binarizerForSegmentDetection = new Binarizer()
-              .setInputCol(prediction)
-              .setOutputCol(predict)
-              .setThreshold(i)
-            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
-            val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
+            val counts: DataFrame = getCountsDf(df, i)
             val truePositif: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
             val falsePositif: Long = extractThridValueWithTwoFilter(counts, 0, 1.0)
             val falseNegative: Long = extractThridValueWithTwoFilter(counts, 1, 0.0)
@@ -87,6 +83,16 @@ object Regressor {
     }
     
     
+    private def getCountsDf(df: DataFrame, threshold: Double): DataFrame = {
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+          .setThreshold(threshold)
+        val segmentDetectionBinaryResults: DataFrame = binarizerForSegmentDetection.transform(df)
+        val counts: DataFrame = segmentDetectionBinaryResults.groupBy(label, predict).count()
+        counts
+    }
+    
     private def extractThridValueWithTwoFilter(counts: DataFrame, labelValue: Int, predictValue: Double): Long = {
         import org.apache.spark.sql.functions._
         val row = counts.filter(col("label") === labelValue).filter(col("predict") === predictValue)
@@ -98,8 +104,30 @@ object Regressor {
         }
     }
     
-    
-    def getThreshold(df: DataFrame): Double = {
+    def getThreshold(ss: SparkSession, df: DataFrame): Double = {
+        import ss.implicits._
+        import org.apache.spark.sql.functions._
+        val minmaxDf: DataFrame = df.agg(min(prediction), max(prediction))
+        val minValue: Double = minmaxDf.map(_.getDouble(0)).first()
+        val maxValue: Double = minmaxDf.map(_.getDouble(1)).first()
+        val diff: Double = maxValue - minValue
+        val samplingThresholds: Seq[Int] = 0 until 40
+        val rates: Seq[(Double, Double, Double, Double, Double)] = 
+            samplingThresholds.map(s => minValue + (s * (diff/(samplingThresholds.length - 1)))).map(t=>{
+                val counts: DataFrame = getCountsDf(df, t)
+                val truePositif: Long = extractThridValueWithTwoFilter(counts, 1, 1.0)
+                val falsePositif: Long = extractThridValueWithTwoFilter(counts, 0, 1.0)
+                val falseNegative: Long = extractThridValueWithTwoFilter(counts, 1, 0.0)
+                val trueNegative: Long = extractThridValueWithTwoFilter(counts, 0, 0.0)
+                val total = truePositif + falsePositif + falseNegative + trueNegative
+                val rate1 = truePositif.toDouble / (truePositif + falsePositif)
+                val rate2 = trueNegative.toDouble / (falseNegative + trueNegative)
+                val rate3 = (truePositif + falsePositif).toDouble/total
+                val rate4 = (truePositif + trueNegative).toDouble/total
+                (t, rate1, rate2, rate3, rate4)
+            })
+        
+        rates.foreach(println)
         1D
     }
 }
