@@ -122,12 +122,13 @@ object Regressor {
         })
     }
     
-    def getThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.8): (Double, Rates) = {
+    def getThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.82): (Double, Rates) = {
         val centeredThreshold = getCenteredThreshold(ss, df)
         getAdjustedThreshold(ss, df, centeredThreshold._1, minimumTruePositiveRate)
     }
     
-    def getCenteredThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.82): (Double, Rates) = {
+    private def getCenteredThreshold(ss: SparkSession, df: DataFrame, minimumTruePositiveRate: Double = 0.82): (Double, 
+      Rates) = {
         import ss.implicits._
         import org.apache.spark.sql.functions._
         val minmaxDf: DataFrame = df.agg(min(prediction), max(prediction))
@@ -154,7 +155,6 @@ object Regressor {
         val epsilon = 0.001
         val thresholds = (-30 until 30).map(e => centeredThreshold + e*epsilon)
         val rates = getRates(thresholds, df)
-        rates.foreach(println)
         bestRate(minimumTruePositiveRate, rates)
     }
 }
