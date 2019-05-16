@@ -39,4 +39,13 @@ object Timestamps {
         val time = DateTimes.getTime(dateString, format)
         new Timestamp(time)
     }
+    
+    def fromTimestampsLong(l: Long): Timestamp = {
+        new Timestamp(l * 1000)
+    }
+    
+    def afterOrSame(refTs: Timestamp, ts: Timestamp): Boolean = {
+        !ts.before(refTs)
+    }
+    
 }
