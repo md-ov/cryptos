@@ -4,9 +4,9 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
 import com.minhdd.cryptos.scryptosbt.predict.Explorates.CustomSum
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks, Statistics}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 case class BeforeSplit(
@@ -133,14 +133,14 @@ object OHLCAndTradesExplorator {
         
         val sampledOhlcDataSet: DataFrame =
             SamplerObj.sampling(ss, ohlc)
-              .withColumn(datetime, unix_timestamp(col("cryptoValue.datetime")) / 1000)
+              .withColumn(datetime, unix_timestamp(col("cryptoValue.datetime")) / 1000) //pourquoi diviser par 1000 ? peut etre pour que tableau puisse lire
               .withColumn(ohlc_volume, col("cryptoValue.volume"))
               .withColumn(count, col("count"))
               .withColumn(ohlc_value, col("cryptoValue.value"))
               .select(datetime, count, ohlc_value, ohlc_volume)
         val sampledTradesDataSet: DataFrame = 
             SamplerObj.sampling(ss, trades)
-              .withColumn(datetime, unix_timestamp(col("cryptoValue.datetime")) / 1000)
+              .withColumn(datetime, unix_timestamp(col("cryptoValue.datetime")) / 1000) //pourquoi diviser par 1000 ? peut etre pour que tableau puisse lire
               .withColumn(volume, col("cryptoValue.volume"))
               .withColumn(value, col("cryptoValue.value"))
               .select(datetime, value, volume)
@@ -148,7 +148,7 @@ object OHLCAndTradesExplorator {
         
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetime, volume).rowsBetween(-numberOfCryptoOnOneWindow, 0)
-        import org.apache.spark.sql.functions.{max, min, when, struct}
+        import org.apache.spark.sql.functions.{max, min, when}
 
         val dfWithAnalyticsColumns: DataFrame = joined
           .withColumn("max", max("value").over(window))
