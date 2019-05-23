@@ -9,9 +9,9 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 
 object Regressor {
-    val segmentDirectory = "all-190502"
+    val segmentDirectory = "all-190523-fusion"
     def main(args: Array[String]): Unit = {
-        percentiles()
+        resultss()
     }
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
@@ -26,6 +26,7 @@ object Regressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
+        println(df.count())
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
@@ -46,13 +47,40 @@ object Regressor {
           .setInputCol(prediction)
           .setOutputCol(predict)
     
-        for (i <- 2 to 9) {
-            binarizerForSegmentDetection.setThreshold(i/10)
+        for (i <- 0 to 10) {
+            println("threshold : " + i.toDouble/10)
+            binarizerForSegmentDetection.setThreshold(i.toDouble/10)
             val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(result)
             val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
             counts.show()
         } 
+    }
+    
+    def resultss(): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
         
+        for (i <- 0 to 10) {
+            val binarizerForSegmentDetection = new Binarizer()
+              .setInputCol(prediction)
+              .setOutputCol(predict)
+            println("threshold : " + i.toDouble/10)
+            binarizerForSegmentDetection.setThreshold(i.toDouble/10)
+            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
+            val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
+            counts.show()
+        }
+        
+        val t: (Double, Rates) = getThreshold(ss, df)
+        println(t)
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+        binarizerForSegmentDetection.setThreshold(t._1)
+        val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
+        val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
+        counts.show()
     }
     
     def distribution(): Unit = {
@@ -157,6 +185,8 @@ object Regressor {
         bw.close()
     }
     
+
+    
     def results(): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
@@ -259,7 +289,6 @@ object Regressor {
         val epsilon = 0.0005
         val thresholds = (-60 until 60).map(e => centeredThreshold + e*epsilon)
         val rates = getRates(thresholds, df)
-        rates.foreach(println)
         bestRate(minimumTruePositiveRate, rates)
     }
 }

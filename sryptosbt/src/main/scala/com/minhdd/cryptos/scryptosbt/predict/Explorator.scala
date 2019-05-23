@@ -51,21 +51,27 @@ object Explorator {
         val ohlcs = ohlcCryptoDsFromLastSegment(ss, lastTimestamp)
         val trades = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)
     
-        OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, "D:\\ws\\cryptos\\data\\csv\\segments\\all-190516")
+        OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, outputDir)
     }
     
     def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp, 
                               lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
-        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
-            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
-        Crypto.getPartitionsUniFromPathFromLastTimestamp(ss, "file:///", parquetPath, parquetPath, lastTimestamps, 
-          lastCryptoPartitionKey).get
+//        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
+//            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
+        val parquetPath = "D://ws//cryptos//data//parquets"
+        Crypto.getPartitionsUniFromPathFromLastTimestamp(ss, "file:///", parquetPath, parquetPath, lastTimestamps, lastCryptoPartitionKey).get
     }
     
     def ohlcCryptoDsFromLastSegment(ss: SparkSession, lastTimestamp: Timestamp): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
             parquetsDir = "file:///D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
         Crypto.getPartitionFromPathFromLastTimestamp(ss, parquetPath, lastTimestamp).get
+    }
+    
+    def fusion(ss: SparkSession, targetPath: String, elementsPaths: Seq[String]) = {
+        import ss.implicits._
+        val finalDs = elementsPaths.map(p => ss.read.parquet(p).as[Seq[BeforeSplit]]).reduce(_.union(_))
+        finalDs.write.parquet(targetPath+"\\beforesplits")
     }
     
     def main(args: Array[String]): Unit = {
@@ -79,11 +85,20 @@ object Explorator {
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
 //          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
-    
-        explorateFromLastSegment(ss = ss, 
-            lastSegments = lastSegments(ss, lastSegmentsDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190427\\beforesplits"), 
-            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190509")
 
+        f(ss)
+    }
+    
+    def e(ss: SparkSession): Unit = {
+        explorateFromLastSegment(ss = ss,
+            lastSegments = lastSegments(ss, lastSegmentsDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190427\\beforesplits"),
+            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523\\beforesplitsnew")
+    }
+    
+    def f(ss: SparkSession)= {
+        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion",
+            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190427\\beforesplits",
+                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523\\beforesplits"))
     }
     
     

@@ -8,11 +8,13 @@ import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
 object Files {
     def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
         val d = new File(path)
-        getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false).map(_.getAbsolutePath).filter(_.contains(cryptoPartitionKey.provider))
+        getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false, false).map(_.getAbsolutePath).filter(_
+          .contains(cryptoPartitionKey.provider))
     }
     
     private def getRecursiveDirsFromLastTimestamp(directory: File, ts: Timestamp, 
-                                                  cryptoPartitionKey: CryptoPartitionKey, itIsMonth: Boolean): Seq[File] = {
+                                                  cryptoPartitionKey: CryptoPartitionKey, itIsMonth: Boolean, 
+                                                  sameParent: Boolean): Seq[File] = {
         if (directory.isFile) {
             Seq()
         } else {
@@ -23,28 +25,40 @@ object Files {
             } else {
                 if (directoryNameInt.isEmpty) {
                     val list = directory.listFiles()
-                    list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false)).reduce(_ ++ _)
+                    list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false, false)).reduce(_ ++ _)
                 } else {
                     val directoryNameIntGet: Int = directoryNameInt.get
                     if (directoryNameIntGet > 1000) {
-                        if (directoryNameIntGet >= cryptoPartitionKey.year.toInt) {
+                        if (directoryNameIntGet == cryptoPartitionKey.year.toInt) {
                             val list = directory.listFiles()
-                            list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, true)).reduce(_ ++ _)
+                            list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, true, true))
+                              .reduce(_ ++ _)
+                        } else if (directoryNameIntGet > cryptoPartitionKey.year.toInt) {
+                            val list = directory.listFiles()
+                            list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, true, false))
+                              .reduce(_ ++ _)
                         } else {
                             Seq()
                         }
                     } else {
-                        if (itIsMonth) {
-                            if (directoryNameIntGet >= cryptoPartitionKey.month.toInt) {
+                        if (itIsMonth && sameParent) {
+                            if (directoryNameIntGet == cryptoPartitionKey.month.toInt) {
                                 val list = directory.listFiles()
-                                list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false)).reduce(_ ++ _)
+                                list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false, true))
+                                  .reduce(_ ++ _)
+                            } else if (directoryNameIntGet > cryptoPartitionKey.month.toInt) {
+                                val list = directory.listFiles()
+                                list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false, false)).reduce(_ ++ _)
                             } else {
                                 Seq()
                             }
+                        } else if (itIsMonth) {
+                            val list = directory.listFiles()
+                            list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false, false)).reduce(_ ++ _)
                         } else {
-                            if (directoryNameIntGet > cryptoPartitionKey.day.toInt) {
+                            if ((sameParent && directoryNameIntGet > cryptoPartitionKey.day.toInt) || !sameParent) {
                                 val list = directory.listFiles()
-                                list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false)).reduce(_ ++ _)
+                                list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false, false)).reduce(_ ++ _)
                             } else {
                                 Seq()
                             }
@@ -71,7 +85,8 @@ object Files {
         getRecursiveDirs(d).map(_.getAbsolutePath)
     }
     
-    def getPathForSpark(relativePath: String): String = {
-        "file:///" + getClass.getResource("/" + relativePath).getPath
+    def getPathForSpark(path: String): String = {
+        if (path.contains("://")) "file:///" + path else 
+        "file:///" + getClass.getResource("/" + path).getPath
     }
 }
