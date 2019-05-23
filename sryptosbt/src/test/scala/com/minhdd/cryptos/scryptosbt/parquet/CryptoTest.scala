@@ -67,13 +67,14 @@ class CryptoTest extends FunSuite {
     test("spark read") {
         val ss: SparkSession = SparkSession.builder()
           .config("spark.driver.maxResultSize", "2g")
+          .config("spark.eventLog.dir", "d:\\ws\\spark-events")
+          .config("spark.eventLog.enabled", "true")
           .appName("test")
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         val c = ss.read.parquet(Files.getPathForSpark
         ("/parquets/XBT/EUR/TRADES/3000/04/29/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
-        
-        c.show(false)
+        assert(c.count() == 18127)
     }
     
 }
