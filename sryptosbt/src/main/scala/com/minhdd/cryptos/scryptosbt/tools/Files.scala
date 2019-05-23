@@ -8,7 +8,7 @@ import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
 object Files {
     def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
         val d = new File(path)
-        getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false).map(_.getAbsolutePath)
+        getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false).map(_.getAbsolutePath).filter(_.contains(cryptoPartitionKey.provider))
     }
     
     private def getRecursiveDirsFromLastTimestamp(directory: File, ts: Timestamp, 
@@ -42,7 +42,7 @@ object Files {
                                 Seq()
                             }
                         } else {
-                            if (directoryNameIntGet >= cryptoPartitionKey.day.toInt) {
+                            if (directoryNameIntGet > cryptoPartitionKey.day.toInt) {
                                 val list = directory.listFiles()
                                 list.map(e => getRecursiveDirsFromLastTimestamp(e, ts, cryptoPartitionKey, false)).reduce(_ ++ _)
                             } else {

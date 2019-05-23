@@ -197,7 +197,8 @@ object Crypto {
             val dsFromLastTimestampDay: Dataset[Crypto] = 
                 ss.read.parquet(Files.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(ss))
             val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
-    
+            println()
+            println(filteredDsFromLastTimestampDay.count())
             allPaths
               .map(ss.read.parquet(_).as[Crypto](encoder(ss)))
               .reduce(_.union(_))

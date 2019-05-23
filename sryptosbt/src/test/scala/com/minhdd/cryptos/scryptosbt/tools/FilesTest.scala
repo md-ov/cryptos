@@ -13,16 +13,16 @@ class FilesTest extends FunSuite {
     test("testGetAllDirFromLastTimestamp") {
         val allDirs: Seq[String] = Files.getAllDirFromLastTimestamp(
             path = "src//test//resources//parquets", 
-            ts = Timestamps.getTimestamp("3000-04-29-10-30", "yyyy-MM-dd-hh-mm"),
+            ts = Timestamps.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             cryptoPartitionKey = CryptoPartitionKey(
             asset = "XBT",
             currency = "EUR",
             provider = "KRAKEN",
             api = "TRADES",
-            year = "3000",
+            year = "2019",
             month = "04",
             day = "29"))
-        assert(allDirs.size == 3)
+        assert(allDirs.size == 1)
 }
     
 }

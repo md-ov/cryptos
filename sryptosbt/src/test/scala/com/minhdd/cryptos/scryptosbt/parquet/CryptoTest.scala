@@ -39,17 +39,17 @@ class CryptoTest extends FunSuite {
         
         val ds = Crypto.getPartitionsUniFromPathFromLastTimestamp(
             ss, "file:///", "src//test//resources//parquets", "parquets",
-            Timestamps.getTimestamp("3000-04-29-10-30", "yyyy-MM-dd-hh-mm"),
+            Timestamps.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             CryptoPartitionKey(
                 asset = "XBT",
                 currency = "EUR",
                 provider = "KRAKEN",
                 api = "TRADES",
-                year = "3000",
+                year = "2019",
                 month = "04",
                 day = "29")
         ).get
-        assert(ds.count() == 38685)
+        assert(ds.count() == 34286)
         
     }
     
@@ -67,8 +67,11 @@ class CryptoTest extends FunSuite {
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         val c = ss.read.parquet(Files.getPathForSpark
-        ("parquets/XBT/EUR/TRADES/3000/04/29/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
+        ("parquets/XBT/EUR/TRADES/2019/04/29/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
         assert(c.count() == 18127)
+        val d = ss.read.parquet(Files.getPathForSpark
+        ("parquets/XBT/EUR/TRADES/2019/04/30/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
+        assert(d.count() == 19838)
     }
     
 }
