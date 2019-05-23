@@ -12,8 +12,7 @@ object Files {
     }
     
     private def getRecursiveDirsFromLastTimestamp(directory: File, ts: Timestamp, 
-                                                  cryptoPartitionKey: CryptoPartitionKey, itIsMonth: Boolean): Seq[File]
-    = {
+                                                  cryptoPartitionKey: CryptoPartitionKey, itIsMonth: Boolean): Seq[File] = {
         if (directory.isFile) {
             Seq()
         } else {
