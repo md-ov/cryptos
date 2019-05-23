@@ -22,8 +22,7 @@ class FilesTest extends FunSuite {
             year = "3000",
             month = "04",
             day = "29"))
-    
-        assert(allDirs.size == 5)
+        assert(allDirs.size == 3)
 }
     
 }
