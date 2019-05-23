@@ -27,6 +27,7 @@ object Timestamps {
         new Timestamps(new Timestamp(timestamp), new DateTime(timestamp))
     }
     
+   
     def now: Timestamp = {
         new Timestamp(DateTime.now().getMillis)
     }

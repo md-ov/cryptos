@@ -187,7 +187,33 @@ object Crypto {
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     
-    def getPartition(ss: SparkSession, parquetsDir: String, key: CryptoPartitionKey) = {
+    def getPartitionsUniFromPathFromLastTimestamp(ss: SparkSession, prefix: String, path1: String,
+                                                  path2: String, ts: Timestamp, 
+                                                  lastCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
+        import com.minhdd.cryptos.scryptosbt.tools.Files
+        Try {
+            val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
+            val allPaths: Seq[String] = Files.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
+            val dsFromLastTimestampDay: Dataset[Crypto] = 
+                ss.read.parquet(Files.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(ss))
+            val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
+    
+            allPaths
+              .map(ss.read.parquet(_).as[Crypto](encoder(ss)))
+              .reduce(_.union(_))
+              .union(filteredDsFromLastTimestampDay)
+        }.mapException(e => new Exception("path is not a parquet", e)).toOption
+    }
+    
+    
+    def getPartitionFromPathFromLastTimestamp(ss: SparkSession, path: String, ts: Timestamp)
+    : Option[Dataset[Crypto]] = {
+        Try {
+            ss.read.parquet(path).as[Crypto](encoder(ss)).filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
+        }.mapException(e => new Exception("path is not a parquet", e)).toOption
+    }
+    
+    def getPartition(ss: SparkSession, parquetsDir: String, key: CryptoPartitionKey): Option[Dataset[Crypto]] = {
         val path = key.getPartitionPath(parquetsDir)
         getPartitionFromPath(ss, path)
     }

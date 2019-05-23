@@ -9,7 +9,7 @@ class RegressorTest extends FunSuite {
     ignore("testGetThreshold") {
         val ss: SparkSession = SparkSession.builder().appName("minh").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df = ss.read.parquet(Files.getPathForSpark("/parquets/regressor-result"))
+        val df = ss.read.parquet(Files.getPathForSpark("parquets/regressor-result"))
         val threshold: Double = Regressor.getThreshold(ss, df)._1
         assert(threshold > 1.01897137 && threshold < 1.021)
     }
@@ -19,7 +19,7 @@ class RegressorTest extends FunSuite {
     ignore("adjust threshold") {
         val ss: SparkSession = SparkSession.builder().appName("minh").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df = ss.read.parquet(Files.getPathForSpark("/parquets/regressor-result"))
+        val df = ss.read.parquet(Files.getPathForSpark("parquets/regressor-result"))
         val centeredThreshold: Double = 1.0465104442389215
         val adjustedThreshold = Regressor.getAdjustedThreshold(ss, df, centeredThreshold, 0.82)._1
         assert(adjustedThreshold > 1.01897137 && adjustedThreshold < 1.021)

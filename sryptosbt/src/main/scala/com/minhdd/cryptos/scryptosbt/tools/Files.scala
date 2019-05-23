@@ -72,6 +72,6 @@ object Files {
     }
     
     def getPathForSpark(relativePath: String): String = {
-        "file://" + getClass.getResource(relativePath).getPath
+        "file:///" + getClass.getResource("/" + relativePath).getPath
     }
 }
