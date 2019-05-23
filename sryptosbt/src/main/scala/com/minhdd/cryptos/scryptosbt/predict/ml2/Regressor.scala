@@ -289,6 +289,8 @@ object Regressor {
         val epsilon = 0.0005
         val thresholds = (-60 until 60).map(e => centeredThreshold + e*epsilon)
         val rates = getRates(thresholds, df)
+        rates.foreach(println)
+        println("----------")
         bestRate(minimumTruePositiveRate, rates)
     }
 }
