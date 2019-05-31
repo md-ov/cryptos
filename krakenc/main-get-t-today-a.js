@@ -32,7 +32,7 @@ var lastsince = since;
         console.log(since)
         console.log("nowSince : " + nowSince)
         a = await krakenc.api('Trades', { pair : pair, since : since });
-        var todayFileName = outdir + '/today/'+i +'.csv'
+        var todayFileName = outdir + 'today/'+i +'.csv'
         var todayFile = fs.createWriteStream(todayFileName);
         todayFile.on('error', function(err) { console.log("error createWriteStream on today file") });
         a.result[pair].forEach(function(v) {
