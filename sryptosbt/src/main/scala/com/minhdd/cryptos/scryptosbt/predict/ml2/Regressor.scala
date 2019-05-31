@@ -2,17 +2,86 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import java.io.{BufferedWriter, File, FileWriter}
 
+import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
+import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 import org.apache.spark.ml.feature.Binarizer
+import org.apache.spark.ml.tuning.CrossValidatorModel
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 
 object Regressor {
-    val segmentDirectory = "all-190523-fusion"
+    val segmentDirectory = "all-190531-fusion"
+    
     def main(args: Array[String]): Unit = {
-        resultss()
+//        resultss()
+//        t()
+        t
+//        predictOneSegment()
     }
+    
+    def predictOneSegment(): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        val df: DataFrame = 
+            ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
+        val someSegments: DataFrame = df.limit(3)
+        predictTheSegment(ss, "D:\\ws\\cryptos\\data\\models\\20190523", someSegments)
+    }
+    
+    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit], threshold: Double): Unit = {
+        val p: DataFrame = predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+        binarizerForSegmentDetection.setThreshold(threshold)
+        val result = binarizerForSegmentDetection.transform(p)
+        result.show(false)
+        import org.apache.spark.sql.functions._
+        val maxNumberOfElement: Int = result.agg(max("numberOfElement")).first().getInt(0)
+        val aa: Double = result.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
+        println(aa)
+    }
+    
+    def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {
+        import ss.implicits._
+        val ds: Dataset[Seq[BeforeSplit]] = ss.createDataset(Seq(segment))
+        ds.toDF()
+    }
+    
+    def getModelFromPath(ss: SparkSession, modelPath: String): CrossValidatorModel = {
+        val a: RDD[CrossValidatorModel] = ss.sparkContext.objectFile[CrossValidatorModel](modelPath)
+        val model = a.first()
+        a.first()
+    }
+    
+    def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): DataFrame = {
+        val model: CrossValidatorModel = getModelFromPath(ss, modelPath)
+        val result = model.transform(segments)
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+        binarizerForSegmentDetection.setThreshold(1.02)
+        val resultt = binarizerForSegmentDetection.transform(result)
+        resultt.show(false)
+        import org.apache.spark.sql.functions._
+        val maxNumberOfElement: Int = resultt.agg(max("numberOfElement")).first().getInt(0)
+        val aa: Double = resultt.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
+        println(aa)
+        result
+    }
+    
+    def why() = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        import ss.implicits._
+        val ds = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\all-190531\\beforesplits").as[Seq[BeforeSplit]]
+        val f: Dataset[Seq[BeforeSplit]] = ds.filter(s => s.exists(_.secondDerive.isEmpty))
+        f.map(s => s.map(b => b.copy(datetime = Timestamps(b.datetime.getTime *1000).timestamp ))).show(false)
+    }
+    
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
         import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
@@ -26,7 +95,6 @@ object Regressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
-        println(df.count())
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
@@ -38,7 +106,8 @@ object Regressor {
         val cv = new CrossValidator()
           .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
           .setNumFolds(3).setSeed(27)
-        val model = cv.fit(trainDF)
+        val model: CrossValidatorModel = cv.fit(trainDF)
+        ss.sparkContext.parallelize(Seq(model), 1).saveAsObjectFile(s"D:\\ws\\cryptos\\data\\models\\$segmentDirectory")
         val result = model.transform(testDF)
         result.show(false)
         result.write.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")

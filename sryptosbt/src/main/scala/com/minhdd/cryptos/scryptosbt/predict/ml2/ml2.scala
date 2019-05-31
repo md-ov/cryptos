@@ -8,6 +8,7 @@ object ml2 {
     val indexerBegin = new StringIndexer()
       .setInputCol("beginEvolution")
       .setOutputCol("begin-evo")
+      .setHandleInvalid("keep")
     
     val indexerEnd = new StringIndexer()
       .setInputCol("endEvolution")
@@ -21,5 +22,8 @@ object ml2 {
           "numberOfElement", "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive"
       ))
       .setOutputCol("features")
+      .setHandleInvalid("keep")
+    
+        
     
 }
