@@ -16,6 +16,17 @@ case class CryptoPartitionKey (
     month: String,
     day: String                     
 ) {
+    def getTodayPartitionPath(parquetsDir: String): String = {
+        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
+        val path = fullParquetDir +
+          asset.toUpperCase + separator +
+          currency.toUpperCase + separator +
+          api.toUpperCase + separator + 
+          "today" + separator + "parquet"
+        path
+    }
+    
     def date(): String = DateTimes.getDate(year, month, day)
     
     def getPartitionPath(parquetsDir: String) = {

@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
 import com.minhdd.cryptos.scryptosbt.predict.{Predictor, SamplerObj}
-import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV}
+import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV, ToParquetsFromTodayCSV}
 
 sealed trait CommandAppArgs
 
@@ -47,6 +47,14 @@ case class ToParquetsFromCsv(
                               minimum: Long  //minimum number for one partition
                          ) extends CommandAppArgs
 
+case class ToParquetsFromTodayCsv(
+                              api: String,
+                              master: String,
+                              inputDir: String,
+                              parquetsDir: String,
+                              minimum: Long  //minimum number for one partition
+                            ) extends CommandAppArgs
+
 case class Predict(
                     dt: String,
                     asset: String,
@@ -69,6 +77,7 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
             case args: Predict => Predictor.predict(args)
             case args: ParquetFromCsv => ParquetFromCSVObj.run(args, getMaster(args.master))
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
+            case args: ToParquetsFromTodayCsv => ToParquetsFromTodayCSV.run(args, getMaster(args.master))
             case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
             case args: ExtractToCsv => ExtractToCsvObj.run(args, getMaster(args.master))
             case args: Sampler => SamplerObj.run(args, getMaster(args.master))
