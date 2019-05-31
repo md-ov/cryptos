@@ -26,7 +26,7 @@ var lastSince = 0;
     try {
       console.log(interval);
       a = await krakenc.api('OHLC', { pair : pair, interval : interval, since : since});
-      var fileName = './out/' + pair + since + interval + '.csv'
+      var fileName = './out/ohlc/' + pair + since + interval + '.csv'
       var file = fs.createWriteStream(fileName);
       file.on('error', function(err) { console.log("error createWriteStream ") });
       a.result[pair].forEach(function(v) {
@@ -42,6 +42,7 @@ var lastSince = 0;
       if (i == 0) {
         lastSince = a.result.last
       }
+
       console.log(fileName + ' done');
     } catch(error) {
       console.error("problem : " + interval);
