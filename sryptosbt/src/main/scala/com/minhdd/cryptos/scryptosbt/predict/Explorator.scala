@@ -85,20 +85,26 @@ object Explorator {
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
 //          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
-
+    
+        //        e(ss)
         f(ss)
+        now(ss)
     }
     
     def e(ss: SparkSession): Unit = {
         explorateFromLastSegment(ss = ss,
-            lastSegments = lastSegments(ss, lastSegmentsDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190427\\beforesplits"),
-            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523\\beforesplitsnew")
+            lastSegments = lastSegments(ss, lastSegmentsDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion\\beforesplits"),
+            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531")
     }
     
     def f(ss: SparkSession)= {
-        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion",
-            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190427\\beforesplits",
-                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523\\beforesplits"))
+        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion",
+            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion\\beforesplits",
+                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531\\beforesplits"))
+    }
+    
+    def now(ss: SparkSession) = {
+        
     }
     
     
