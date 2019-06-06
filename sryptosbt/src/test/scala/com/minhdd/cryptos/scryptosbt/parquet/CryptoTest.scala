@@ -38,7 +38,7 @@ class CryptoTest extends FunSuite {
         ss.sparkContext.setLogLevel("WARN")
         
         val ds = Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            ss, "file:///", "src//test//resources//parquets", "parquets",
+            ss, "file:///", "src//test//resources//parquets", "parquets", "src//test//resources//parquets",
             Timestamps.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             CryptoPartitionKey(
                 asset = "XBT",

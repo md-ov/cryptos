@@ -49,7 +49,8 @@ object Explorator {
             day = ts.getDayString)
         
         val ohlcs = ohlcCryptoDsFromLastSegment(ss, lastTimestamp)
-        val trades = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)
+        val trades: Dataset[Crypto] = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)
+        trades.show(10000, false)
     
         OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, outputDir)
     }
@@ -59,7 +60,11 @@ object Explorator {
 //        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
 //            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
         val parquetPath = "D://ws//cryptos//data//parquets"
-        Crypto.getPartitionsUniFromPathFromLastTimestamp(ss, "file:///", parquetPath, parquetPath, lastTimestamps, lastCryptoPartitionKey).get
+        val todayPath = "D://ws//cryptos//data//parquets//XBT//EUR//TRADES//today//parquet"
+        Crypto.getPartitionsUniFromPathFromLastTimestamp(
+            ss = ss, prefix = "file:///", 
+            path1 = parquetPath, path2 = parquetPath, todayPath = todayPath, 
+            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }
     
     def ohlcCryptoDsFromLastSegment(ss: SparkSession, lastTimestamp: Timestamp): Dataset[Crypto] = {
@@ -86,21 +91,21 @@ object Explorator {
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
 //          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
     
-        //        e(ss)
+//                e(ss)
         f(ss)
-        now(ss)
     }
     
     def e(ss: SparkSession): Unit = {
         explorateFromLastSegment(ss = ss,
-            lastSegments = lastSegments(ss, lastSegmentsDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion\\beforesplits"),
-            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531")
+            lastSegments = lastSegments(ss, lastSegmentsDir = 
+              "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion\\beforesplits"),
+            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190601")
     }
     
     def f(ss: SparkSession)= {
-        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion",
-            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190523-fusion\\beforesplits",
-                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531\\beforesplits"))
+        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190601-fusion",
+            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion\\beforesplits",
+                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190601\\beforesplits"))
     }
     
     def now(ss: SparkSession) = {

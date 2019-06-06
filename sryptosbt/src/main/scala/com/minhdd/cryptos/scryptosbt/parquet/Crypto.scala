@@ -199,7 +199,7 @@ object Crypto {
     }
     
     def getPartitionsUniFromPathFromLastTimestamp(ss: SparkSession, prefix: String, path1: String,
-                                                  path2: String, ts: Timestamp, 
+                                                  path2: String, todayPath: String, ts: Timestamp, 
                                                   lastCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
         import com.minhdd.cryptos.scryptosbt.tools.Files
         Try {
@@ -208,9 +208,8 @@ object Crypto {
             val dsFromLastTimestampDay: Dataset[Crypto] = 
                 ss.read.parquet(Files.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(ss))
             val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
-            println()
-            println(filteredDsFromLastTimestampDay.count())
-            allPaths
+            (allPaths :+ todayPath).foreach(println)
+            (allPaths :+ todayPath)
               .map(ss.read.parquet(_).as[Crypto](encoder(ss)))
               .reduce(_.union(_))
               .union(filteredDsFromLastTimestampDay)
