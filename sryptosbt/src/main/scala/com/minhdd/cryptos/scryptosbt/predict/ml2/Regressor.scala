@@ -56,16 +56,16 @@ object Regressor {
     
     def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit], threshold: Double): Unit = {
         val p: DataFrame = predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
-        val binarizerForSegmentDetection = new Binarizer()
-          .setInputCol(prediction)
-          .setOutputCol(predict)
-        binarizerForSegmentDetection.setThreshold(threshold)
-        val result = binarizerForSegmentDetection.transform(p)
-        result.show(false)
-        import org.apache.spark.sql.functions._
-        val maxNumberOfElement: Int = result.agg(max("numberOfElement")).first().getInt(0)
-        val aa: Double = result.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-        println("prediction :" + aa)
+//        val binarizerForSegmentDetection = new Binarizer()
+//          .setInputCol(prediction)
+//          .setOutputCol(predict)
+//        binarizerForSegmentDetection.setThreshold(threshold)
+//        val result = binarizerForSegmentDetection.transform(p)
+//        result.show(false)
+//        import org.apache.spark.sql.functions._
+//        val maxNumberOfElement: Int = result.agg(max("numberOfElement")).first().getInt(0)
+//        val aa: Double = result.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
+//        println("prediction :" + aa)
     }
     
     def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {
