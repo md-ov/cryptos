@@ -1,13 +1,10 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import java.io.{BufferedWriter, File, FileWriter}
-import java.sql.Timestamp
-
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import ml2.{label, predict, prediction}
 
@@ -24,7 +21,7 @@ object Regressor {
 //        predictOneSegment()
     }
     
-    def why() = {
+    def thereIsSomeNull() = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
@@ -40,16 +37,15 @@ object Regressor {
         import org.apache.spark.ml.feature.Binarizer
         import org.apache.spark.ml.regression.GBTRegressor
         import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-        import org.apache.spark.sql.{DataFrame, SparkSession}
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
         val expanser = new ExpansionSegmentsTransformer(ss, 
-            ss.read.parquet("D:\\ws\\cryptos\\data\\csv\\segments\\all-190418\\expansion").schema)
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\all-190418\\expansion").schema)
         val pipeline = new Pipeline().setStages(Array(expanser, indexerBegin, vectorAssembler, gbt))
         val paramGrid = new ParamGridBuilder().addGrid(gbt.maxIter, Array(5, 10, 20, 50, 100)).build()
         val evaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
@@ -60,7 +56,7 @@ object Regressor {
         Models.saveModel(ss, model, s"$dataDirectory\\models\\$segmentDirectory")
         val testDfWithRawPrediction: DataFrame = model.transform(testDF)
         testDfWithRawPrediction.show(false)
-        testDfWithRawPrediction.write.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
+        testDfWithRawPrediction.write.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
 
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
@@ -75,10 +71,10 @@ object Regressor {
         } 
     }
     
-    def resultss(): Unit = {
+    def examinateTestDf(): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
         
         for (i <- 0 to 10) {
             val binarizerForSegmentDetection = new Binarizer()
