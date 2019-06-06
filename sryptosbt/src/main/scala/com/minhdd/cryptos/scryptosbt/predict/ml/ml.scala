@@ -4,6 +4,10 @@ import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, StringType, StructField, StructType, TimestampType}
 
 object ml {
+    val prediction = "prediction"
+    val label = "label"
+    val predict = "predict"
+    
     val csvSchema = StructType(
         List(
             StructField("t1", TimestampType, nullable = false),

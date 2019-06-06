@@ -4,12 +4,13 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import ml2.{label, predict, prediction}
+
 
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 
@@ -21,59 +22,15 @@ object Regressor {
 //        resultss()
 //        t
 //        predictOneSegment()
-    
-        getActualSegmentAndPredict
-    }
-    
-    def getActualSegmentAndPredict() = {
-        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
-        ss.sparkContext.setLogLevel("ERROR")
-        import ss.implicits._
-        val df: Dataset[Seq[BeforeSplit]] =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits").as[Seq[BeforeSplit]]
-        
-        val s: Array[Seq[BeforeSplit]] = df.collect()
-        s.map(e => (e.head, e.last))
-          .foreach(f => println("" + new Timestamp(f._1.datetime.getTime*1000) + " -> " + new Timestamp(f._2.datetime.getTime*1000)))
-        println("----")
-        println("Actual segment : ")
-        val actualSegment = s.sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime}).last
-        actualSegment.map(e => {
-            val ts = new Timestamp(e.datetime.getTime * 1000)
-            val evolution = e.evolution
-            val importantChange = e.importantChange
-            (ts, evolution, importantChange)
-        }).foreach(println)
-        predictOneSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", actualSegment)
     }
     
     def predictOneSegment(): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame = 
-            ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits")
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
         val someSegments: DataFrame = df.limit(3)
-        predictTheSegment(ss, "D:\\ws\\cryptos\\data\\models\\20190523", someSegments)
-    }
-    
-    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit]): Unit = {
-        val p: DataFrame = predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
-//        val binarizerForSegmentDetection = new Binarizer()
-//          .setInputCol(prediction)
-//          .setOutputCol(predict)
-//        binarizerForSegmentDetection.setThreshold(1.02)
-//        val result = binarizerForSegmentDetection.transform(p)
-//        result.show(false)
-//        import org.apache.spark.sql.functions._
-//        val maxNumberOfElement: Int = result.agg(max("numberOfElement")).first().getInt(0)
-//        val aa: Double = result.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-//        println("prediction :" + aa)
-    }
-    
-    def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {
-        import ss.implicits._
-        val ds: Dataset[Seq[BeforeSplit]] = ss.createDataset(Seq(segment))
-        ds.toDF()
+        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", someSegments)
     }
     
     def getModelFromPath(ss: SparkSession, modelPath: String): CrossValidatorModel = {
@@ -82,21 +39,7 @@ object Regressor {
         a.first()
     }
     
-    def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): DataFrame = {
-        val model: CrossValidatorModel = getModelFromPath(ss, modelPath)
-        val result = model.transform(segments)
-        val binarizerForSegmentDetection = new Binarizer()
-          .setInputCol(prediction)
-          .setOutputCol(predict)
-        binarizerForSegmentDetection.setThreshold(1.02)
-        val resultt = binarizerForSegmentDetection.transform(result)
-        resultt.show(1000, false)
-        import org.apache.spark.sql.functions._
-        val maxNumberOfElement: Int = resultt.agg(max("numberOfElement")).first().getInt(0)
-        val aa: Double = resultt.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-        println(aa)
-        result
-    }
+
     
     def why() = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
@@ -109,7 +52,6 @@ object Regressor {
     
     def t() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
-        import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
         import org.apache.spark.ml.Pipeline
         import org.apache.spark.ml.evaluation.RegressionEvaluator
         import org.apache.spark.ml.feature.Binarizer

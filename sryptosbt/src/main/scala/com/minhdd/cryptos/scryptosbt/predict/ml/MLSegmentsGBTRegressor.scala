@@ -9,16 +9,13 @@ import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
+import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
 import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 
 object MLSegmentsGBTRegressor {
     
     val absolute_label = "absolute_label"
     val absolute_predict = "absolute_predict"
-    val prediction = "prediction"
-    val label = "label"
-    val predict = "predict"
     
     def main(args: Array[String]): Unit = {
         val ts1 = Timestamps.now
