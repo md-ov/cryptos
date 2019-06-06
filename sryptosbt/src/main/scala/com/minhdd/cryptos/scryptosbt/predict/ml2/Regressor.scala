@@ -15,6 +15,7 @@ case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, 
 
 object Regressor {
     val segmentDirectory = "all-190601-fusion"
+    val dataDirectory = "D:\\ws\\cryptos\\data"
     
     def main(args: Array[String]): Unit = {
 //        resultss()
@@ -29,12 +30,13 @@ object Regressor {
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
         val df: Dataset[Seq[BeforeSplit]] =
-            ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits").as[Seq[BeforeSplit]]
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits").as[Seq[BeforeSplit]]
         
         val s: Array[Seq[BeforeSplit]] = df.collect()
         s.map(e => (e.head, e.last))
           .foreach(f => println("" + new Timestamp(f._1.datetime.getTime*1000) + " -> " + new Timestamp(f._2.datetime.getTime*1000)))
         println("----")
+        println("Actual segment : ")
         val actualSegment = s.sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime}).last
         actualSegment.map(e => {
             val ts = new Timestamp(e.datetime.getTime * 1000)
@@ -42,7 +44,7 @@ object Regressor {
             val importantChange = e.importantChange
             (ts, evolution, importantChange)
         }).foreach(println)
-        predictOneSegment(ss, "D:\\ws\\cryptos\\data\\models\\all-190601-fusion", actualSegment, 0.8)
+        predictOneSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", actualSegment)
     }
     
     def predictOneSegment(): Unit = {
@@ -54,12 +56,12 @@ object Regressor {
         predictTheSegment(ss, "D:\\ws\\cryptos\\data\\models\\20190523", someSegments)
     }
     
-    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit], threshold: Double): Unit = {
+    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit]): Unit = {
         val p: DataFrame = predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
 //        val binarizerForSegmentDetection = new Binarizer()
 //          .setInputCol(prediction)
 //          .setOutputCol(predict)
-//        binarizerForSegmentDetection.setThreshold(threshold)
+//        binarizerForSegmentDetection.setThreshold(1.02)
 //        val result = binarizerForSegmentDetection.transform(p)
 //        result.show(false)
 //        import org.apache.spark.sql.functions._
@@ -88,7 +90,7 @@ object Regressor {
           .setOutputCol(predict)
         binarizerForSegmentDetection.setThreshold(1.02)
         val resultt = binarizerForSegmentDetection.transform(result)
-        resultt.show(false)
+        resultt.show(1000, false)
         import org.apache.spark.sql.functions._
         val maxNumberOfElement: Int = resultt.agg(max("numberOfElement")).first().getInt(0)
         val aa: Double = resultt.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
