@@ -63,8 +63,8 @@ object ThresholdCalculator {
         bestRate(minimumTruePositiveRate, rates)
     }
     
-    private def getAdjustedThreshold(ss: SparkSession, df: DataFrame, centeredThreshold: Double,
-                                     minimumTruePositiveRate: Double, precision: Int): (Double, Rates) = {
+    def getAdjustedThreshold(ss: SparkSession, df: DataFrame, centeredThreshold: Double,
+                                     minimumTruePositiveRate: Double, precision: Int = 60): (Double, Rates) = {
         val epsilon = 0.0005
         val thresholds = (-precision until precision).map(e => centeredThreshold + e*epsilon)
         val rates = getRates(thresholds, df)

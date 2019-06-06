@@ -3,6 +3,7 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.Predict
+import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.Models
 import org.apache.spark.ml.feature.Binarizer
@@ -12,7 +13,6 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Predictor {
     val segmentDirectory = "all-190601-fusion"
-    val dataDirectory = "D:\\ws\\cryptos\\data"
     
     def predictMain(args: Predict): String = {
         getActualSegmentAndPredict

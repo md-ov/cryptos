@@ -1,11 +1,12 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
+import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
 import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-import ml2.{label, predict, prediction, dataDirectory}
+import ml2.{label, predict, prediction}
 
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 

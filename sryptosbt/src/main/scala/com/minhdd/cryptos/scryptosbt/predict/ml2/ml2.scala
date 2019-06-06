@@ -4,8 +4,7 @@ import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, StringType, StructField, StructType, TimestampType}
 
 object ml2 {
-    val dataDirectory = "D:\\ws\\cryptos\\data"
-    
+
     val indexerBegin = new StringIndexer()
       .setInputCol("beginEvolution")
       .setOutputCol("begin-evo")

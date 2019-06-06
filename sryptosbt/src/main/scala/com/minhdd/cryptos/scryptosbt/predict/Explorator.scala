@@ -92,25 +92,24 @@ object Explorator {
 //          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
     
 //                e(ss)
-        f(ss)
+        allSegments(ss)
     }
     
-    def e(ss: SparkSession): Unit = {
+    def allSegments(ss: SparkSession): Unit = {
+        import predict.dataDirectory
+        val last = "all-190531-fusion"
+        val now = "all-190601"
+        val fromLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
+        
         explorateFromLastSegment(ss = ss,
             lastSegments = lastSegments(ss, lastSegmentsDir = 
-              "D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion\\beforesplits"),
-            outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190601")
-    }
+              s"$dataDirectory\\csv\\segments\\$last\\beforesplits"),
+            outputDir = fromLastSegmentDir)
     
-    def f(ss: SparkSession)= {
-        fusion(ss,"D:\\ws\\cryptos\\data\\csv\\segments\\all-190601-fusion",
-            Seq("D:\\ws\\cryptos\\data\\csv\\segments\\all-190531-fusion\\beforesplits",
-                "D:\\ws\\cryptos\\data\\csv\\segments\\all-190601\\beforesplits"))
+        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion",
+            Seq(s"$dataDirectory\\csv\\segments\\$last\\beforesplits",
+                s"$dataDirectory\\csv\\segments\\$now\\beforesplits"))
     }
-    
-    def now(ss: SparkSession) = {
-        
-    }
-    
+      
     
 }
