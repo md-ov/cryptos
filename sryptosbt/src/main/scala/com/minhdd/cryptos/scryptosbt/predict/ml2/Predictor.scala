@@ -12,7 +12,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190601-fusion"
+    val segmentDirectory = "all-190606-fusion"
+    val modelDirectory = "all-190601-fusion"
     
     def predictMain(args: Predict): String = {
         getActualSegmentAndPredict
@@ -25,7 +26,7 @@ object Predictor {
         val df: DataFrame =
             ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
         val someSegments: DataFrame = df.limit(3)
-        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", someSegments)
+        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$modelDirectory", someSegments)
     }
     
     def getActualSegmentAndPredict() = {
@@ -47,7 +48,7 @@ object Predictor {
             val importantChange = e.importantChange
             (ts, evolution, importantChange)
         }).foreach(println)
-        predictOneSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", actualSegment)
+        predictOneSegment(ss, s"$dataDirectory\\models\\$modelDirectory", actualSegment)
     }
     
     def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {

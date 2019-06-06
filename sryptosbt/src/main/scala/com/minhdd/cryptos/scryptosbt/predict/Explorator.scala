@@ -90,25 +90,23 @@ object Explorator {
 //        run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
 //        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
 //          "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
-    
 //                e(ss)
         allSegments(ss)
     }
     
     def allSegments(ss: SparkSession): Unit = {
         import predict.dataDirectory
-        val last = "all-190531-fusion"
-        val now = "all-190601"
-        val fromLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
+        val last = "all-190601-fusion"
+        val now = "all-190606"
+        val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\beforesplits"
+        val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
         
         explorateFromLastSegment(ss = ss,
-            lastSegments = lastSegments(ss, lastSegmentsDir = 
-              s"$dataDirectory\\csv\\segments\\$last\\beforesplits"),
-            outputDir = fromLastSegmentDir)
+            lastSegments = lastSegments(ss, lastSegmentsDir = lastSegmentsDir),
+            outputDir = afterLastSegmentDir)
     
         fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion",
-            Seq(s"$dataDirectory\\csv\\segments\\$last\\beforesplits",
-                s"$dataDirectory\\csv\\segments\\$now\\beforesplits"))
+            Seq(lastSegmentsDir, s"$dataDirectory\\csv\\segments\\$now\\beforesplits"))
     }
       
     
