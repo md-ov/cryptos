@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.tools.Timestamps
+import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.rdd.RDD
@@ -24,23 +24,6 @@ object Regressor {
 //        predictOneSegment()
     }
     
-    def predictOneSegment(): Unit = {
-        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
-        ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = 
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
-        val someSegments: DataFrame = df.limit(3)
-        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", someSegments)
-    }
-    
-    def getModelFromPath(ss: SparkSession, modelPath: String): CrossValidatorModel = {
-        val a: RDD[CrossValidatorModel] = ss.sparkContext.objectFile[CrossValidatorModel](modelPath)
-        val model = a.first()
-        a.first()
-    }
-    
-
-    
     def why() = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
@@ -50,7 +33,7 @@ object Regressor {
         f.map(s => s.map(b => b.copy(datetime = Timestamps(b.datetime.getTime *1000).timestamp ))).show(false)
     }
     
-    def t() = {
+    def trainingModelAndWriteTestDfWithRawPrediction() = {
         import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
         import org.apache.spark.ml.Pipeline
         import org.apache.spark.ml.evaluation.RegressionEvaluator
@@ -74,10 +57,10 @@ object Regressor {
           .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
           .setNumFolds(3).setSeed(27)
         val model: CrossValidatorModel = cv.fit(trainDF)
-        ss.sparkContext.parallelize(Seq(model), 1).saveAsObjectFile(s"D:\\ws\\cryptos\\data\\models\\$segmentDirectory")
-        val result = model.transform(testDF)
-        result.show(false)
-        result.write.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
+        Models.saveModel(ss, model, s"$dataDirectory\\models\\$segmentDirectory")
+        val testDfWithRawPrediction: DataFrame = model.transform(testDF)
+        testDfWithRawPrediction.show(false)
+        testDfWithRawPrediction.write.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\result")
 
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
@@ -86,7 +69,7 @@ object Regressor {
         for (i <- 0 to 10) {
             println("threshold : " + i.toDouble/10)
             binarizerForSegmentDetection.setThreshold(i.toDouble/10)
-            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(result)
+            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(testDfWithRawPrediction)
             val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
             counts.show()
         } 

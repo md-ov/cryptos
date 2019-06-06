@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.Predict
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.predict.ml2.Regressor.getModelFromPath
+import com.minhdd.cryptos.scryptosbt.tools.Models
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -17,6 +17,15 @@ object Predictor {
     def predictMain(args: Predict): String = {
         getActualSegmentAndPredict
         "status|SUCCESS, result|366"
+    }
+    
+    def predictSomeSegment(): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        val df: DataFrame =
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
+        val someSegments: DataFrame = df.limit(3)
+        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$segmentDirectory", someSegments)
     }
     
     def getActualSegmentAndPredict() = {
@@ -49,19 +58,20 @@ object Predictor {
     
     def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): DataFrame = {
         import ml2.{prediction, predict}
-        val model: CrossValidatorModel = getModelFromPath(ss, modelPath)
-        val result = model.transform(segments)
+        val model: CrossValidatorModel = Models.getModel(ss, modelPath)
+        val segmentsWithRawPrediction = model.transform(segments)
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
           .setOutputCol(predict)
         binarizerForSegmentDetection.setThreshold(1.02)
-        val resultt = binarizerForSegmentDetection.transform(result)
-        resultt.show(1000, false)
-        import org.apache.spark.sql.functions._
-        val maxNumberOfElement: Int = resultt.agg(max("numberOfElement")).first().getInt(0)
-        val aa: Double = resultt.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-        println(aa)
-        result
+        val dfWithFinalPrediction = binarizerForSegmentDetection.transform(segmentsWithRawPrediction)
+        dfWithFinalPrediction.show(1000, false)
+        import org.apache.spark.sql.functions.{col, max}
+        val maxNumberOfElement: Int = dfWithFinalPrediction.agg(max("numberOfElement")).first().getInt(0)
+        val finalPrediction: Double = 
+            dfWithFinalPrediction.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
+        println("prediction : " + finalPrediction);
+        segmentsWithRawPrediction
     }
     
     def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit]): Unit = {
@@ -79,6 +89,7 @@ object Predictor {
     }
     
     def main(args: Array[String]): Unit = {
+//        predictSomeSegment
         getActualSegmentAndPredict
     }
 }
