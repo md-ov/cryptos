@@ -65,7 +65,7 @@ object Regressor {
         import org.apache.spark.sql.functions._
         val maxNumberOfElement: Int = result.agg(max("numberOfElement")).first().getInt(0)
         val aa: Double = result.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-        println(aa)
+        println("prediction :" + aa)
     }
     
     def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {
