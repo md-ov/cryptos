@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import java.io.{BufferedWriter, File, FileWriter}
+import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.predict.ml.MLSegmentsGBTRegressor.{label, predict, prediction}
@@ -13,13 +14,35 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 
 object Regressor {
-    val segmentDirectory = "all-190531-fusion"
+    val segmentDirectory = "all-190601-fusion"
     
     def main(args: Array[String]): Unit = {
 //        resultss()
-//        t()
-        t
+//        t
 //        predictOneSegment()
+    
+        getActualSegmentAndPredict
+    }
+    
+    def getActualSegmentAndPredict() = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        import ss.implicits._
+        val df: Dataset[Seq[BeforeSplit]] =
+            ss.read.parquet(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\beforesplits").as[Seq[BeforeSplit]]
+        
+        val s: Array[Seq[BeforeSplit]] = df.collect()
+        s.map(e => (e.head, e.last))
+          .foreach(f => println("" + new Timestamp(f._1.datetime.getTime*1000) + " -> " + new Timestamp(f._2.datetime.getTime*1000)))
+        println("----")
+        val actualSegment = s.sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime}).last
+        actualSegment.map(e => {
+            val ts = new Timestamp(e.datetime.getTime * 1000)
+            val evolution = e.evolution
+            val importantChange = e.importantChange
+            (ts, evolution, importantChange)
+        }).foreach(println)
+        predictOneSegment(ss, "D:\\ws\\cryptos\\data\\models\\all-190601-fusion", actualSegment, 0.8)
     }
     
     def predictOneSegment(): Unit = {
