@@ -1,7 +1,5 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
-import java.sql.Timestamp
-
 import com.minhdd.cryptos.scryptosbt.Predict
 import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
@@ -12,7 +10,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190606-fusion"
+    val segmentDirectory = "all-190611-fusion"
     val modelDirectory = "all-190601-fusion"
     
     def predictMain(args: Predict): String = {
@@ -38,15 +36,14 @@ object Predictor {
         
         val s: Array[Seq[BeforeSplit]] = df.collect()
         s.map(e => (e.head, e.last))
-          .foreach(f => println("" + new Timestamp(f._1.datetime.getTime*1000) + " -> " + new Timestamp(f._2.datetime.getTime*1000)))
+          .foreach(f => println("" + f._1.datetime + " -> " + f._2.datetime))
         println("----")
         println("Actual segment : ")
         val actualSegment = s.sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime}).last
         actualSegment.map(e => {
-            val ts = new Timestamp(e.datetime.getTime * 1000)
             val evolution = e.evolution
             val importantChange = e.importantChange
-            (ts, evolution, importantChange)
+            (e.datetime, evolution, importantChange)
         }).foreach(println)
         predictOneSegment(ss, s"$dataDirectory\\models\\$modelDirectory", actualSegment)
     }

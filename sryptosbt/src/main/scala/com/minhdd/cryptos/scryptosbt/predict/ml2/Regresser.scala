@@ -17,16 +17,17 @@ object Regressor {
 //        resultss()
 //        t
 //        predictOneSegment()
-        trainingModelAndWriteTestDfWithRawPrediction
+//        trainingModelAndWriteTestDfWithRawPrediction
+        whyThereIsSomeNull
     }
     
     def whyThereIsSomeNull() = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
-        val ds = ss.read.parquet(s"$dataDirectory\\csv\\segments\\all-190531\\beforesplits").as[Seq[BeforeSplit]]
+        val ds = ss.read.parquet(s"$dataDirectory\\csv\\segments\\all-190611-fusion\\beforesplits").as[Seq[BeforeSplit]]
         val f: Dataset[Seq[BeforeSplit]] = ds.filter(s => s.exists(_.secondDerive.isEmpty))
-        f.map(s => s.map(b => b.copy(datetime = Timestamps(b.datetime.getTime *1000).timestamp ))).show(false)
+        f.show(false)
     }
     
     def trainingModelAndWriteTestDfWithRawPrediction() = {

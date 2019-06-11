@@ -181,7 +181,8 @@ object OHLCAndTradesExplorator {
                 xColumn = datetime,
                 newCol = "secondDerive")
     
-        val beforeSplits: Dataset[BeforeSplit] = dfWithSecondDerive.as[BeforeSplit]
+        val beforeSplits: Dataset[BeforeSplit] = 
+            dfWithSecondDerive.as[BeforeSplit].map(b => b.copy(datetime = new Timestamp(b.datetime.getTime * 1000)))
         val beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]] = beforeSplits.mapPartitions(split)
         beforeSplitsSeqDataset.write.parquet(outputDir+ "\\beforesplits") 
 //        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)

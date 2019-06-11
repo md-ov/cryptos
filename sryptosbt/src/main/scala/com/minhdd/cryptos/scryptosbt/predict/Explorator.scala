@@ -73,11 +73,7 @@ object Explorator {
         Crypto.getPartitionFromPathFromLastTimestamp(ss, parquetPath, lastTimestamp).get
     }
     
-    def fusion(ss: SparkSession, targetPath: String, elementsPaths: Seq[String]) = {
-        import ss.implicits._
-        val finalDs = elementsPaths.map(p => ss.read.parquet(p).as[Seq[BeforeSplit]]).reduce(_.union(_))
-        finalDs.write.parquet(targetPath+"\\beforesplits")
-    }
+
     
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder()
@@ -96,18 +92,24 @@ object Explorator {
     
     def allSegments(ss: SparkSession): Unit = {
         import predict.dataDirectory
-        val last = "all-190601-fusion"
-        val now = "all-190606"
+        val last = "all-190606-fusion"
+        val now = "all-190611"
         val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\beforesplits"
         val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
         
         explorateFromLastSegment(ss = ss,
             lastSegments = lastSegments(ss, lastSegmentsDir = lastSegmentsDir),
             outputDir = afterLastSegmentDir)
-    
-        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion",
+
+        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion\\beforesplits",
             Seq(lastSegmentsDir, s"$dataDirectory\\csv\\segments\\$now\\beforesplits"))
+        
     }
-      
+    
+    def fusion(ss: SparkSession, targetPath: String, elementsPaths: Seq[String]) = {
+        import ss.implicits._
+        val finalDs = elementsPaths.map(p => ss.read.parquet(p).as[Seq[BeforeSplit]]).reduce(_.union(_))
+        finalDs.write.parquet(targetPath)
+    }
     
 }
