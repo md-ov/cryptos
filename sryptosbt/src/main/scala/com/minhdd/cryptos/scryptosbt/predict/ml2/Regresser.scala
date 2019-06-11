@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
+import com.minhdd.cryptos.scryptosbt.predict.predict._
 import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
@@ -25,7 +25,7 @@ object Regressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
-        val ds = ss.read.parquet(s"$dataDirectory\\csv\\segments\\all-190611-fusion\\beforesplits").as[Seq[BeforeSplit]]
+        val ds = ss.read.parquet(s"$dataDirectory\\csv\\segments\\all-190611-fusion\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         val f: Dataset[Seq[BeforeSplit]] = ds.filter(s => s.exists(_.secondDerive.isEmpty))
         f.show(false)
     }
@@ -40,7 +40,7 @@ object Regressor {
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)

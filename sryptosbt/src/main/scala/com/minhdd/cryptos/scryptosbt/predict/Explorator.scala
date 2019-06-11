@@ -8,18 +8,19 @@ import Explorates._
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.apache.spark.sql.functions.max
 import org.joda.time.DateTime
+import com.minhdd.cryptos.scryptosbt.predict.predict._
 
 object Explorator {
     
     def tradesCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
-            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
+            parquetsDir = s"$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
         Crypto.getPartitionsUniFromPath(ss, "file:///", parquetPath).get
     }
     
     def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
-            parquetsDir = "file:///D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
+            parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
         Crypto.getPartitionFromPath(ss, parquetPath).get
     }
     
@@ -69,7 +70,7 @@ object Explorator {
     
     def ohlcCryptoDsFromLastSegment(ss: SparkSession, lastTimestamp: Timestamp): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
-            parquetsDir = "file:///D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
+            parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
         Crypto.getPartitionFromPathFromLastTimestamp(ss, parquetPath, lastTimestamp).get
     }
     
@@ -94,15 +95,15 @@ object Explorator {
         import predict.dataDirectory
         val last = "all-190606-fusion"
         val now = "all-190611"
-        val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\beforesplits"
+        val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\$BEFORE_SPLITS"
         val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
         
         explorateFromLastSegment(ss = ss,
             lastSegments = lastSegments(ss, lastSegmentsDir = lastSegmentsDir),
             outputDir = afterLastSegmentDir)
 
-        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion\\beforesplits",
-            Seq(lastSegmentsDir, s"$dataDirectory\\csv\\segments\\$now\\beforesplits"))
+        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion\\$BEFORE_SPLITS",
+            Seq(lastSegmentsDir, s"$dataDirectory\\csv\\segments\\$now\\$BEFORE_SPLITS"))
         
     }
     

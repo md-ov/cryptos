@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import com.minhdd.cryptos.scryptosbt.Predict
-import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
+import com.minhdd.cryptos.scryptosbt.predict.predict._
 import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.Models
 import org.apache.spark.ml.feature.Binarizer
@@ -22,7 +22,7 @@ object Predictor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits")
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
         val someSegments: DataFrame = df.limit(3)
         Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$modelDirectory", someSegments)
     }
@@ -32,7 +32,7 @@ object Predictor {
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
         val df: Dataset[Seq[BeforeSplit]] =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\beforesplits").as[Seq[BeforeSplit]]
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         
         val s: Array[Seq[BeforeSplit]] = df.collect()
         s.map(e => (e.head, e.last))
