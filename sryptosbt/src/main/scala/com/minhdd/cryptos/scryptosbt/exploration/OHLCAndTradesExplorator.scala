@@ -3,9 +3,9 @@ package com.minhdd.cryptos.scryptosbt.exploration
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants
-import com.minhdd.cryptos.scryptosbt.exploration.Explorates.CustomSum
-import com.minhdd.cryptos.scryptosbt.parquet.Crypto
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics}
+import com.minhdd.cryptos.scryptosbt.constants.{BEFORE_SPLITS, dataDirectory}
+import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics, Timestamps}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
@@ -220,5 +220,73 @@ object OHLCAndTradesExplorator {
         } else {
             Iterator[Seq[BeforeSplit]]()
         }
+    }
+    
+    def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
+                              lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
+        //        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
+        //            parquetsDir = "D:\\ws\\cryptos\\data\\parquets", asset = "XBT", currency = "EUR")
+        val parquetPath = "D://ws//cryptos//data//parquets"
+        val todayPath = "D://ws//cryptos//data//parquets//XBT//EUR//TRADES//today//parquet"
+        Crypto.getPartitionsUniFromPathFromLastTimestamp(
+            ss = ss, prefix = "file:///",
+            path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
+            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
+    }
+    
+    def ohlcCryptoDsFromLastSegment(ss: SparkSession, lastTimestamp: Timestamp): Dataset[Crypto] = {
+        val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
+            parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
+        Crypto.getPartitionFromPathFromLastTimestamp(ss, parquetPath, lastTimestamp).get
+    }
+    
+    def explorateFromLastSegment(ss: SparkSession,
+                                 lastSegments: Dataset[Seq[BeforeSplit]],
+                                 outputDir: String) = {
+        import ss.implicits._
+        
+        val lastTimestampDS: Dataset[Timestamp] = lastSegments.map(_.last.datetime)
+        val lastTimestamp: Timestamp = lastTimestampDS.agg(max("value").as("max")).first().getAs[Timestamp](0)
+        
+        val ts: Timestamps = Timestamps(lastTimestamp.getTime)
+        
+        val lastCryptoPartitionKey = CryptoPartitionKey(
+            asset = "XBT",
+            currency = "EUR",
+            provider = "KRAKEN",
+            api = "TRADES",
+            year = ts.getYearString,
+            month = ts.getMonthString,
+            day = ts.getDayString)
+        
+        val ohlcs = ohlcCryptoDsFromLastSegment(ss, lastTimestamp)
+        val trades: Dataset[Crypto] = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)
+        OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, outputDir)
+    }
+    
+    def fusion(ss: SparkSession, targetPath: String, elementsPaths: Seq[String]) = {
+        import ss.implicits._
+        val finalDs = elementsPaths.map(p => ss.read.parquet(p).as[Seq[BeforeSplit]]).reduce(_.union(_))
+        finalDs.write.parquet(targetPath)
+    }
+    
+    def allSegments(ss: SparkSession): Unit = {
+        import constants.dataDirectory
+        val last = "all-190611-fusion"
+        val now = "all-190612"
+        val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\$BEFORE_SPLITS"
+        val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
+        
+        import ss.implicits._
+        val lastSegments = ss.read.parquet(lastSegmentsDir).as[Seq[BeforeSplit]]
+        
+        explorateFromLastSegment(
+            ss = ss,
+            lastSegments = lastSegments,
+            outputDir = afterLastSegmentDir)
+        
+        fusion(ss,s"$dataDirectory\\csv\\segments\\$now-fusion\\$BEFORE_SPLITS",
+            Seq(lastSegmentsDir, s"$dataDirectory\\csv\\segments\\$now\\$BEFORE_SPLITS"))
+        
     }
 }
