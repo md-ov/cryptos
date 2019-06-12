@@ -31,10 +31,9 @@ object Explorator {
     def explorateFromLastSegment(ss: SparkSession, 
                                  lastSegments: Dataset[Seq[BeforeSplit]],
                                  outputDir: String) = {
-        import Timestamps.fromTimestampsLong
         import ss.implicits._
         
-        val lastTimestampDS: Dataset[Timestamp] = lastSegments.map(e => fromTimestampsLong(e.last.datetime.getTime))
+        val lastTimestampDS: Dataset[Timestamp] = lastSegments.map(_.last.datetime)
         val lastTimestamp: Timestamp = lastTimestampDS.agg(max("value").as("max")).first().getAs[Timestamp](0)
         
         val ts: Timestamps = Timestamps(lastTimestamp.getTime)
@@ -50,8 +49,6 @@ object Explorator {
         
         val ohlcs = ohlcCryptoDsFromLastSegment(ss, lastTimestamp)
         val trades: Dataset[Crypto] = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)
-        trades.show(10000, false)
-    
         OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, outputDir)
     }
     
@@ -92,8 +89,8 @@ object Explorator {
     
     def allSegments(ss: SparkSession): Unit = {
         import constants.dataDirectory
-        val last = "all-190606-fusion"
-        val now = "all-190611"
+        val last = "all-190611-fusion"
+        val now = "all-190612"
         val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\$BEFORE_SPLITS"
         val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
         
