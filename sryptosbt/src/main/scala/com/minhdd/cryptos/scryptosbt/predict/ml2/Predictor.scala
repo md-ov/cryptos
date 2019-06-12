@@ -1,5 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
+import java.sql.Timestamp
+
 import com.minhdd.cryptos.scryptosbt.Predict
 import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.constants._
@@ -34,12 +36,22 @@ object Predictor {
         val df: Dataset[Seq[BeforeSplit]] =
             ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         
-        val s: Array[Seq[BeforeSplit]] = df.collect()
-        s.map(e => (e.head, e.last))
-          .foreach(f => println("" + f._1.datetime + " -> " + f._2.datetime))
+        val s: Array[Seq[BeforeSplit]] = df.collect().sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime})
+        val headDateTimeAndLastDateTimeSeq: Array[(Timestamp, Timestamp)] = s.map(e => (e.head.datetime, e.last.datetime))
+        headDateTimeAndLastDateTimeSeq.foreach(f => println("" + f._1 + " -> " + f._2))
+        val bugs = headDateTimeAndLastDateTimeSeq.indices.filter(i =>
+            (i != headDateTimeAndLastDateTimeSeq.length - 1) &&
+              (headDateTimeAndLastDateTimeSeq.apply(i)._2 != headDateTimeAndLastDateTimeSeq.apply(i+1)._1)
+        )
+        if (bugs.nonEmpty) {
+            println("---- les anomalies : ")
+            bugs.foreach(f => println("" + headDateTimeAndLastDateTimeSeq.apply(f)._1 + " -> " + headDateTimeAndLastDateTimeSeq.apply(f)._2))
+        } else {
+            println("-- there is no anomalie !!!! --")
+        }
         println("----")
         println("Actual segment : ")
-        val actualSegment = s.sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime}).last
+        val actualSegment = s.last
         actualSegment.map(e => {
             val evolution = e.evolution
             val importantChange = e.importantChange
