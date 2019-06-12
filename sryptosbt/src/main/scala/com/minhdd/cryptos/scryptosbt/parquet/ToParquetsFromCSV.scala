@@ -6,9 +6,8 @@ import java.util.Date
 import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto.getPartitionFromPath
 import com.minhdd.cryptos.scryptosbt.tools.DateTimes
-import org.apache.spark.sql.{Dataset, KeyValueGroupedDataset, SaveMode, SparkSession}
-
-import scala.io.Source
+import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import com.minhdd.cryptos.scryptosbt.tools.Files.firstLine
 
 object ToParquetsFromCSV {
     
@@ -29,13 +28,6 @@ object ToParquetsFromCSV {
         } else None
     }
     
-    def firstLine(filePath: String): String = {
-        val file = Source.fromFile(filePath)
-        val line = file.bufferedReader().readLine()
-        file.close()
-        line
-    }
-    
     def run(args: ToParquetsFromCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
@@ -43,7 +35,8 @@ object ToParquetsFromCSV {
         if (apiLowercased == "ohlc") {
             val fileList: Seq[String] = getListOfFiles(args.inputDir).map(_.getAbsolutePath)
             val dss: Seq[(CryptoPartitionKey, Dataset[String])] = 
-                fileList.map(filePath => (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
+                fileList.map(filePath => (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile
+                (filePath)))
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] = dss.map(e => {
                 val ds = e._2.flatMap(Crypto.parseOHLC)(Crypto.encoder(ss))
                 (e._1, ds)
@@ -64,7 +57,7 @@ object ToParquetsFromCSV {
             
             val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = 
                 orderedFileList.filter(firstLine(_).nonEmpty).map(filePath => 
-                (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
+                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile(filePath)))
     
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
                 orderedDatasets.map(e => {

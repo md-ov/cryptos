@@ -1,9 +1,10 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt.exploration
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.constants
+import com.minhdd.cryptos.scryptosbt.exploration.Explorates.CustomSum
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
-import com.minhdd.cryptos.scryptosbt.predict.Explorates.CustomSum
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -91,7 +92,6 @@ object OHLCAndTradesExplorator {
     def expansion(ss: SparkSession, beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]]) = {
         import ss.implicits._
         val expandedSegments: Dataset[Segment] = beforeSplitsSeqDataset.flatMap(Segment.segments)
-        //        segments.show(5, false)
     
         val segmentsDF: DataFrame =
             expandedSegments
@@ -126,7 +126,6 @@ object OHLCAndTradesExplorator {
               )
         segmentsDF
     }
-    
     
     def explorate(ss:SparkSession, ohlc: Dataset[Crypto], trades: Dataset[Crypto], outputDir: String): Unit = {
         import ss.implicits._
@@ -181,10 +180,11 @@ object OHLCAndTradesExplorator {
                 xColumn = datetime,
                 newCol = "secondDerive")
     
-        val beforeSplits: Dataset[BeforeSplit] = 
-            dfWithSecondDerive.as[BeforeSplit].map(b => b.copy(datetime = new Timestamp(b.datetime.getTime * 1000)))
+        val beforeSplits: Dataset[BeforeSplit] =  //rétablir 1000 pour le vrai timestamp
+            dfWithSecondDerive.as[BeforeSplit].map(b => b.copy(datetime = new Timestamp(b.datetime.getTime * 1000))) 
+        
         val beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]] = beforeSplits.mapPartitions(split)
-        beforeSplitsSeqDataset.write.parquet(outputDir+ s"\\${predict.BEFORE_SPLITS}") 
+        beforeSplitsSeqDataset.write.parquet(outputDir+ s"\\${constants.BEFORE_SPLITS}") 
 //        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)
 //    
 //        val trainingSegments: DataFrame = expansion(ss, trainingdf)

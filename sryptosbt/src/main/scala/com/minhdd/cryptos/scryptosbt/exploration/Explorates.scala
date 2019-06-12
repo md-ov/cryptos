@@ -1,11 +1,12 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt.exploration
 
+import com.minhdd.cryptos.scryptosbt.analytics.{AnalyticsCrypto, AnalyticsSegment, RegularSegment}
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.apache.spark.sql.expressions.{MutableAggregationBuffer, UserDefinedAggregateFunction, Window}
 import org.apache.spark.sql.functions.{col, when}
 import org.apache.spark.sql.types.{BooleanType, DataType, LongType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object Explorates {
     //    val maximumDeltaTime = 4 * Timestamps.oneDayTimestampDelta
@@ -66,7 +67,7 @@ object Explorates {
         
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetimeColumnName, volumeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
-        import org.apache.spark.sql.functions.{max, min, when, struct}
+        import org.apache.spark.sql.functions.{max, min, struct, when}
         
         val dfWithAnalyticsColumns: DataFrame = dfWithDatetimeAndWrappedCrypto
           .withColumn("value", col(cryptoValueColumnName))

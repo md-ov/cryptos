@@ -5,6 +5,8 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
 
+import scala.io.{BufferedSource, Source}
+
 object Files {
     def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
         val d = new File(path)
@@ -88,5 +90,12 @@ object Files {
     def getPathForSpark(path: String): String = {
         if (path.contains("://")) "file:///" + path else 
         "file:///" + getClass.getResource("/" + path).getPath
+    }
+    
+    def firstLine(filePath: String): Option[String] = {
+        val file: BufferedSource = Source.fromFile(filePath)
+        val line: String = file.bufferedReader().readLine()
+        file.close()
+        Option(line)
     }
 }

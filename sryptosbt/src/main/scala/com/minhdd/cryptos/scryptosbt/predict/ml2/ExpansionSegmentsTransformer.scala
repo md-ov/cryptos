@@ -2,8 +2,8 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import java.util.UUID
 
-import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.predict.OHLCAndTradesExplorator.expansion
+import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
+import com.minhdd.cryptos.scryptosbt.exploration.OHLCAndTradesExplorator.expansion
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions.{col, when}

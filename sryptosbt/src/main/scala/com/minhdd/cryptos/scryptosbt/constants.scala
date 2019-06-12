@@ -1,6 +1,6 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt
 
-object predict {
+object constants {
     val dataDirectory = "D:\\ws\\cryptos\\data"
     val BEFORE_SPLITS = "beforesplits"
 }

@@ -3,7 +3,8 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import java.io.File
 import java.util.Date
 
-import com.minhdd.cryptos.scryptosbt.{ToParquetsFromCsv, ToParquetsFromTodayCsv}
+import com.minhdd.cryptos.scryptosbt.tools.Files.firstLine
+import com.minhdd.cryptos.scryptosbt.ToParquetsFromTodayCsv
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto.getPartitionFromPath
 import com.minhdd.cryptos.scryptosbt.tools.DateTimes
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
@@ -29,13 +30,6 @@ object ToParquetsFromTodayCSV {
         } else None
     }
     
-    def firstLine(filePath: String): String = {
-        val file = Source.fromFile(filePath)
-        val line = file.bufferedReader().readLine()
-        file.close()
-        line
-    }
-    
     def run(args: ToParquetsFromTodayCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
@@ -56,8 +50,8 @@ object ToParquetsFromTodayCSV {
                 .map(_.getAbsolutePath)
             
             val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = 
-                orderedFileList.filter(firstLine(_).nonEmpty).map(filePath => 
-                (getPartitionKey(firstLine(filePath), apiLowercased).get, ss.read.textFile(filePath)))
+                orderedFileList.filter(firstLine(_).isDefined).map(filePath => 
+                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile(filePath)))
     
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
                 orderedDatasets.map(e => {
@@ -66,7 +60,6 @@ object ToParquetsFromTodayCSV {
                 })
     
             runTodayTrades(ss, dsCryptos, args.parquetsDir, args.minimum)
-            println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
             "status|SUCCESS"
         } else {
             "status|ERROR|api"
@@ -176,8 +169,9 @@ object ToParquetsFromTodayCSV {
             newKeys.foreach(key => {
                 val partition: Option[Dataset[Crypto]] = filterDatasets(firstDates, orderedDatasetsWithFirstDate, key)
                 if (partition.isDefined) {
-                    println("writing partition : " + key)
-                    partition.get.write.mode(SaveMode.Overwrite).parquet(key.getTodayPartitionPath(parquetsDir))
+                    val parquetPath = key.getTodayPartitionPath(parquetsDir)
+                    println("writing partition : " + parquetPath)
+                    partition.get.write.mode(SaveMode.Overwrite).parquet(parquetPath)
                 } else {
                     println("---- partition is empty : " + key)
                 }

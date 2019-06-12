@@ -1,8 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
+import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.parquet.CSVFromParquetObj.merge
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
-import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Sparks {

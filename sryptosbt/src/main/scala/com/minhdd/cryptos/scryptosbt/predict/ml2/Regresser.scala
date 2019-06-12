@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml2
 
-import com.minhdd.cryptos.scryptosbt.predict.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.predict.predict._
+import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
+import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel

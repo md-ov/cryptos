@@ -1,14 +1,13 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.exploration.{BeforeSplit, OHLCAndTradesExplorator}
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import Explorates._
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 import org.apache.spark.sql.functions.max
-import org.joda.time.DateTime
-import com.minhdd.cryptos.scryptosbt.predict.predict._
+import org.apache.spark.sql.{Dataset, SparkSession}
+import com.minhdd.cryptos.scryptosbt.constants._
 
 object Explorator {
     
@@ -32,8 +31,8 @@ object Explorator {
     def explorateFromLastSegment(ss: SparkSession, 
                                  lastSegments: Dataset[Seq[BeforeSplit]],
                                  outputDir: String) = {
-        import ss.implicits._
         import Timestamps.fromTimestampsLong
+        import ss.implicits._
         
         val lastTimestampDS: Dataset[Timestamp] = lastSegments.map(e => fromTimestampsLong(e.last.datetime.getTime))
         val lastTimestamp: Timestamp = lastTimestampDS.agg(max("value").as("max")).first().getAs[Timestamp](0)
@@ -92,7 +91,7 @@ object Explorator {
     }
     
     def allSegments(ss: SparkSession): Unit = {
-        import predict.dataDirectory
+        import constants.dataDirectory
         val last = "all-190606-fusion"
         val now = "all-190611"
         val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\$BEFORE_SPLITS"

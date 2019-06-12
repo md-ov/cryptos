@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt.analytics
 
 import java.sql.Timestamp
 

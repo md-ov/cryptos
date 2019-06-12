@@ -1,5 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
+import com.minhdd.cryptos.scryptosbt.exploration.SamplerObj
 import org.joda.time.DateTime
 import org.scalatest.FunSuite
 import org.joda.time.format.DateTimeFormat

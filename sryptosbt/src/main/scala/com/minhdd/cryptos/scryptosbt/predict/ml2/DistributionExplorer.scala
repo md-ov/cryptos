@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import com.minhdd.cryptos.scryptosbt.predict.predict.dataDirectory
+import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
 import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2.{label, predict, prediction}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}

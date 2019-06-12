@@ -1,7 +1,7 @@
-package com.minhdd.cryptos.scryptosbt.predict
+package com.minhdd.cryptos.scryptosbt.tools
 
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoValue, Margin}
-import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
+import com.minhdd.cryptos.scryptosbt.parquet.Crypto
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object DerivativeCrypto {
     def toX(c: Crypto) = c.cryptoValue.datetime.getTime.toDouble / 1000000

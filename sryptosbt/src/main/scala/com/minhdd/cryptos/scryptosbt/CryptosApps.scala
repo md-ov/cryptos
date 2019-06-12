@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
-import com.minhdd.cryptos.scryptosbt.predict.SamplerObj
+import com.minhdd.cryptos.scryptosbt.exploration.SamplerObj
 import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV, ToParquetsFromTodayCSV}
 import com.minhdd.cryptos.scryptosbt.predict.ml2.Predictor
 
