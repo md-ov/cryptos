@@ -66,7 +66,7 @@ object ToParquetsFromCSV {
                 })
     
             runTrades(ss, dsCryptos, args.parquetsDir, args.minimum)
-            println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
+//            println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
             "status|SUCCESS"
         } else {
             "status|ERROR|api"
@@ -171,6 +171,8 @@ object ToParquetsFromCSV {
     
             val newKeys: Seq[CryptoPartitionKey] =
                 allKeys.filter(key => getPartitionFromPath(ss, key.getPartitionPath(parquetsDir)).isEmpty)
+            
+            if (newKeys.isEmpty) println("There is no add to parquets")
     
             newKeys.foreach(key => {
                 val partition: Option[Dataset[Crypto]] = filterDatasets(firstDates, orderedDatasetsWithFirstDate, key)
