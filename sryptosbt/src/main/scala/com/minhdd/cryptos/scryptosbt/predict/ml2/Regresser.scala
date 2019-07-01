@@ -77,6 +77,10 @@ object Regressor {
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
         
+        exploreDfAndFindThreshold(ss, df)
+    }
+    
+    def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): (Double, Rates) = {
         for (i <- 0 to 10) {
             val binarizerForSegmentDetection = new Binarizer()
               .setInputCol(prediction)
@@ -87,7 +91,7 @@ object Regressor {
             val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
             counts.show()
         }
-        
+    
         val t: (Double, Rates) = ThresholdCalculator.getThreshold(ss, df)
         println(t)
         val binarizerForSegmentDetection = new Binarizer()
@@ -97,6 +101,7 @@ object Regressor {
         val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
         val counts: DataFrame = segmentDetectionBinaryResults.groupBy(label, predict).count()
         counts.show()
+        t
     }
 
 }
