@@ -98,8 +98,19 @@ object Predictor {
         //        println("prediction :" + aa)
     }
     
+    def predictSegments(segmentsPath: String): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        val segments: DataFrame =
+            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentsPath\\$BEFORE_SPLITS")
+        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\$modelDirectory")
+        val segmentsWithRawPrediction: DataFrame = model.transform(segments)
+    
+        segmentsWithRawPrediction.show(10000,false)
+    }
+    
     def main(args: Array[String]): Unit = {
 //        predictSomeSegment
-        getActualSegmentAndPredict
+//        getActualSegmentAndPredict
+        predictSegments("all-190701")
     }
 }
