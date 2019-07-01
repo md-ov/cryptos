@@ -5,6 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.Predict
 import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.constants._
+import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.tools.Models
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
@@ -14,6 +15,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 object Predictor {
     val segmentDirectory = "all-190701-fusion"
     val modelDirectory = "all-190612-fusion"
+    val threshold = 0.895
     
     def predictMain(args: Predict): String = {
         getActualSegmentAndPredict
@@ -100,12 +102,28 @@ object Predictor {
     
     def predictSegments(segmentsPath: String): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
         val segments: DataFrame =
             ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentsPath\\$BEFORE_SPLITS")
         val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\$modelDirectory")
         val segmentsWithRawPrediction: DataFrame = model.transform(segments)
     
-        segmentsWithRawPrediction.show(10000,false)
+        import org.apache.spark.sql.functions.{abs, col, sum}
+        val totalError = segmentsWithRawPrediction.withColumn("error", abs(col(prediction) - col(label))).agg(sum("error")).first().getDouble(0)
+        println("total error : " + totalError)
+//        segmentsWithRawPrediction.show(10, false)
+        val t = ThresholdCalculator.getAdjustedThreshold(ss, segmentsWithRawPrediction, threshold, 0.9, 10)
+//        println(t)
+        val binarizerForSegmentDetection = new Binarizer()
+          .setInputCol(prediction)
+          .setOutputCol(predict)
+//        binarizerForSegmentDetection.setThreshold(t._1)
+        binarizerForSegmentDetection.setThreshold(t._1)
+        val dfWithFinalPrediction = binarizerForSegmentDetection.transform(segmentsWithRawPrediction)
+        val counts = dfWithFinalPrediction.groupBy(label, predict).count()
+        counts.show()
+        val all = counts.agg(sum("count")).first().getLong(0)
+        println(Seq(totalError, t._1, t._2.truePositive, t._2.trueRate, all).mkString(";"))
     }
     
     def main(args: Array[String]): Unit = {
