@@ -270,13 +270,10 @@ object OHLCAndTradesExplorator {
         finalDs.write.parquet(targetPath)
     }
     
-    def allSegments(ss: SparkSession): Unit = {
+    def allSegments(ss: SparkSession, last: String, now: String): Unit = {
         import constants.dataDirectory
-        val last = "all-190611-fusion"
-        val now = "all-190612"
         val lastSegmentsDir = s"$dataDirectory\\csv\\segments\\$last\\$BEFORE_SPLITS"
         val afterLastSegmentDir = s"$dataDirectory\\csv\\segments\\$now"
-        
         import ss.implicits._
         val lastSegments = ss.read.parquet(lastSegmentsDir).as[Seq[BeforeSplit]]
         

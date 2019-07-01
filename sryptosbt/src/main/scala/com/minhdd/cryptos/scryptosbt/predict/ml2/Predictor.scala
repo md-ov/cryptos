@@ -12,8 +12,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190612-fusion"
-    val modelDirectory = "all-190601-fusion"
+    val segmentDirectory = "all-190701-fusion"
+    val modelDirectory = "all-190612-fusion"
     
     def predictMain(args: Predict): String = {
         getActualSegmentAndPredict

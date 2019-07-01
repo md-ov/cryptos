@@ -30,8 +30,10 @@ object Explorator {
         //    Explorator.run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
         //    Explorator.run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
         //    OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = "D:\\ws\\cryptos\\data\\csv\\segments\\all-190502")
-        
-        OHLCAndTradesExplorator.allSegments(ss)
+    
+        val last = "all-190612-fusion"
+        val now = "all-190701"
+        OHLCAndTradesExplorator.allSegments(ss, last, now)
     }
     
 }
