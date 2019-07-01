@@ -123,7 +123,7 @@ object Predictor {
         val counts = dfWithFinalPrediction.groupBy(label, predict).count()
         counts.show()
         val all = counts.agg(sum("count")).first().getLong(0)
-        println(Seq(totalError, t._1, t._2.truePositive, t._2.trueRate, all).mkString(";"))
+        println(Seq(modelDirectory, segmentsPath, totalError, t._1, t._2.truePositive, t._2.trueRate, all).mkString(";"))
     }
     
     def main(args: Array[String]): Unit = {

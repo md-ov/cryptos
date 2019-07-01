@@ -1,2 +1,2 @@
-total-error;threshold;true-positive-by-positive;positive-rate;number-of-elements
-1296.8857060402645;0.895;0.9799426934097422;0.2387140902872777;1798.0
+model-path;segments-path;total-error;threshold;true-positive-by-positive;positive-rate;number-of-elements
+all-190612-fusion;all-190701;1296.8857060402645;0.895;0.9799426934097422;0.2387140902872777;1798.0
