@@ -13,7 +13,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190701-fusion"
+    val segmentDirectory = "all-190703-fusion"
     val modelDirectory = "all-190612-fusion"
     val threshold = 0.895
     
@@ -68,7 +68,7 @@ object Predictor {
         ds.toDF()
     }
     
-    def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): DataFrame = {
+    def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): String = {
         import ml2.{prediction, predict}
         val model: CrossValidatorModel = Models.getModel(ss, modelPath)
         val segmentsWithRawPrediction = model.transform(segments)
@@ -80,14 +80,19 @@ object Predictor {
         dfWithFinalPrediction.show(1000, false)
         import org.apache.spark.sql.functions.{col, max}
         val maxNumberOfElement: Int = dfWithFinalPrediction.agg(max("numberOfElement")).first().getInt(0)
-        val finalPrediction: Double = 
-            dfWithFinalPrediction.filter(col("numberOfElement") === maxNumberOfElement).first().getAs[Double](predict)
-        println("prediction : " + finalPrediction);
-        segmentsWithRawPrediction
+        val longestSegment = dfWithFinalPrediction.filter(col("numberOfElement") === maxNumberOfElement).first()
+        val binaryPrediction: Double = longestSegment.getAs[Double](predict)
+        val predictionValue: Double = longestSegment.getAs[Double](prediction)
+        val numberOfElement: Int = longestSegment.getAs[Integer]("numberOfElement")
+        val beginValue: Double = longestSegment.getAs[Double]("beginvalue")
+        val endvalue: Double = longestSegment.getAs[Double]("endvalue")
+        val beginDt: Timestamp = longestSegment.getAs[Timestamp]("begindt")
+        println("prediction : " + binaryPrediction)
+        Seq(modelDirectory, beginDt, beginValue, endvalue, endvalue,numberOfElement, "", predictionValue, binaryPrediction).mkString(";")
     }
     
-    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit]): Unit = {
-        val p: DataFrame = predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
+    def predictOneSegment(ss: SparkSession, modelPath: String, segment: Seq[BeforeSplit]): String = {
+        predictTheSegment(ss, modelPath, getDfFromOneSegment(ss, segment))
         //        val binarizerForSegmentDetection = new Binarizer()
         //          .setInputCol(prediction)
         //          .setOutputCol(predict)
@@ -128,7 +133,7 @@ object Predictor {
     
     def main(args: Array[String]): Unit = {
 //        predictSomeSegment
-//        getActualSegmentAndPredict
-        predictSegments("all-190701")
+        println(getActualSegmentAndPredict)
+//        predictSegments("all-190701")
     }
 }
