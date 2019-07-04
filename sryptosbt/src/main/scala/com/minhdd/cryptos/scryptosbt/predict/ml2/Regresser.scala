@@ -26,7 +26,7 @@ object Regressor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
-        val ds = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
+        val ds = ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         val f: Dataset[Seq[BeforeSplit]] = ds.filter(s => s.exists(_.secondDerive.isEmpty))
         f.show(false)
     }
@@ -41,7 +41,7 @@ object Regressor {
         
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
@@ -57,7 +57,7 @@ object Regressor {
         Models.saveModel(ss, model, s"$dataDirectory\\models\\$segmentDirectory")
         val testDfWithRawPrediction: DataFrame = model.transform(testDF)
         testDfWithRawPrediction.show(false)
-        testDfWithRawPrediction.write.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
+        testDfWithRawPrediction.write.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")
 
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
@@ -75,7 +75,7 @@ object Regressor {
     def exploreTestDfAndFindThreshold(): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")
         
         exploreDfAndFindThreshold(ss, df)
     }

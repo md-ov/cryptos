@@ -61,13 +61,13 @@ object MLSegmentsRandomForrest {
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190126before1803")
+//              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190126before1803")
 //
 //        val df2: DataFrame = 
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190129-from")
+//              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190129-from")
 //
 //        val df = df1.union(df2)
 //          .filter(!(col("begin-evolution") === "-"))
@@ -77,7 +77,7 @@ object MLSegmentsRandomForrest {
             ss.read
               .option("sep", ";")
               .schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\ohlc-190129-2")
+              .csv("D:\\ws\\cryptos\\data\\segments\\ohlc-190129-2")
                   .filter(!(col("begin-evolution") === "-"))
                   .filter(!(col("end-evolution") === "-"))
         

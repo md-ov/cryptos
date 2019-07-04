@@ -44,7 +44,7 @@ object MLSegmentsGBTRegressor {
         val dfWithoutBeginEvolutionNull: DataFrame =
             ss.read
               .option("sep", ";").schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190407")
+              .csv("D:\\ws\\cryptos\\data\\segments\\all-190407")
               .filter(!(col("begin-evolution") === "-"))
               
         val dfForTrueSegment = dfWithoutBeginEvolutionNull.filter(!(col("end-evolution") === "-"))
@@ -136,13 +136,13 @@ object MLSegmentsGBTRegressor {
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-before")
+//              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190206-before")
 //
 //        val df2: DataFrame =
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190206-from")
+//              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190206-from")
 //
 //        val df = df1.union(df2)
 //          .filter(!(col("begin-evolution") === "-"))
@@ -152,6 +152,6 @@ object MLSegmentsGBTRegressor {
 //            ss.read
 //              .option("sep", ";")
 //              .schema(csvSchema)
-//              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\trades-190120-5")
+//              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190120-5")
 
         

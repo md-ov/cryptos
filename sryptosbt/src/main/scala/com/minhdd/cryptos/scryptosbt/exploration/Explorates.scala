@@ -105,7 +105,7 @@ object Explorates {
                   "standardDeviationVolume",
                   "sameEvolution", "numberOfElement")
         
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\segments\\" + outputDir, segmentsDF)
+        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\segments\\" + outputDir, segmentsDF)
         
         val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)

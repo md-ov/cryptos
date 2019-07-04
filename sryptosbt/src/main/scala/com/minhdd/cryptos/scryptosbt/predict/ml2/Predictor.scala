@@ -26,7 +26,7 @@ object Predictor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
         val someSegments: DataFrame = df.limit(3)
         Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$modelDirectory", someSegments)
     }
@@ -36,7 +36,7 @@ object Predictor {
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
         val df: Dataset[Seq[BeforeSplit]] =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         
         val s: Array[Seq[BeforeSplit]] = df.collect().sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime})
         val headDateTimeAndLastDateTimeSeq: Array[(Timestamp, Timestamp)] = s.map(e => (e.head.datetime, e.last.datetime))
@@ -78,6 +78,7 @@ object Predictor {
         binarizerForSegmentDetection.setThreshold(1.02)
         val dfWithFinalPrediction = binarizerForSegmentDetection.transform(segmentsWithRawPrediction)
         dfWithFinalPrediction.show(1000, false)
+        import org.apache.spark.sql.functions.lit
         import org.apache.spark.sql.functions.{col, max}
         val maxNumberOfElement: Int = dfWithFinalPrediction.agg(max("numberOfElement")).first().getInt(0)
         val longestSegment = dfWithFinalPrediction.filter(col("numberOfElement") === maxNumberOfElement).first()
@@ -87,6 +88,9 @@ object Predictor {
         val beginValue: Double = longestSegment.getAs[Double]("beginvalue")
         val endvalue: Double = longestSegment.getAs[Double]("endvalue")
         val beginDt: Timestamp = longestSegment.getAs[Timestamp]("begindt")
+        dfWithFinalPrediction
+          .withColumn("modelPath", lit(modelDirectory))
+          .write.parquet(s"$dataDirectory\\predictions\\$modelDirectory\\${beginDt.getTime}")
         println("prediction : " + binaryPrediction)
         Seq(modelDirectory, beginDt, beginValue, endvalue, endvalue,numberOfElement, "", predictionValue, binaryPrediction).mkString(";")
     }
@@ -109,7 +113,7 @@ object Predictor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val segments: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentsPath\\$BEFORE_SPLITS")
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$BEFORE_SPLITS")
         val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\$modelDirectory")
         val segmentsWithRawPrediction: DataFrame = model.transform(segments)
     
@@ -131,9 +135,24 @@ object Predictor {
         println(Seq(modelDirectory, segmentsPath, totalError, t._1, t._2.truePositive, t._2.trueRate, all).mkString(";"))
     }
     
+    def seedf() = {
+        val beginTimestamp = "1562131800000"
+        val ss: SparkSession = 
+            SparkSession.builder()
+          .appName("read actual segment prediction")
+          .master("local[*]")
+          .getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        ss.read.parquet(s"$dataDirectory\\models\\predictions\\$modelDirectory\\$beginTimestamp").show(100, false)
+    }
+    
     def main(args: Array[String]): Unit = {
 //        predictSomeSegment
-        println(getActualSegmentAndPredict)
+//        println(getActualSegmentAndPredict)
+        seedf()
 //        predictSegments("all-190701")
+        
+        
+        
     }
 }

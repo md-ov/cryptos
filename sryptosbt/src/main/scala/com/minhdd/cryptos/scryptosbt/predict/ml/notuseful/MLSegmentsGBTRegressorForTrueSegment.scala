@@ -31,7 +31,7 @@ object MLSegmentsGBTRegressorForTrueSegment {
         val df: DataFrame =
             ss.read
               .option("sep", ";").schema(csvSchema)
-              .csv("D:\\ws\\cryptos\\data\\csv\\segments\\all-190321")
+              .csv("D:\\ws\\cryptos\\data\\segments\\all-190321")
               .filter(!(col("begin-evolution") === "-"))
               .filter(!(col("end-evolution") === "-"))
 

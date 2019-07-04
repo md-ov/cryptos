@@ -13,7 +13,7 @@ object DistributionExplorer {
         ss.sparkContext.setLogLevel("ERROR")
         import org.apache.spark.sql.functions._
         val segmentDirectory = "all-190427"
-        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
           .setOutputCol(predict)
@@ -54,7 +54,7 @@ object DistributionExplorer {
         ss.sparkContext.setLogLevel("ERROR")
         import org.apache.spark.sql.functions._
         val segmentDirectory = "all-190427"
-        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\csv\\segments\\$segmentDirectory\\result")
+        val df: DataFrame = ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
           .setOutputCol(predict)
@@ -82,7 +82,7 @@ object DistributionExplorer {
         val persPositive: Array[Double] = positive.stat.approxQuantile("numberOfElement", percentiles, 0.00001)
         val persNegative: Array[Double] = negative.stat.approxQuantile("numberOfElement", percentiles, 0.00001)
         
-        val file = new File(s"D:\\ws\\cryptos\\data\\csv\\segments\\$segmentDirectory\\pers.csv")
+        val file = new File(s"D:\\ws\\cryptos\\data\\segments\\$segmentDirectory\\pers.csv")
         val bw = new BufferedWriter(new FileWriter(file))
         val data = Seq(percentiles, pers, persNotOk, persNotokPositive, persNotokNegative, persOk, persOkPositive, persOkNegative, persPositive, persNegative)
         percentiles.indices.map(i => data.map(_.apply(i))).foreach(line => {
