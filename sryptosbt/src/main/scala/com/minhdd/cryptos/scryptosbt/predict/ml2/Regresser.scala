@@ -54,7 +54,7 @@ object Regressor {
           .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
           .setNumFolds(3).setSeed(27)
         val model: CrossValidatorModel = cv.fit(trainDF)
-        Models.saveModel(ss, model, s"$dataDirectory\\models\\$segmentDirectory")
+        Models.saveModel(ss, model, s"$dataDirectory\\models\\models\\$segmentDirectory")
         val testDfWithRawPrediction: DataFrame = model.transform(testDF)
         testDfWithRawPrediction.show(false)
         testDfWithRawPrediction.write.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")

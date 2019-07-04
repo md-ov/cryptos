@@ -28,7 +28,7 @@ object Predictor {
         val df: DataFrame =
             ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
         val someSegments: DataFrame = df.limit(3)
-        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\$modelDirectory", someSegments)
+        Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\models\\$modelDirectory", someSegments)
     }
     
     def getActualSegmentAndPredict() = {
@@ -59,7 +59,7 @@ object Predictor {
             val importantChange = e.importantChange
             (e.datetime, evolution, importantChange)
         }).foreach(println)
-        predictOneSegment(ss, s"$dataDirectory\\models\\$modelDirectory", actualSegment)
+        predictOneSegment(ss, s"$dataDirectory\\models\\models\\$modelDirectory", actualSegment)
     }
     
     def getDfFromOneSegment(ss: SparkSession, segment: Seq[BeforeSplit]): DataFrame = {
@@ -90,7 +90,7 @@ object Predictor {
         val beginDt: Timestamp = longestSegment.getAs[Timestamp]("begindt")
         dfWithFinalPrediction
           .withColumn("modelPath", lit(modelDirectory))
-          .write.parquet(s"$dataDirectory\\predictions\\$modelDirectory\\${beginDt.getTime}")
+          .write.parquet(s"$dataDirectory\\models\\predictions\\$modelDirectory\\${beginDt.getTime}")
         println("prediction : " + binaryPrediction)
         Seq(modelDirectory, beginDt, beginValue, endvalue, endvalue,numberOfElement, "", predictionValue, binaryPrediction).mkString(";")
     }
@@ -114,7 +114,7 @@ object Predictor {
         ss.sparkContext.setLogLevel("ERROR")
         val segments: DataFrame =
             ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$BEFORE_SPLITS")
-        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\$modelDirectory")
+        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
         val segmentsWithRawPrediction: DataFrame = model.transform(segments)
     
         import org.apache.spark.sql.functions.{abs, col, sum}
