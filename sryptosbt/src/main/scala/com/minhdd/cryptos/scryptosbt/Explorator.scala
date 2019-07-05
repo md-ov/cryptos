@@ -22,18 +22,19 @@ object Explorator {
 
     def main(args: Array[String]): Unit = {
         val ss: SparkSession = SparkSession.builder()
-          .config("spark.driver.maxResultSize", "2g")
+          .config("spark.driver.maxResultSize", "3g")
           .appName("exploration")
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
         
         //    Explorator.run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
         //    Explorator.run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
-        //    OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = "D:\\ws\\cryptos\\data\\segments\\all-190502")
+        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
+          "D:\\ws\\cryptos\\data\\segments\\all-190705-from-brut")
     
-        val last = "all-190701-fusion"
-        val now = "all-190703"
-        OHLCAndTradesExplorator.allSegments(ss, last, now)
+//        val last = "all-190703-fusion"
+//        val now = "all-190704"
+//        OHLCAndTradesExplorator.allSegments(ss, last, now)
     }
     
 }

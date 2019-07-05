@@ -112,10 +112,7 @@ object Predictor {
     def predictSegments(segmentsPath: String): Unit = {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
-        val segments: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$BEFORE_SPLITS")
-        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
-        val segmentsWithRawPrediction: DataFrame = model.transform(segments)
+        val segmentsWithRawPrediction: DataFrame = transformSegmentsWithModel(segmentsPath, ss)
     
         import org.apache.spark.sql.functions.{abs, col, sum}
         val totalError = segmentsWithRawPrediction.withColumn("error", abs(col(prediction) - col(label))).agg(sum("error")).first().getDouble(0)
@@ -135,6 +132,14 @@ object Predictor {
         println(Seq(modelDirectory, segmentsPath, totalError, t._1, t._2.truePositive, t._2.trueRate, all).mkString(";"))
     }
     
+    private def transformSegmentsWithModel(segmentsPath: String, ss: SparkSession) = {
+        val segments: DataFrame =
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$BEFORE_SPLITS")
+        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
+        val segmentsWithRawPrediction: DataFrame = model.transform(segments)
+        segmentsWithRawPrediction
+    }
+    
     def seedf() = {
         val beginTimestamp = "1562131800000"
         val ss: SparkSession = 
@@ -146,13 +151,26 @@ object Predictor {
         ss.read.parquet(s"$dataDirectory\\models\\predictions\\$modelDirectory\\$beginTimestamp").show(100, false)
     }
     
+    def findsegment(segmentsPath: String, ts: Int): Unit = {
+        val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
+        ss.sparkContext.setLogLevel("ERROR")
+        
+        val df: DataFrame = transformSegmentsWithModel(segmentsPath, ss)
+        import org.apache.spark.sql.functions.{col, unix_timestamp}
+//        df.withColumn("ss", unix_timestamp(col("begindt"))*1000)
+//          .select("begindt", "ss")
+//          .dropDuplicates("ss")
+//          .orderBy("ss")
+//          .show(100000,false)
+//        df.filter(unix_timestamp(col("begindt"))*1000 >= 1562131800000L).show(10000, false)
+        df.filter(col("endEvolution") === "-").show(10000, false)
+    }
+    
     def main(args: Array[String]): Unit = {
 //        predictSomeSegment
 //        println(getActualSegmentAndPredict)
-        seedf()
+//        seedf()
 //        predictSegments("all-190701")
-        
-        
-        
+        findsegment("all-190705-from-brut", 1562131800)
     }
 }
