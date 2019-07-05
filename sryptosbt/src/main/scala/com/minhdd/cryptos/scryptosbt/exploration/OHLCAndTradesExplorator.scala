@@ -241,13 +241,11 @@ object OHLCAndTradesExplorator {
     }
     
     def explorateFromLastSegment(ss: SparkSession,
-                                 lastSegments: Dataset[Seq[BeforeSplit]],
-                                 outputDir: String) = {
+                                 allTargetedSegments: Dataset[Seq[BeforeSplit]],
+                                 outputDir: String): Unit = {
         import ss.implicits._
-        
-        val lastTimestampDS: Dataset[Timestamp] = lastSegments.map(_.last.datetime)
+        val lastTimestampDS: Dataset[Timestamp] = allTargetedSegments.map(_.last.datetime)
         val lastTimestamp: Timestamp = lastTimestampDS.agg(max("value").as("max")).first().getAs[Timestamp](0)
-        
         val ts: Timestamps = Timestamps(lastTimestamp.getTime)
         
         val lastCryptoPartitionKey = CryptoPartitionKey(
@@ -264,26 +262,23 @@ object OHLCAndTradesExplorator {
         OHLCAndTradesExplorator.explorate(ss, ohlcs, trades, outputDir)
     }
     
-    def fusion(ss: SparkSession, targetPath: String, elementsPaths: Seq[String]) = {
-        import ss.implicits._
-        val finalDs = elementsPaths.map(p => ss.read.parquet(p).as[Seq[BeforeSplit]]).reduce(_.union(_))
-        finalDs.write.parquet(targetPath)
-    }
-    
     def allSegments(ss: SparkSession, last: String, now: String): Unit = {
         import constants.dataDirectory
         val lastSegmentsDir = s"$dataDirectory\\segments\\$last\\$BEFORE_SPLITS"
         val afterLastSegmentDir = s"$dataDirectory\\segments\\$now"
         import ss.implicits._
-        val lastSegments = ss.read.parquet(lastSegmentsDir).as[Seq[BeforeSplit]]
+        val allCalculatedSegments: Dataset[Seq[BeforeSplit]] = ss.read.parquet(lastSegmentsDir).as[Seq[BeforeSplit]]
+        
+        val allTargetedSegments: Dataset[Seq[BeforeSplit]] =
+            allCalculatedSegments.filter(_.last.importantChange.getOrElse(false) == true)
         
         explorateFromLastSegment(
             ss = ss,
-            lastSegments = lastSegments,
+            allTargetedSegments = allTargetedSegments,
             outputDir = afterLastSegmentDir)
-        
-        fusion(ss,s"$dataDirectory\\segments\\$now-fusion\\$BEFORE_SPLITS",
-            Seq(lastSegmentsDir, s"$dataDirectory\\segments\\$now\\$BEFORE_SPLITS"))
-        
+    
+        val lastSegments: Dataset[Seq[BeforeSplit]] = ss.read.parquet(s"$dataDirectory\\segments\\$now\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
+        val finalDs = allTargetedSegments.union(lastSegments)
+        finalDs.write.parquet(s"$dataDirectory\\segments\\$now-fusion\\$BEFORE_SPLITS")
     }
 }

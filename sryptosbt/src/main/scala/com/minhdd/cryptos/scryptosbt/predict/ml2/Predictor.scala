@@ -13,7 +13,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190703-fusion"
+    val segmentDirectory = "all-190705-from-brut"
     val modelDirectory = "all-190612-fusion"
     val threshold = 0.895
     
@@ -39,8 +39,9 @@ object Predictor {
             ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
         
         val s: Array[Seq[BeforeSplit]] = df.collect().sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime})
-        val headDateTimeAndLastDateTimeSeq: Array[(Timestamp, Timestamp)] = s.map(e => (e.head.datetime, e.last.datetime))
-        headDateTimeAndLastDateTimeSeq.foreach(f => println("" + f._1 + " -> " + f._2))
+        val headDateTimeAndLastDateTimeSeq: Array[(Timestamp, Timestamp, Option[Boolean])] = 
+            s.map(e => (e.head.datetime, e.last.datetime, e.last.importantChange))
+        headDateTimeAndLastDateTimeSeq.foreach(f => println("" + f._1 + " -> " + f._2 + " - " + f._3))
         val bugs = headDateTimeAndLastDateTimeSeq.indices.filter(i =>
             (i != headDateTimeAndLastDateTimeSeq.length - 1) &&
               (headDateTimeAndLastDateTimeSeq.apply(i)._2 != headDateTimeAndLastDateTimeSeq.apply(i+1)._1)
@@ -171,6 +172,7 @@ object Predictor {
 //        println(getActualSegmentAndPredict)
 //        seedf()
 //        predictSegments("all-190701")
-        findsegment("all-190705-from-brut", 1562131800)
+        
+//        findsegment("all-190705-from-brut", 1562131800)
     }
 }

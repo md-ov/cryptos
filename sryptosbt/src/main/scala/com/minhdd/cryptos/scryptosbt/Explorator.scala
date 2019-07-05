@@ -29,12 +29,12 @@ object Explorator {
         
         //    Explorator.run(ss, tradesCryptoDs(ss), outputDir = "trades-190407")
         //    Explorator.run(ss, ohlcCryptoDs(ss), outputDir = "ohlc-190407")
-        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
-          "D:\\ws\\cryptos\\data\\segments\\all-190705-from-brut")
+//        OHLCAndTradesExplorator.explorate(ss, ohlcCryptoDs(ss), tradesCryptoDs(ss), outputDir = 
+//          "D:\\ws\\cryptos\\data\\segments\\all-190705-from-brut")
     
-//        val last = "all-190703-fusion"
-//        val now = "all-190704"
-//        OHLCAndTradesExplorator.allSegments(ss, last, now)
+        val last = "all-190705-from-brut"
+        val now = "all-190708"
+        OHLCAndTradesExplorator.allSegments(ss, last, now)
     }
     
 }

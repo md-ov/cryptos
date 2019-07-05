@@ -11,7 +11,7 @@ import ml2.{label, predict, prediction}
 case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
 
 object Regressor {
-    val segmentDirectory = "all-190701-fusion"
+    val segmentDirectory = "all-190705-from-brut"
     
     def main(args: Array[String]): Unit = {
 //        resultss()
