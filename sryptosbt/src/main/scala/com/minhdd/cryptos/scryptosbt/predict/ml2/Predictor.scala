@@ -13,7 +13,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
 object Predictor {
-    val segmentDirectory = "all-190705-from-brut"
+    val segmentDirectory = "all-190706-fusion"
     val modelDirectory = "all-190612-fusion"
     val threshold = 0.895
     
@@ -169,10 +169,11 @@ object Predictor {
     
     def main(args: Array[String]): Unit = {
 //        predictSomeSegment
-//        println(getActualSegmentAndPredict)
+        println(getActualSegmentAndPredict)
 //        seedf()
 //        predictSegments("all-190701")
         
 //        findsegment("all-190705-from-brut", 1562131800)
+//        findsegment("all-190706-fusion", 1562131800)
     }
 }

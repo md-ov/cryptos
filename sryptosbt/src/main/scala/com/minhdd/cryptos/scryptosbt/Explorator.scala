@@ -33,7 +33,7 @@ object Explorator {
 //          "D:\\ws\\cryptos\\data\\segments\\all-190705-from-brut")
     
         val last = "all-190705-from-brut"
-        val now = "all-190708"
+        val now = "all-190706"
         OHLCAndTradesExplorator.allSegments(ss, last, now)
     }
     
