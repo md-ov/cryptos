@@ -1,3 +1,4 @@
 model-path;begin-dt;begin-value;value;end-value;number-of-element;target;prediction;binary-prediction
 all-190612-fusion;2019-06-27 22:30:00;9152.5;9716.9;;;;0.8335362095019003;0.0
 all-190612-fusion;2019-07-03 07:30:00;10226.8;10111.1;;31;;0.6855830609314053;0.0 
+all-190612-fusion;2019-07-08 13:45:00.0;10666.3;10606.7;10606.7;6;;0.5109009950057393;0.0
