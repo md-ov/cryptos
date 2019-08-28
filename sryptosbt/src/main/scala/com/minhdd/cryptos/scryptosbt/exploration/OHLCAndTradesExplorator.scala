@@ -72,7 +72,7 @@ object Segment {
 }
 object OHLCAndTradesExplorator {
     val numberOfMinutesBetweenTwoElement = 15
-    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15) // sampling every 15 minutes, 4 cryptos on one window
+    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15) // sampling every 15 minutes, 4 jours on one window
     val minDeltaValue = 150
     val evolutionNullValue = "-"
     val datetime = "datetime"
@@ -144,7 +144,10 @@ object OHLCAndTradesExplorator {
               .withColumn(value, col("cryptoValue.value"))
               .select(datetime, value, volume)
         val joined = sampledOhlcDataSet.join(sampledTradesDataSet, datetime)
-        
+//        println(sampledOhlcDataSet.count())
+//        println(sampledTradesDataSet.count())
+//        println(joined.count())
+    
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetime, volume).rowsBetween(-numberOfCryptoOnOneWindow, 0)
         import org.apache.spark.sql.functions.{max, min, when}
@@ -154,6 +157,10 @@ object OHLCAndTradesExplorator {
           .withColumn("min", min("value").over(window))
           .withColumn(variation, max(value).over(window) - min(value).over(window))
     
+//        dfWithAnalyticsColumns.withColumn("dt", (col("datetime") * 1000).cast(TimestampType))
+//          .select("dt", "value", "max", "min", "variation")
+//          .show(100000,false)
+        
         val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn(evolution,
             when(col("min") === col(value) && col(variation) > minDeltaValue, "down")
               .when(col("max") === col(value) && col(variation) > minDeltaValue, "up")
