@@ -1,7 +1,6 @@
-package com.minhdd.cryptos.scryptosbt.math
+package com.minhdd.cryptos.scryptosbt.tools
 
-
-import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object Derivative {
     def derive(i: Seq[Double], j: Seq[Double]): Seq[Double] = {

@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.analytics
+package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 

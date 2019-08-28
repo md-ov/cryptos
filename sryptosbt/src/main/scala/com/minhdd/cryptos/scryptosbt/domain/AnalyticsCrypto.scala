@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.analytics
+package com.minhdd.cryptos.scryptosbt.domain
 
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
 
