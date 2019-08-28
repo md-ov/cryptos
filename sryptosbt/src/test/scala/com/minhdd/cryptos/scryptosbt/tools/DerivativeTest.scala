@@ -1,7 +1,6 @@
-package com.minhdd.cryptos.scryptosbt.math
+package com.minhdd.cryptos.scryptosbt.tools
 
-import com.minhdd.cryptos.scryptosbt.tools.{Derivative, DerivativeDatasetDoubleDouble}
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 
 class DerivativeTest extends FunSuite {
