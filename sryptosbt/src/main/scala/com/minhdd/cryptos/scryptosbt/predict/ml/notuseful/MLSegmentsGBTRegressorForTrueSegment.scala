@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml.notuseful
 
 import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
+import com.minhdd.cryptos.scryptosbt.constants._
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.Binarizer
@@ -32,8 +33,8 @@ object MLSegmentsGBTRegressorForTrueSegment {
             ss.read
               .option("sep", ";").schema(csvSchema)
               .csv("D:\\ws\\cryptos\\data\\segments\\all-190321")
-              .filter(!(col("begin-evolution") === "-"))
-              .filter(!(col("end-evolution") === "-"))
+              .filter(!(col("begin-evolution") === evolutionNone))
+              .filter(!(col("end-evolution") === evolutionNone))
 
         df.show(false)
         df.printSchema()

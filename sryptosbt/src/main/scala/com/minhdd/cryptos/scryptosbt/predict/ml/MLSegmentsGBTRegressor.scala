@@ -10,6 +10,7 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
+import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.tools.Timestamps
 
 object MLSegmentsGBTRegressor {
@@ -45,9 +46,9 @@ object MLSegmentsGBTRegressor {
             ss.read
               .option("sep", ";").schema(csvSchema)
               .csv("D:\\ws\\cryptos\\data\\segments\\all-190407")
-              .filter(!(col("begin-evolution") === "-"))
+              .filter(!(col("begin-evolution") === evolutionNone))
               
-        val dfForTrueSegment = dfWithoutBeginEvolutionNull.filter(!(col("end-evolution") === "-"))
+        val dfForTrueSegment = dfWithoutBeginEvolutionNull.filter(!(col("end-evolution") === evolutionNone))
         val modelForTrueSegment = cvForTrueSegment.fit(dfForTrueSegment)      
               
         ///// begin of segment detection 
@@ -81,7 +82,7 @@ object MLSegmentsGBTRegressor {
         
 //        val detectedSegments = segmentDetectionBinaryResults.filter(col(predict) === 1)
 //          .drop(label, predict, prediction, "begin-evo", "features")
-//          .filter(!(col("begin-evolution") === "-"))
+//          .filter(!(col("begin-evolution") === evolutionNone))
 //        
 //        val finalResults: DataFrame = modelForTrueSegment.transform(detectedSegments)
 //    
@@ -145,8 +146,8 @@ object MLSegmentsGBTRegressor {
 //              .csv("D:\\ws\\cryptos\\data\\segments\\trades-190206-from")
 //
 //        val df = df1.union(df2)
-//          .filter(!(col("begin-evolution") === "-"))
-//          .filter(!(col("end-evolution") === "-"))
+//          .filter(!(col("begin-evolution") === evolutionNone))
+//          .filter(!(col("end-evolution") === evolutionNone))
 
 //        val df1: DataFrame =
 //            ss.read

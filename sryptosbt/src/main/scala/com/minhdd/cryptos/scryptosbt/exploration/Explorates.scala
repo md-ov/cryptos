@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.exploration
 
 import com.minhdd.cryptos.scryptosbt.domain.{AnalyticsCrypto, AnalyticsSegment, RegularSegment}
 import com.minhdd.cryptos.scryptosbt.parquet.Crypto
+import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, when}
@@ -28,7 +29,6 @@ object Explorates {
               .withColumnRenamed("_2", datetime)
         
         val volumeColumnName = "crypto.cryptoValue.volume"
-        val evolutionNullValue = "-"
         
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(datetimeColumnName, volumeColumnName).rowsBetween(-numberOfCryptoOnOneWindow, 0)
@@ -43,14 +43,14 @@ object Explorates {
         val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn("evolution",
             when(col("min") === col("value") && col("variation") > minDeltaValue, "down")
               .when(col("max") === col("value") && col("variation") > minDeltaValue, "up")
-              .otherwise(evolutionNullValue))
+              .otherwise(evolutionNone))
         
         //          dfWithEvolutionUpOrDown.filter("evolution != '-'")
         //          .filter(($"evolution" === "up" && $"derive" < 0) || ($"evolution" === "down" && $"derive" > 0))
         //          .select(datetimeColumnName, "value", "variation", "evolution", "analytics.derive")
         //          .show(1000, false)
         
-        val binaryEvolution = when(col("evolution") === evolutionNullValue, false).otherwise(true)
+        val binaryEvolution = when(col("evolution") === evolutionNone, false).otherwise(true)
         val dfWithImportantChanges: DataFrame = dfWithEvolutionUpOrDown.withColumn("importantChange", binaryEvolution)
         
         val w = Window.orderBy(datetimeColumnName, volumeColumnName)

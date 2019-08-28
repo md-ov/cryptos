@@ -1,11 +1,13 @@
 package com.minhdd.cryptos.scryptosbt.predict.ml.notuseful
 
 import com.minhdd.cryptos.scryptosbt.predict.ml.ml._
+import com.minhdd.cryptos.scryptosbt.constants._
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 
 
 object MLSegmentsGBTRegressor2 {
@@ -24,8 +26,8 @@ object MLSegmentsGBTRegressor2 {
 //                .option("sep", ";")
 //                .schema(csvSchema)
 //                .csv("/home/mdao/Downloads/segments.csv")
-//                    .filter(!(col("begin-evolution") === "-"))
-//                    .filter(!(col("end-evolution") === "-"))
+//                    .filter(!(col("begin-evolution") === evolutionNone))
+//                    .filter(!(col("end-evolution") === evolutionNone))
 
         val df1: DataFrame =
             ss.read
@@ -40,8 +42,8 @@ object MLSegmentsGBTRegressor2 {
               .csv("D:\\ws\\cryptos\\data\\segments\\trades-190129-from")
 
         val df = df1.union(df2)
-                  .filter(!(col("begin-evolution") === "-"))
-                  .filter(!(col("end-evolution") === "-"))
+                  .filter(!(col("begin-evolution") === evolutionNone))
+                  .filter(!(col("end-evolution") === evolutionNone))
 
         //        val df1: DataFrame =
         //            ss.read

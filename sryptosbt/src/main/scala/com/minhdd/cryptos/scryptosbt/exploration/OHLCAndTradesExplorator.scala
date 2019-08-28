@@ -2,25 +2,24 @@ package com.minhdd.cryptos.scryptosbt.exploration
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants
-import com.minhdd.cryptos.scryptosbt.constants.{BEFORE_SPLITS, dataDirectory}
+import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics, Timestamps}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 
-case class BeforeSplit(
+case class BeforeSplit( //représente l'élément juste avant le découpage en segments
                       datetime: Timestamp,
                       value: Double,
                       evolution: String,
                       variation: Double,
                       derive: Option[Double],
                       secondDerive: Option[Double],
-                      ohlc_value: Double,
-                      ohlc_volume: Double,
+                      ohlc_value: Option[Double],
+                      ohlc_volume: Option[Double],
                       volume: Double,
-                      count: BigInt,
+                      count: Option[Int],
                       importantChange: Option[Boolean])
 
 case class Segment (
@@ -56,8 +55,8 @@ object Segment {
             standardDeviationDerive = Statistics.standardDeviation(seq.flatMap(_.derive)),
             averageSecondDerive = Statistics.avg(seq.flatMap(_.secondDerive)),
             standardDeviationSecondDerive = Statistics.standardDeviation(seq.flatMap(_.secondDerive)),
-            averageCount = Statistics.avg(seq.map(_.count.toDouble)),
-            standardDeviationCount = Statistics.standardDeviation(seq.map(_.count.toDouble))
+            averageCount = Statistics.avg(seq.filter(_.count.isDefined).map(_.count.get.toDouble)),
+            standardDeviationCount = Statistics.standardDeviation(seq.filter(_.count.isDefined).map(_.count.get.toDouble))
         )
     }
     
@@ -74,7 +73,6 @@ object OHLCAndTradesExplorator {
     val numberOfMinutesBetweenTwoElement = 15
     val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15) // sampling every 15 minutes, 4 jours on one window
     val minDeltaValue = 150
-    val evolutionNullValue = "-"
     val datetime = "datetime"
     val volume = "volume"
     val ohlc_volume = "ohlc_volume"
@@ -143,7 +141,7 @@ object OHLCAndTradesExplorator {
               .withColumn(volume, col("cryptoValue.volume"))
               .withColumn(value, col("cryptoValue.value"))
               .select(datetime, value, volume)
-        val joined = sampledOhlcDataSet.join(sampledTradesDataSet, datetime)
+        val joined: DataFrame = sampledOhlcDataSet.join(sampledTradesDataSet, datetime)
 //        println(sampledOhlcDataSet.count())
 //        println(sampledTradesDataSet.count())
 //        println(joined.count())
@@ -164,9 +162,9 @@ object OHLCAndTradesExplorator {
         val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn(evolution,
             when(col("min") === col(value) && col(variation) > minDeltaValue, "down")
               .when(col("max") === col(value) && col(variation) > minDeltaValue, "up")
-              .otherwise(evolutionNullValue))
+              .otherwise(evolutionNone))
 
-        val binaryEvolution = when(col(evolution) === evolutionNullValue, false).otherwise(true)
+        val binaryEvolution = when(col(evolution) === evolutionNone, false).otherwise(true)
         val dfWithImportantChanges: DataFrame = dfWithEvolutionUpOrDown.withColumn(importantChange, binaryEvolution)
 
         val w = Window.orderBy(datetime, volume)
@@ -191,7 +189,7 @@ object OHLCAndTradesExplorator {
             dfWithSecondDerive.as[BeforeSplit].map(b => b.copy(datetime = new Timestamp(b.datetime.getTime * 1000))) 
         
         val beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]] = beforeSplits.mapPartitions(split)
-        beforeSplitsSeqDataset.write.parquet(outputDir+ s"\\${constants.BEFORE_SPLITS}") 
+        beforeSplitsSeqDataset.write.parquet(outputDir+ s"\\${beforesplits}") 
 //        val Array(trainingdf, crossValidationdf, testingdf) = beforeSplitsSeqDataset.randomSplit(Array(0.5, 0.2, 0.3), seed=42)
 //    
 //        val trainingSegments: DataFrame = expansion(ss, trainingdf)
@@ -270,8 +268,7 @@ object OHLCAndTradesExplorator {
     }
     
     def allSegments(ss: SparkSession, last: String, now: String): Unit = {
-        import constants.dataDirectory
-        val lastSegmentsDir = s"$dataDirectory\\segments\\$last\\$BEFORE_SPLITS"
+        val lastSegmentsDir = s"$dataDirectory\\segments\\$last\\$beforesplits"
         val afterLastSegmentDir = s"$dataDirectory\\segments\\$now"
         import ss.implicits._
         val allCalculatedSegments: Dataset[Seq[BeforeSplit]] = ss.read.parquet(lastSegmentsDir).as[Seq[BeforeSplit]]
@@ -284,8 +281,8 @@ object OHLCAndTradesExplorator {
             allTargetedSegments = allTargetedSegments,
             outputDir = afterLastSegmentDir)
     
-        val lastSegments: Dataset[Seq[BeforeSplit]] = ss.read.parquet(s"$dataDirectory\\segments\\$now\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
+        val lastSegments: Dataset[Seq[BeforeSplit]] = ss.read.parquet(s"$dataDirectory\\segments\\$now\\$beforesplits").as[Seq[BeforeSplit]]
         val finalDs = allTargetedSegments.union(lastSegments)
-        finalDs.write.parquet(s"$dataDirectory\\segments\\$now-fusion\\$BEFORE_SPLITS")
+        finalDs.write.parquet(s"$dataDirectory\\segments\\$now-fusion\\$beforesplits")
     }
 }

@@ -26,7 +26,7 @@ object Predictor {
         val ss: SparkSession = SparkSession.builder().appName("ml").master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("ERROR")
         val df: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS")
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$beforesplits")
         val someSegments: DataFrame = df.limit(3)
         Predictor.predictTheSegment(ss, s"$dataDirectory\\models\\models\\$modelDirectory", someSegments)
     }
@@ -36,7 +36,7 @@ object Predictor {
         ss.sparkContext.setLogLevel("ERROR")
         import ss.implicits._
         val df: Dataset[Seq[BeforeSplit]] =
-            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$BEFORE_SPLITS").as[Seq[BeforeSplit]]
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\$beforesplits").as[Seq[BeforeSplit]]
         
         val s: Array[Seq[BeforeSplit]] = df.collect().sortWith({case (a, b) => a.last.datetime.getTime < b.last.datetime.getTime})
         val headDateTimeAndLastDateTimeSeq: Array[(Timestamp, Timestamp, Option[Boolean])] = 
@@ -135,7 +135,7 @@ object Predictor {
     
     private def transformSegmentsWithModel(segmentsPath: String, ss: SparkSession) = {
         val segments: DataFrame =
-            ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$BEFORE_SPLITS")
+            ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$beforesplits")
         val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
         val segmentsWithRawPrediction: DataFrame = model.transform(segments)
         segmentsWithRawPrediction
@@ -164,7 +164,7 @@ object Predictor {
 //          .orderBy("ss")
 //          .show(100000,false)
 //        df.filter(unix_timestamp(col("begindt"))*1000 >= 1562131800000L).show(10000, false)
-        df.filter(col("endEvolution") === "-").show(10000, false)
+        df.filter(col("endEvolution") === evolutionNone).show(10000, false)
     }
     
     def main(args: Array[String]): Unit = {
