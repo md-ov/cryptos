@@ -1,8 +1,16 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
+import java.sql.Timestamp
+
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object Derivative {
+    
+    def deriveTs(seqTs: Seq[Timestamp], values: Seq[Double]): Seq[Double] = {
+        val seqTsDouble = seqTs.map(_.getTime.toDouble / 1000000D) // /1000 to have good derive values
+        derive(seqTsDouble, values)
+    }
+    
     def derive(i: Seq[Double], j: Seq[Double]): Seq[Double] = {
         i.indices.map(indice => {
             val x = i.apply(indice)

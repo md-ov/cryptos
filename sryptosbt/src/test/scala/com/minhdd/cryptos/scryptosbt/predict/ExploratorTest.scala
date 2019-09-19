@@ -5,6 +5,7 @@ import com.minhdd.cryptos.scryptosbt.exploration.Explorates
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue, Margin}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.scalatest.FunSuite
+import com.minhdd.cryptos.scryptosbt.constants.evolutionUp
 
 class ExploratorTest extends FunSuite {
     test("splitAnalyticsCryptos") {
@@ -43,7 +44,7 @@ class ExploratorTest extends FunSuite {
             numberOfStableDay = None,
             importantChange = Option(true),
             variation = None,
-            evolution = Option("up"))
+            evolution = Option(evolutionUp))
         
         val cryptoValue1Seq2 = CryptoValue(
             datetime = Timestamps.getTimestamp("2013-08-31", DateTimes.defaultFormat),

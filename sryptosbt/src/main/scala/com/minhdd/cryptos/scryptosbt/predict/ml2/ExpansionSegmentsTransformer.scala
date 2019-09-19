@@ -9,7 +9,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions.{col, when}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import com.minhdd.cryptos.scryptosbt.constants.evolutionNone
+import com.minhdd.cryptos.scryptosbt.constants.{evolutionNone, evolutionUp, evolutionDown}
 
 class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: StructType) extends Transformer{
     override def transform(ds: Dataset[_]): DataFrame = {
@@ -17,8 +17,8 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
         expansion(spark, ds.as[Seq[BeforeSplit]])
           .filter(!(col("beginEvolution") === evolutionNone))
           .withColumn("label",
-              when(col("endEvolution") === "up", 1)
-                .when(col("endEvolution") === "down", 0)
+              when(col("endEvolution") === evolutionUp, 1)
+                .when(col("endEvolution") === evolutionDown, 0)
                 .otherwise(-1))
     }
     

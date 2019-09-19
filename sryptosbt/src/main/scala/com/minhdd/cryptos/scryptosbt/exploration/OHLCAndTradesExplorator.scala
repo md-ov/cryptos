@@ -71,8 +71,6 @@ object Segment {
 }
 object OHLCAndTradesExplorator {
     val numberOfMinutesBetweenTwoElement = 15
-    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / 15) // sampling every 15 minutes, 4 jours on one window
-    val minDeltaValue = 150
     val datetime = "datetime"
     val volume = "volume"
     val ohlc_volume = "ohlc_volume"
@@ -160,8 +158,8 @@ object OHLCAndTradesExplorator {
 //          .show(100000,false)
         
         val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn(evolution,
-            when(col("min") === col(value) && col(variation) > minDeltaValue, "down")
-              .when(col("max") === col(value) && col(variation) > minDeltaValue, "up")
+            when(col("min") === col(value) && col(variation) > minDeltaValue, evolutionDown)
+              .when(col("max") === col(value) && col(variation) > minDeltaValue, evolutionUp)
               .otherwise(evolutionNone))
 
         val binaryEvolution = when(col(evolution) === evolutionNone, false).otherwise(true)

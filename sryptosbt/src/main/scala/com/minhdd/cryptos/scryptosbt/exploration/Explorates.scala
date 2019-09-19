@@ -41,12 +41,12 @@ object Explorates {
           .withColumn("variation", max(cryptoValueColumnName).over(window) - min(cryptoValueColumnName).over(window))
         
         val dfWithEvolutionUpOrDown = dfWithAnalyticsColumns.withColumn("evolution",
-            when(col("min") === col("value") && col("variation") > minDeltaValue, "down")
-              .when(col("max") === col("value") && col("variation") > minDeltaValue, "up")
+            when(col("min") === col("value") && col("variation") > minDeltaValue, evolutionDown)
+              .when(col("max") === col("value") && col("variation") > minDeltaValue, evolutionUp)
               .otherwise(evolutionNone))
         
         //          dfWithEvolutionUpOrDown.filter("evolution != '-'")
-        //          .filter(($"evolution" === "up" && $"derive" < 0) || ($"evolution" === "down" && $"derive" > 0))
+        //          .filter(($"evolution" === "up" && $"derive" < 0) || ($"evolution" === evolutionDown && $"derive" > 0))
         //          .select(datetimeColumnName, "value", "variation", "evolution", "analytics.derive")
         //          .show(1000, false)
         
@@ -127,7 +127,7 @@ object Explorates {
               "days", "pattern", "evolution", "numberOfSegment", "beginVariation", "endVariation", 
               "ecartTypeVariations")
             .withColumn("days-with-sign", 
-                when(col("evolution") === "up", col("days")).otherwise(col("days") * -1)
+                when(col("evolution") === evolutionUp, col("days")).otherwise(col("days") * -1)
             )
             .withColumn("cumdays", sum(col("days-with-sign")).over(window))
     

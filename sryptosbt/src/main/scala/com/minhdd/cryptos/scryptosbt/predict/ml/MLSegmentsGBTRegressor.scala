@@ -54,8 +54,8 @@ object MLSegmentsGBTRegressor {
         ///// begin of segment detection 
         
         val dfOfAll = dfWithoutBeginEvolutionNull.withColumn("label",
-                    when(col("end-evolution") === "up", 1)
-                    .when(col("end-evolution") === "down", 0)
+                    when(col("end-evolution") === evolutionUp, 1)
+                    .when(col("end-evolution") === evolutionDown, 0)
                     .otherwise(-1))
     
         val Array(trainDF, testDF) = dfOfAll.randomSplit(Array(0.7, 0.3), seed=42)
