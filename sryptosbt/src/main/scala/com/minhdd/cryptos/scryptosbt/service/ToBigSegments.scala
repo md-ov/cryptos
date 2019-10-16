@@ -29,18 +29,23 @@ object ToBigSegments {
         
         spark.sparkContext.setLogLevel("ERROR")
         
+        val ds = toBigSegmentsBetween2013and2016(spark, "2013")
+    
+        val smallSegments: Dataset[Seq[BeforeSplit]] = ds.flatMap(BigSegmentToSegment.get)(BeforeSplit.encoderSeq(spark))
+    }
+    
+    
+    def toBigSegmentsBetween2013and2016(spark: SparkSession, year: String): Dataset[Seq[BeforeSplit]] = {
         import spark.implicits._
-        
-        //        val trades: Dataset[Crypto] = tradesCryptoDs(spark).filter(_.partitionKey.year == "2013")
         val trades: Dataset[Crypto] = spark.createDataset(Seq[Crypto]())(Crypto.encoder(spark))
-        
-        val ohlcs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(_.partitionKey.year == "2013")
+        val ohlcs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(_.partitionKey.year == year)
         val joined: Dataset[KrakenCrypto] = SpacingSpreadingJoiner.join(spark, trades, ohlcs)
         val collected: Seq[KrakenCrypto] = joined.collect().toSeq
         val beforeSplits: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(collected)
         val bigSegments: Seq[Seq[BeforeSplit]] = Splitter.toBigSegments(beforeSplits)
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(bigSegments)(BeforeSplit.encoderSeq(spark))
         ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(100, true)
-        //        val segments: Dataset[Seq[BeforeSplit]] = ds.flatMap(BigSegmentToSegment.get)(BeforeSplit.encoderSeq(spark))
+        
+        ds
     }
 }
