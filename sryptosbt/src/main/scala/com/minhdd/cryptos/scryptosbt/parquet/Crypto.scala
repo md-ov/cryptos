@@ -84,6 +84,17 @@ object CryptoPartitionKey {
           "TRADES" 
         path
     }
+    
+    def getTRADESParquetPath(parquetsDir: String, asset: String, currency: String, year: String): String = {
+        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
+        val path: String = fullParquetDir +
+          asset.toUpperCase + separator +
+          currency.toUpperCase + separator +
+          "TRADES" + separator +
+          year
+        path
+    }
 }
 
 case class CryptoValue (
