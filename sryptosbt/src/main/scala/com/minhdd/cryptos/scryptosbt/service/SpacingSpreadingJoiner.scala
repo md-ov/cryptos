@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.service
 
 import java.sql.Timestamp
-
+import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
 import com.minhdd.cryptos.scryptosbt.domain.KrakenCrypto
 import com.minhdd.cryptos.scryptosbt.exploration.SamplerObj.adjustSecond
 import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
@@ -144,7 +144,7 @@ object SpacingSpreadingJoiner {
         }
     }
     
-    def spread(spark: SparkSession, spacedKrakenCryptos: Dataset[KrakenCrypto], numberOfMinutesBetweenTwoElement: Int): Dataset[KrakenCrypto] = {
+    def spread(spark: SparkSession, spacedKrakenCryptos: Dataset[KrakenCrypto]): Dataset[KrakenCrypto] = {
         val window = Window.orderBy("datetime")
         val cryptoSpreadContainers: Dataset[CryptoSpreadContainer] =
             spacedKrakenCryptos
@@ -155,14 +155,12 @@ object SpacingSpreadingJoiner {
         cryptoSpreadContainers.flatMap(fill(_, numberOfMinutesBetweenTwoElement))(KrakenCrypto.encoder(spark))
     }
     
-    def join(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto],
-             numberOfMinutesBetweenTwoElement: Int = 15): Dataset[KrakenCrypto] = {
-        val spacedKrakenCryptos: Dataset[KrakenCrypto] = space(spark, trades, ohlcs, numberOfMinutesBetweenTwoElement)
-        spread(spark, spacedKrakenCryptos, numberOfMinutesBetweenTwoElement)
+    def join(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): Dataset[KrakenCrypto] = {
+        val spacedKrakenCryptos: Dataset[KrakenCrypto] = space(spark, trades, ohlcs)
+        spread(spark, spacedKrakenCryptos)
     }
     
-    def space(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto],
-              numberOfMinutesBetweenTwoElement: Int = 15): Dataset[KrakenCrypto] = {
+    def space(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): Dataset[KrakenCrypto] = {
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
         
         def adjustTimestamp(ts: Timestamp): DateTime = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
