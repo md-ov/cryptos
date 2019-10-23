@@ -4,12 +4,11 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, KrakenCrypto}
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, collect_list, lead, struct}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 
 case class CryptoContainer(
                             timestamp: Timestamp,
@@ -55,11 +54,6 @@ object CryptoSpreadContainer {
 
 object SpacingSpreadingJoiner {
     
-    def getAdjustedDatetime(numberOfMinutesBetweenTwoElement: Int)(dateTime: DateTime): DateTime = {
-        val minutes = dateTime.getMinuteOfHour
-        val delta: Int = minutes % numberOfMinutesBetweenTwoElement
-        dateTime.minusMinutes(delta)
-    }
     
     def oneKrakenCrypto(timestamp: Timestamp, containersTrades: Seq[CryptoContainer], containersOhlcs: Seq[CryptoContainer]): KrakenCrypto = {
         
@@ -136,7 +130,7 @@ object SpacingSpreadingJoiner {
     def fill(cryptoSpreadContainer: CryptoSpreadContainer, numberOfMinutesBetweenTwoElement: Int): Seq[KrakenCrypto] = {
         if (cryptoSpreadContainer.next == null) Seq(cryptoSpreadContainer.toKrakenCrypto) else {
             val tss: Seq[Timestamp] =
-                DateTimes.getTimestamps(
+                DateTimeHelper.getTimestamps(
                     cryptoSpreadContainer.timestamp,
                     cryptoSpreadContainer.next,
                     numberOfMinutesBetweenTwoElement)
@@ -161,14 +155,11 @@ object SpacingSpreadingJoiner {
     }
     
     def space(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): Dataset[KrakenCrypto] = {
-        val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
-        
-        def adjustTimestamp(ts: Timestamp): DateTime = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
         
         def toContainers(cryptos: Dataset[Crypto], api: String): Dataset[CryptoContainer] = {
             cryptos.map(crypto =>
                 CryptoContainer(
-                    timestamp = Timestamps.fromDatetime(adjustTimestamp(crypto.cryptoValue.datetime)),
+                    timestamp = crypto.cryptoValue.datetime.adjusted,
                     api = api,
                     partitionKey = crypto.partitionKey,
                     cryptoValue = crypto.cryptoValue,
@@ -202,11 +193,6 @@ object SpacingSpreadingJoiner {
         })(KrakenCrypto.encoder(spark))
         
         spacedKrakenCryptos
-    }
-    
-    private def adjustSecond(dt: DateTime): DateTime = {
-        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm'Z'")
-        DateTime.parse(formatter.print(dt), formatter)
     }
     
 }

@@ -2,15 +2,15 @@ package com.minhdd.cryptos.scryptosbt.parquet
 
 import org.scalatest.FunSuite
 import ToParquetsFromCSV._
-import com.minhdd.cryptos.scryptosbt.tools.DateTimes
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 
 class ToParquetsFromCSVTest extends FunSuite {
 
     
     test("date before after") {
-        assert(DateTimes.toDate("2017-08-05").before(DateTimes.toDate("2017-08-06")))
-        assert(DateTimes.toDate("2017-08-06").after(DateTimes.toDate("2017-08-05")))
-        assert(!DateTimes.toDate("2017-08-06").after(DateTimes.toDate("2017-08-06")))
+        assert(DateTimeHelper.toDate("2017-08-05").before(DateTimeHelper.toDate("2017-08-06")))
+        assert(DateTimeHelper.toDate("2017-08-06").after(DateTimeHelper.toDate("2017-08-05")))
+        assert(!DateTimeHelper.toDate("2017-08-06").after(DateTimeHelper.toDate("2017-08-06")))
     }
 
     test("nextSmallerDate") {

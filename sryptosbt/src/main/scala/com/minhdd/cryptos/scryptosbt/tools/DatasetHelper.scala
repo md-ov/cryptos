@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.tools
 import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.Dataset
 
-object Datasets {
+object DatasetHelper {
     
     def union(ds1: Option[Dataset[Crypto]], ds2: Option[Dataset[Crypto]]): Option[Dataset[Crypto]] = {
         if (ds1.isEmpty && ds2.isEmpty) None

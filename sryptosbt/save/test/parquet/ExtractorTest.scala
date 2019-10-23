@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, Margin}
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 
@@ -27,7 +27,7 @@ class ExtractorTest extends FunSuite {
     
         assert(extractedCrypto.partitionKey == key)
         assert(extractedCrypto.cryptoValue == CryptoValue(
-            datetime = Timestamps.getTimestamp("2018-08-29", DateTimes.defaultFormat),
+            datetime = TimestampHelper.getTimestamp("2018-08-29", DateTimeHelper.defaultFormat),
             value = 0.19770672916666657,
             volume = 0,
             margin = Some(Margin(0.203491, 0.192397))

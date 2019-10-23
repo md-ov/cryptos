@@ -1,7 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, Margin}
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object Extractor {
@@ -24,12 +24,12 @@ object Extractor {
         Crypto(
             partitionKey = CryptoPartitionKey.fusion(keys),
             cryptoValue = CryptoValue(
-                datetime = Timestamps.getTimestamp(d, DateTimes.defaultFormat),
+                datetime = TimestampHelper.getTimestamp(d, DateTimeHelper.defaultFormat),
                 value = averageValue,
                 volume = volume,
                 margin = Some(Margin(maxValue, minValue))
             ),
-            processingDt = Timestamps.now,
+            processingDt = TimestampHelper.now,
             count = None,
             tradeMode = None,
             prediction = None

@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.tools.Sparks
+import com.minhdd.cryptos.scryptosbt.tools.SparkHelper
 import com.minhdd.cryptos.scryptosbt.CSVFromParquet
 import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -23,7 +23,7 @@ object CSVFromParquetObj {
         val ds: Dataset[Crypto] = ss.read.parquet(args.parquetPath).as[Crypto]
         ds.toDF().show(false)
     
-        Sparks.csvFromDSCrypto(ss, args.csvpath, ds)
+        SparkHelper.csvFromDSCrypto(ss, args.csvpath, ds)
     
         "status|SUCCESS"
     }

@@ -3,99 +3,72 @@ package com.minhdd.cryptos.scryptosbt.service
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto, Segment}
-import com.minhdd.cryptos.scryptosbt.tools.{Derivative, SeqDoubleHelper}
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto}
+import com.minhdd.cryptos.scryptosbt.tools.Derivative
+import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 
 object SegmentsCalculator {
-    
-    def get(krakenCryptos: Seq[KrakenCrypto]): Seq[Segment] = {
-        toSegments(toBeforeSplits(krakenCryptos))
-    }
-    
-    def toSegments(beforeSplits: Seq[BeforeSplit]): Seq[Segment] = {
-        val splits = split(beforeSplits)
-        splits.map(beforeSplits => Segment(beforeSplits, beforeSplits.last))
-    }
-    
-
     
     def toBeforeSplits(krakenCryptos: Seq[KrakenCrypto]): Seq[BeforeSplit] = {
         if (krakenCryptos.isEmpty) {
             Seq()
         } else if (krakenCryptos.length == 1) {
-            val krakenCrypto = krakenCryptos.head
-            val beforeSplit = BeforeSplit(
-                datetime = krakenCrypto.datetime,
-                value = krakenCrypto.value,
-                evolution = evolutionNone,
-                variation = 0D,
-                derive = Some(0D),
-                secondDerive = Some(0),
-                ohlc_value = krakenCrypto.ohlcValue,
-                ohlc_volume = krakenCrypto.ohlcVolume,
-                volume = krakenCrypto.volume,
-                count = krakenCrypto.count,
-                importantChange = None)
-            Seq(beforeSplit)
+            Seq(BeforeSplit(krakenCryptos.head))
         } else {
             val sortedKrakenCryptos: Seq[KrakenCrypto] = krakenCryptos.sortWith((k1, k2) => k1.datetime.before(k2.datetime))
-            val seqTimestamp: Seq[Timestamp] = sortedKrakenCryptos.map(_.datetime)
-            val seqValues: Seq[Double] = sortedKrakenCryptos.map(_.value)
-            val premierDerives: Seq[Double] = Derivative.deriveTs(seqTimestamp, seqValues)
-            val secondDerives: Seq[Double] = Derivative.deriveTs(seqTimestamp, premierDerives)
-            val seqMaxPosition: Seq[Int] =
-                SeqDoubleHelper.getMaxFast(seqValues, numberOfCryptoOnOneWindow/2, numberOfCryptoOnOneWindow/2)
-            val seqMinPosition: Seq[Int] =
-                SeqDoubleHelper.getMinFast(seqValues, numberOfCryptoOnOneWindow/2, numberOfCryptoOnOneWindow/2)
-            val seqVariation: Seq[Double] = getVariations(seqValues, seqMaxPosition, seqMinPosition)
-            val seqExtremum: Seq[Boolean] = getExtremums(seqValues, seqMaxPosition, seqMinPosition)
-            val seqImportantChange: Seq[Boolean] = getImportantChanges(seqValues, seqExtremum, seqVariation)
-            val seqEvolution: Seq[String] = getEvolutions(seqImportantChange, seqMaxPosition, seqMinPosition)
-    
+            val timestamps: Seq[Timestamp] = sortedKrakenCryptos.map(_.datetime)
+            val values: Seq[Double] = sortedKrakenCryptos.map(_.value)
+            val premierDerives: Seq[Double] = Derivative.deriveTs(timestamps, values)
+            val secondDerives: Seq[Double] = Derivative.deriveTs(timestamps, premierDerives)
+            val maxIndices: Seq[Int] = values.getMaxFast(numberOfCryptoOnOneWindow / 2, numberOfCryptoOnOneWindow / 2)
+            val minIndices: Seq[Int] = values.getMinFast(numberOfCryptoOnOneWindow / 2, numberOfCryptoOnOneWindow / 2)
+            val variations: Seq[Double] = getVariations(values, maxIndices, minIndices)
+            val isExtremums: Seq[Boolean] = getIsExtremums(values, maxIndices, minIndices)
+            val importantChanges: Seq[Boolean] = getImportantChanges(values, isExtremums, variations)
+            val seqEvolution: Seq[String] = getEvolutions(importantChanges, maxIndices, minIndices)
+            
             sortedKrakenCryptos.indices.map(i => BeforeSplit(
-                datetime = seqTimestamp.apply(i),
-                value = seqValues.apply(i),
+                datetime = timestamps.apply(i),
+                value = values.apply(i),
                 evolution = seqEvolution.apply(i),
-                variation = seqVariation.apply(i),
+                variation = variations.apply(i),
                 derive = Option(premierDerives.apply(i)),
                 secondDerive = Option(secondDerives.apply(i)),
                 ohlc_value = sortedKrakenCryptos.apply(i).ohlcValue,
                 ohlc_volume = sortedKrakenCryptos.apply(i).ohlcVolume,
                 volume = sortedKrakenCryptos.apply(i).volume,
                 count = sortedKrakenCryptos.apply(i).count,
-                importantChange = Option(seqImportantChange.apply(i))
+                importantChange = Option(importantChanges.apply(i))
             ))
         }
     }
     
-    def getVariations(seqValues: Seq[Double], seqMaxPosition: Seq[Int], seqMinPosition: Seq[Int]): Seq[Double] = {
-        val indices = seqValues.indices
-
-        indices.map(i => {
-            val maxPosition: Int = seqMaxPosition.apply(i)
-            val minPosition: Int = seqMinPosition.apply(i)
+    private def getVariations(values: Seq[Double], maxIndices: Seq[Int], minIndices: Seq[Int]): Seq[Double] = {
+        values.indices.map(i => {
+            val maxPosition: Int = maxIndices.apply(i)
+            val minPosition: Int = minIndices.apply(i)
             if (minPosition <= maxPosition) {
-                seqValues(maxPosition) - seqValues(minPosition)
+                values(maxPosition) - values(minPosition)
             } else {
-                seqValues(minPosition) - seqValues(maxPosition)
+                values(minPosition) - values(maxPosition)
             }
         })
     }
     
-    def getExtremums(seqValues: Seq[Double], seqMaxPosition: Seq[Int], seqMinPosition: Seq[Int]): Seq[Boolean] = {
-        seqValues.indices.map(i => seqMaxPosition(i) == i || seqMinPosition(i) == i)
+    private def getIsExtremums(values: Seq[Double], maxIndices: Seq[Int], minIndices: Seq[Int]): Seq[Boolean] = {
+        values.indices.map(i => maxIndices(i) == i || minIndices(i) == i)
     }
     
-    def getEvolutions(seqImportantChange: Seq[Boolean], seqMaxPosition: Seq[Int], seqMinPosition: Seq[Int]): Seq[String] = {
-        if (seqImportantChange.length < 2) {
-            seqImportantChange.map(_ => evolutionNone)
+    private def getEvolutions(importantChanges: Seq[Boolean], maxIndices: Seq[Int], minPositions: Seq[Int]): Seq[String] = {
+        if (importantChanges.length < 2) {
+            importantChanges.map(_ => evolutionNone)
         } else {
-            seqImportantChange.indices.map(i => {
+            importantChanges.indices.map(i => {
                 if (i == 0) {
                     evolutionNone
-                } else if (seqImportantChange(i) && seqMaxPosition(i) == i) {
+                } else if (importantChanges(i) && maxIndices(i) == i) {
                     evolutionUp
-                } else if (seqImportantChange(i) && seqMinPosition(i) == i) {
+                } else if (importantChanges(i) && minPositions(i) == i) {
                     evolutionDown
                 } else {
                     evolutionNone
@@ -104,14 +77,14 @@ object SegmentsCalculator {
         }
     }
     
-    def getImportantChanges(seqValues:Seq[Double], seqExtremum: Seq[Boolean], seqVariation: Seq[Double]): Seq[Boolean] = {
-        seqExtremum.indices.map(i => seqExtremum(i) && math.abs(seqVariation(i)/seqValues(i)) > relativeMinDelta)
+    private def getImportantChanges(values: Seq[Double], isExtremums: Seq[Boolean], variations: Seq[Double]): Seq[Boolean] = {
+        isExtremums.indices.map(i => isExtremums(i) && math.abs(variations(i) / values(i)) > relativeMinDelta)
     }
     
     private def split(beforeSplits: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
         if (beforeSplits.isEmpty) {
             Seq()
-        } else if (beforeSplits.size <= 2 ) {
+        } else if (beforeSplits.size <= 2) {
             Seq(beforeSplits)
         } else {
             ???
@@ -122,7 +95,9 @@ object SegmentsCalculator {
         if (iterator.hasNext) {
             new Iterator[Seq[BeforeSplit]] {
                 var last: BeforeSplit = iterator.next
+                
                 override def hasNext: Boolean = iterator.hasNext
+                
                 override def next(): Seq[BeforeSplit] = {
                     var nextSeq: Seq[BeforeSplit] = Seq(last)
                     var cut = false

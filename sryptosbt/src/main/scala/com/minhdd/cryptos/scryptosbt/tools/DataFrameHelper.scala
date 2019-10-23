@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.tools
 
 import org.apache.spark.sql.DataFrame
 
-object DataFrames {
+object DataFrameHelper {
     def derive(df: DataFrame, yColumn: String, xColumn: String, newCol: String): DataFrame = {
         import org.apache.spark.sql.expressions.Window
         val window = Window.orderBy(xColumn)

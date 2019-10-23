@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.Sampler
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.parquet.{CryptoPartitionKey, CryptoValue}
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, SparkHelper, TimestampHelper}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
@@ -21,13 +21,13 @@ object SamplerObj {
         
         val first = cryptos.head
         val count = cryptos.size
-        if (count == 1) first.copy(processingDt = Timestamps.now) else {
+        if (count == 1) first.copy(processingDt = TimestampHelper.now) else {
             val cryptoValue: CryptoValue = cryptos.map(_.cryptoValue).sortWith(_.value > _.value).apply(count / 2)
             first.copy(
                 cryptoValue = cryptoValue.copy(volume = totalVolume), 
                 tradeMode = None,
                 count = Option(allCount), 
-                processingDt = Timestamps.now)
+                processingDt = TimestampHelper.now)
         }
     }
     def toSeparate(deltaValue: Double)(first: Crypto, last: Crypto, next: Crypto): Boolean = {
@@ -49,7 +49,7 @@ object SamplerObj {
             println(dsget.count())
             val seperatedCryptos: Dataset[Crypto] = seperate(toSeparate(args.delta), oneCrypto, dsget, ss)
             println(seperatedCryptos.count())
-            Sparks.csvFromDSCrypto(ss, args.csvpath, seperatedCryptos)
+            SparkHelper.csvFromDSCrypto(ss, args.csvpath, seperatedCryptos)
         }
     }
     
@@ -107,7 +107,7 @@ object SamplerObj {
     
     def fill(crypto: Crypto, datetime: Timestamp, nextdt: Timestamp, numberOfMinutesBetweenTwoElement: Int): Seq[Crypto] = {
         if (nextdt == null) Seq(crypto) else {
-            val tss: Seq[Timestamp] = DateTimes.getTimestamps(datetime, nextdt, numberOfMinutesBetweenTwoElement)
+            val tss: Seq[Timestamp] = DateTimeHelper.getTimestamps(datetime, nextdt, numberOfMinutesBetweenTwoElement)
             val cryptoValue = crypto.cryptoValue
             tss.map(ts => crypto.copy(cryptoValue = cryptoValue.copy(datetime = ts)))
         }
@@ -123,13 +123,13 @@ object SamplerObj {
         val adjustDatetime: DateTime => DateTime = getAdjustedDatetime(numberOfMinutesBetweenTwoElement)
         //        val adjustedNow: DateTime = adjustDatetime(DateTime.now())
         
-        def adjustTimestamp(ts: Timestamp): DateTime = adjustSecond(adjustDatetime(DateTimes.fromTimestamp(ts)))
+        def adjustTimestamp(ts: Timestamp): DateTime = adjustSecond(adjustDatetime(DateTimeHelper.getDateTime(ts)))
         import ss.implicits._
     
         val groupedAndTransformed: RDD[Crypto] =
             ds.rdd.map(c => (adjustTimestamp(c.cryptoValue.datetime), c))
               .groupByKey().mapValues(g => oneCrypto(g.toSeq))
-              .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = Timestamps.fromDatetime(dt)))}
+              .map{case (dt, c) => c.copy(cryptoValue = c.cryptoValue.copy(datetime = TimestampHelper.fromDatetime(dt)))}
     
     
         ///// dedup

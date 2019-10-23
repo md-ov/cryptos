@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.exploration
 
 import com.minhdd.cryptos.scryptosbt.domain.{AnalyticsCrypto, AnalyticsSegment, Crypto, RegularSegment}
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrameHelper, SparkHelper}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, when}
 import org.apache.spark.sql.types.{BooleanType, DataType, LongType, StructField, StructType}
@@ -58,14 +58,14 @@ object Explorates {
         val dfWithNumberOfStableDay: DataFrame = dfWithImportantChanges
           .withColumn(numberOfStableDayColumnName, customSum(binaryEvolution).over(w))
         
-        val dfWithDerive = DataFrames.derive(
+        val dfWithDerive = DataFrameHelper.derive(
             df = dfWithNumberOfStableDay,
             yColumn = cryptoValueColumnName,
             xColumn = datetime,
             newCol = "derive")
         
         val dfWithSecondDerive: DataFrame =
-            DataFrames.derive(
+            DataFrameHelper.derive(
                 df = dfWithDerive,
                 yColumn = "derive",
                 xColumn = datetime,
@@ -104,7 +104,7 @@ object Explorates {
                   "standardDeviationVolume",
                   "sameEvolution", "numberOfElement")
         
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\segments\\" + outputDir, segmentsDF)
+        SparkHelper.csvFromDataframe("D:\\ws\\cryptos\\data\\segments\\" + outputDir, segmentsDF)
         
         val numberOfPartition: Int = analyticsCrypto.rdd.getNumPartitions
         println(numberOfPartition)
@@ -130,7 +130,7 @@ object Explorates {
             )
             .withColumn("cumdays", sum(col("days-with-sign")).over(window))
     
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\trends\\" + outputDir, regularTrends)
+        SparkHelper.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\trends\\" + outputDir, regularTrends)
     }
     
     def printAnalyticsCrypto(analyticsCrypto: Dataset[AnalyticsCrypto], outputDir: String) = {
@@ -141,7 +141,7 @@ object Explorates {
         //          .filter($"importantChange" === true)
         //              .filter($"numberOfStableDay" !== 0)
         //              .show(10000, false)
-        Sparks.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\evolutions\\" + outputDir, selectedAnalytics)
+        SparkHelper.csvFromDataframe("D:\\ws\\cryptos\\data\\csv\\evolutions\\" + outputDir, selectedAnalytics)
     }
     
     def splitAnalyticsCryptos(iterator: Iterator[AnalyticsCrypto]): Iterator[Seq[AnalyticsCrypto]] = {

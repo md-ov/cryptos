@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.domain.Crypto.encoder
-import com.minhdd.cryptos.scryptosbt.tools.{Files, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{FileHelper, TimestampHelper}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
@@ -40,7 +40,7 @@ class CryptoTest extends FunSuite {
         
         val ds = Crypto.getPartitionsUniFromPathFromLastTimestamp(
             ss, "file:///", "src//test//resources//parquets", "parquets", "src//test//resources//parquets//parquet",
-            Timestamps.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
+            TimestampHelper.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             CryptoPartitionKey(
                 asset = "XBT",
                 currency = "EUR",
@@ -67,10 +67,10 @@ class CryptoTest extends FunSuite {
           .appName("test")
           .master("local[*]").getOrCreate()
         ss.sparkContext.setLogLevel("WARN")
-        val c = ss.read.parquet(Files.getPathForSpark
+        val c = ss.read.parquet(FileHelper.getPathForSpark
         ("parquets/XBT/EUR/TRADES/2019/04/29/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
         assert(c.count() == 18127)
-        val d = ss.read.parquet(Files.getPathForSpark
+        val d = ss.read.parquet(FileHelper.getPathForSpark
         ("parquets/XBT/EUR/TRADES/2019/04/30/KRAKEN/TRADES/parquet")).as[Crypto](encoder(ss))
         assert(d.count() == 19838)
     }

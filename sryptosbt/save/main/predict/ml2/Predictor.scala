@@ -6,7 +6,7 @@ import com.minhdd.cryptos.scryptosbt.Predict
 import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2.{label, predict, prediction}
-import com.minhdd.cryptos.scryptosbt.tools.Models
+import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -71,7 +71,7 @@ object Predictor {
     
     def predictTheSegment(ss: SparkSession, modelPath: String, segments: DataFrame): String = {
         import ml2.{prediction, predict}
-        val model: CrossValidatorModel = Models.getModel(ss, modelPath)
+        val model: CrossValidatorModel = ModelHelper.getModel(ss, modelPath)
         val segmentsWithRawPrediction = model.transform(segments)
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
@@ -136,7 +136,7 @@ object Predictor {
     private def transformSegmentsWithModel(segmentsPath: String, ss: SparkSession) = {
         val segments: DataFrame =
             ss.read.parquet(s"$dataDirectory\\segments\\$segmentsPath\\$beforesplits")
-        val model: CrossValidatorModel = Models.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
+        val model: CrossValidatorModel = ModelHelper.getModel(ss, s"$dataDirectory\\models\\models\\$modelDirectory")
         val segmentsWithRawPrediction: DataFrame = model.transform(segments)
         segmentsWithRawPrediction
     }

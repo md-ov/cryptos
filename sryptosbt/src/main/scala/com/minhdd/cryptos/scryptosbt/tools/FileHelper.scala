@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.domain.CryptoPartitionKey
 
 import scala.io.{BufferedSource, Source}
 
-object Files {
+object FileHelper {
     def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
         val d = new File(path)
         getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false, false).map(_.getAbsolutePath).filter(_
@@ -21,7 +21,7 @@ object Files {
             Seq()
         } else {
             val directoryName = directory.getName
-            val directoryNameInt = Numbers.fromStringToInt(directoryName)
+            val directoryNameInt = NumberHelper.fromStringToInt(directoryName)
             if (directoryName == "parquet") {
                 Seq(directory)
             } else {

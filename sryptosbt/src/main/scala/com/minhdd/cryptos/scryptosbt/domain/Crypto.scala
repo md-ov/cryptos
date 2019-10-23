@@ -2,7 +2,8 @@ package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Numbers, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 import scala.util.{Failure, Try}
@@ -27,7 +28,7 @@ case class CryptoPartitionKey (
         path
     }
     
-    def date(): String = DateTimes.getDate(year, month, day)
+    def date(): String = DateTimeHelper.getDate(year, month, day)
     
     def getPartitionPath(parquetsDir: String) = {
         val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
@@ -125,19 +126,19 @@ object Crypto {
         val value: String = splits.apply(timestampPosition+1)
         val volume: String = splits.apply(timestampPosition+6)
         val count: String = splits.apply(timestampPosition+7)
-        val ts: Timestamps = Timestamps(splits.apply(timestampPosition).toLong*1000)
+        val ts: TimestampHelper = TimestampHelper(splits.apply(timestampPosition).toLong*1000)
         val partitionKey = CryptoPartitionKey(
             asset = asset.toUpperCase,
             currency = currency.toUpperCase,
             provider = provider.toUpperCase,
             api = "OHLC",
-            year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
+            year = ts.getYear, month = ts.getMonth, day = ts.getDay
         )
-        val processingDt: Timestamp = Timestamps.now
+        val processingDt: Timestamp = TimestampHelper.now
         val cryptoValue = CryptoValue(
             datetime = ts.timestamp,
-            value = Numbers.toDouble(value),
-            volume = Numbers.toDouble(volume),
+            value = value.toDouble,
+            volume = volume.toDouble,
             margin = None
         )
         Seq(Crypto(
@@ -156,20 +157,20 @@ object Crypto {
         val provider: String = splits.apply(2)
         val value: String = splits.apply(5)
         val volume: String = splits.apply(6)
-        val ts: Timestamps = Timestamps((splits.apply(7).toDouble*1000).toLong)
+        val ts: TimestampHelper = TimestampHelper((splits.apply(7).toDouble*1000).toLong)
         val tradeMode: String = splits.apply(8)
         val partitionKey = CryptoPartitionKey(
             asset = asset.toUpperCase,
             currency = currency.toUpperCase,
             provider = provider.toUpperCase,
             api = "TRADES",
-            year = ts.getYearString, month = ts.getMonthString, day = ts.getDayString
+            year = ts.getYear, month = ts.getMonth, day = ts.getDay
         )
-        val processingDt = Timestamps.now
+        val processingDt = TimestampHelper.now
         val cryptoValue = CryptoValue(
             datetime = ts.timestamp,
-            value = Numbers.toDouble(value),
-            volume = Numbers.toDouble(volume),
+            value = value.toDouble,
+            volume = volume.toDouble,
             margin = None
         )
         Seq(Crypto(
@@ -200,9 +201,9 @@ object Crypto {
     }
     
     def getPartitionsUniFromPath(ss: SparkSession, prefix: String, path: String): Option[Dataset[Crypto]] = {
-        import com.minhdd.cryptos.scryptosbt.tools.Files
+        import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
-            val allPartitionsPath: Seq[String] = Files.getAllDir(path)
+            val allPartitionsPath: Seq[String] = FileHelper.getAllDir(path)
             val allPaths = allPartitionsPath.map(prefix + _)
 //            allPaths.foreach(println)
             allPaths.map(ss.read.parquet(_).as[Crypto](encoder(ss))).reduce(_.union(_))
@@ -212,13 +213,13 @@ object Crypto {
     def getPartitionsUniFromPathFromLastTimestamp(ss: SparkSession, prefix: String, path1: String,
                                                   path2: String, todayPath: String, ts: Timestamp, 
                                                   lastCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
-        import com.minhdd.cryptos.scryptosbt.tools.Files
+        import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
             val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
-            val allPaths: Seq[String] = Files.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
+            val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
             val dsFromLastTimestampDay: Dataset[Crypto] = 
-                ss.read.parquet(Files.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(ss))
-            val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
+                ss.read.parquet(FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(ss))
+            val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(_.cryptoValue.datetime.afterOrSame(ts))
             (allPaths :+ todayPath).foreach(println)
             (allPaths :+ todayPath)
               .map(ss.read.parquet(_).as[Crypto](encoder(ss)))
@@ -231,7 +232,7 @@ object Crypto {
     def getPartitionFromPathFromLastTimestamp(ss: SparkSession, path: String, ts: Timestamp)
     : Option[Dataset[Crypto]] = {
         Try {
-            ss.read.parquet(path).as[Crypto](encoder(ss)).filter(c => Timestamps.afterOrSame(ts, c.cryptoValue.datetime))
+            ss.read.parquet(path).as[Crypto](encoder(ss)).filter(_.cryptoValue.datetime.afterOrSame(ts))
         }.mapException(e => new Exception("path is not a parquet", e)).toOption
     }
     

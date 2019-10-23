@@ -11,7 +11,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import com.minhdd.cryptos.scryptosbt.predict.ml2.ml2._
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.tools.Timestamps
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 
 object MLSegmentsGBTRegressor {
     
@@ -19,7 +19,7 @@ object MLSegmentsGBTRegressor {
     val absolute_predict = "absolute_predict"
     
     def main(args: Array[String]): Unit = {
-        val ts1 = Timestamps.now
+        val ts1 = TimestampHelper.now
         println("begin : "  + ts1)
         
         val evaluator = new RegressionEvaluator().setLabelCol("label").setPredictionCol("prediction")
@@ -101,7 +101,7 @@ object MLSegmentsGBTRegressor {
 //        finalBinaryResults.groupBy(label, predict).count().show(false)
     
     
-        val ts2: Timestamp = Timestamps.now
+        val ts2: Timestamp = TimestampHelper.now
         println("fin : " + ts2)
         println(ts2.getTime - ts1.getTime)
     }

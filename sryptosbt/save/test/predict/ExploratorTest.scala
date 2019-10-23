@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.predict
 import com.minhdd.cryptos.scryptosbt.domain.{Analytics, AnalyticsCrypto, Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.exploration.Explorates
 import com.minhdd.cryptos.scryptosbt.parquet.{CryptoPartitionKey, CryptoValue, Margin}
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.scalatest.FunSuite
 import com.minhdd.cryptos.scryptosbt.constants.evolutionUp
 
@@ -11,7 +11,7 @@ class ExploratorTest extends FunSuite {
     test("splitAnalyticsCryptos") {
         val partitionKey = CryptoPartitionKey("", "", "","","","","")
         val cryptoValue1 = CryptoValue(
-            datetime = Timestamps.getTimestamp("2013-08-28", DateTimes.defaultFormat),
+            datetime = TimestampHelper.getTimestamp("2013-08-28", DateTimeHelper.defaultFormat),
             value = 97,
             volume = 0,
             margin = None
@@ -21,7 +21,7 @@ class ExploratorTest extends FunSuite {
             cryptoValue = cryptoValue1,
             tradeMode = None,
             count = None,
-            processingDt = Timestamps.now,
+            processingDt = TimestampHelper.now,
             prediction = None)
         
         val analytics = Analytics(
@@ -33,9 +33,9 @@ class ExploratorTest extends FunSuite {
             evolution = None)
         
         val analyticsCrypto1 = AnalyticsCrypto(crypto, analytics)
-        val cryptoValue2 = cryptoValue1.copy(datetime = Timestamps.getTimestamp("2013-08-29", DateTimes.defaultFormat))
+        val cryptoValue2 = cryptoValue1.copy(datetime = TimestampHelper.getTimestamp("2013-08-29", DateTimeHelper.defaultFormat))
         val analyticsCrypto2 = AnalyticsCrypto(crypto.copy(cryptoValue = cryptoValue2), analytics)
-        val cryptoValue3 = cryptoValue1.copy(datetime = Timestamps.getTimestamp("2013-08-30", DateTimes.defaultFormat))
+        val cryptoValue3 = cryptoValue1.copy(datetime = TimestampHelper.getTimestamp("2013-08-30", DateTimeHelper.defaultFormat))
         val analyticsCrypto3 = AnalyticsCrypto(crypto.copy(cryptoValue = cryptoValue3), analytics)
     
         val analyticsSeq2 = Analytics(
@@ -47,21 +47,21 @@ class ExploratorTest extends FunSuite {
             evolution = Option(evolutionUp))
         
         val cryptoValue1Seq2 = CryptoValue(
-            datetime = Timestamps.getTimestamp("2013-08-31", DateTimes.defaultFormat),
+            datetime = TimestampHelper.getTimestamp("2013-08-31", DateTimeHelper.defaultFormat),
             value = 468,
             volume = 0,
             margin = None
         )
         
         val cryptoValue2Seq2 = CryptoValue(
-            datetime = Timestamps.getTimestamp("2013-09-01", DateTimes.defaultFormat),
+            datetime = TimestampHelper.getTimestamp("2013-09-01", DateTimeHelper.defaultFormat),
             value = 468,
             volume = 0,
             margin = None
         )
     
         val cryptoValue3Seq2 = CryptoValue(
-            datetime = Timestamps.getTimestamp("2013-09-02", DateTimes.defaultFormat),
+            datetime = TimestampHelper.getTimestamp("2013-09-02", DateTimeHelper.defaultFormat),
             value = 468,
             volume = 0,
             margin = None

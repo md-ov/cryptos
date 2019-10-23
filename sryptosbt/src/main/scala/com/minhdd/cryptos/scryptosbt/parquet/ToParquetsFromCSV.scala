@@ -6,9 +6,9 @@ import java.util.Date
 import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.domain.Crypto.getPartitionFromPath
-import com.minhdd.cryptos.scryptosbt.tools.DateTimes
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
-import com.minhdd.cryptos.scryptosbt.tools.Files.firstLine
+import com.minhdd.cryptos.scryptosbt.tools.FileHelper.firstLine
 
 object ToParquetsFromCSV {
     
@@ -79,11 +79,11 @@ object ToParquetsFromCSV {
             date
         } else {
             val first: String = orderedDates.head
-            val toCheckDate: Date = DateTimes.toDate(date)
-            if (date == first || toCheckDate.before(DateTimes.toDate(first))) {
+            val toCheckDate: Date = DateTimeHelper.toDate(date)
+            if (date == first || toCheckDate.before(DateTimeHelper.toDate(first))) {
                 first
             } else {
-                orderedDates.takeWhile(DateTimes.toDate(_).before(toCheckDate)).last
+                orderedDates.takeWhile(DateTimeHelper.toDate(_).before(toCheckDate)).last
             }
         }
     }
@@ -93,17 +93,17 @@ object ToParquetsFromCSV {
         val firstDate: String = firstKey.date()
         val lastDate: String = orderedDatasets.last._1.date()
     
-        val dates: Seq[String] = DateTimes.getDates(firstDate, lastDate)
+        val dates: Seq[String] = DateTimeHelper.getDates(firstDate, lastDate)
         dates.map(date => firstKey.copy(
-            year = DateTimes.getYear(date),
-            month = DateTimes.getMonth(date),
-            day = DateTimes.getDay(date)))
+            year = DateTimeHelper.getYear(date),
+            month = DateTimeHelper.getMonth(date),
+            day = DateTimeHelper.getDay(date)))
     }
     
     def dateBetween(min: String, toCheck: String, max: String): Boolean = {
         toCheck == max || (
-          DateTimes.toDate(toCheck).before(DateTimes.toDate(max)) &&
-            DateTimes.toDate(min).before(DateTimes.toDate(toCheck))
+          DateTimeHelper.toDate(toCheck).before(DateTimeHelper.toDate(max)) &&
+            DateTimeHelper.toDate(min).before(DateTimeHelper.toDate(toCheck))
           )
     }
     

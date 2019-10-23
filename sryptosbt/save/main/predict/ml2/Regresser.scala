@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.predict.ml2
 
 import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.tools.{Models, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{ModelHelper, TimestampHelper}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
@@ -54,7 +54,7 @@ object Regressor {
           .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
           .setNumFolds(3).setSeed(27)
         val model: CrossValidatorModel = cv.fit(trainDF)
-        Models.saveModel(ss, model, s"$dataDirectory\\models\\models\\$segmentDirectory")
+        ModelHelper.saveModel(ss, model, s"$dataDirectory\\models\\models\\$segmentDirectory")
         val testDfWithRawPrediction: DataFrame = model.transform(testDF)
         testDfWithRawPrediction.show(false)
         testDfWithRawPrediction.write.parquet(s"$dataDirectory\\segments\\$segmentDirectory\\result")

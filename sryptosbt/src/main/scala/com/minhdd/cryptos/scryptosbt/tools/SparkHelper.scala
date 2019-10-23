@@ -5,7 +5,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-object Sparks {
+object SparkHelper {
     
     def merge(srcPath: String, dstPath: String): Unit =  {
         val hadoopConfig = new Configuration()
@@ -14,31 +14,31 @@ object Sparks {
     }
     
     
-    def parquetFromDs(ds: Dataset[_], parquetPath: String) = {
+    def parquetFromDs(ds: Dataset[_], parquetPath: String): Unit = {
         ds.write.parquet(parquetPath)
     }
     
-    def csvFromDS(ds: Dataset[_], csvPath: String) = {
+    def csvFromDS(ds: Dataset[_], csvPath: String): Unit = {
         ds.coalesce(1)
           .write.format("com.databricks.spark.csv")
           .save(csvPath)
         merge(csvPath, csvPath + ".csv")
     }
     
-    def csvFromDSCrypto(ss: SparkSession, csvPath: String, ds: Dataset[Crypto]) = {
+    def csvFromDSCrypto(ss: SparkSession, csvPath: String, ds: Dataset[Crypto]): Unit = {
         import ss.implicits._
         val dsString: Dataset[String] = ds.map(_.flatten.toLine())
         csvFromDS(dsString, csvPath)
     }
     
-    def csvFromSeqCrypto(ss: SparkSession, csvPath: String, seq: Seq[Crypto]) = {
+    def csvFromSeqCrypto(ss: SparkSession, csvPath: String, seq: Seq[Crypto]): Unit = {
         val ds: Dataset[Crypto] = ss.createDataset(seq)(Crypto.encoder(ss))
         import ss.implicits._
         val dsString: Dataset[String] = ds.map(_.flatten.toLine())
         csvFromDS(dsString, csvPath)
     }
     
-    def csvFromDataframe(csvPath: String, df: DataFrame) = {
+    def csvFromDataframe(csvPath: String, df: DataFrame): Unit = {
         df.coalesce(1).write.option("delimiter", ";").csv(csvPath)
     }
     

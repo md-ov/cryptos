@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
-import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics, Timestamps}
+import com.minhdd.cryptos.scryptosbt.tools.{DataFrameHelper, StatisticHelper, TimestampHelper}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
@@ -50,16 +50,16 @@ object Segment {
             end = last,
             numberOfElement = seq.size,
             sameEvolution = begin.evolution == last.evolution,
-            standardDeviationVolume = Statistics.standardDeviation(seq.map(_.volume)),
-            averageVolume = Statistics.avg(seq.map(_.volume)),
-            averageVariation = Statistics.avg(seq.map(_.variation)),
-            standardDeviationVariation = Statistics.standardDeviation(seq.map(_.variation)),
-            averageDerive = Statistics.avg(seq.flatMap(_.derive)),
-            standardDeviationDerive = Statistics.standardDeviation(seq.flatMap(_.derive)),
-            averageSecondDerive = Statistics.avg(seq.flatMap(_.secondDerive)),
-            standardDeviationSecondDerive = Statistics.standardDeviation(seq.flatMap(_.secondDerive)),
-            averageCount = Statistics.avg(seq.filter(_.count.isDefined).map(_.count.get.toDouble)),
-            standardDeviationCount = Statistics.standardDeviation(seq.filter(_.count.isDefined).map(_.count.get.toDouble))
+            standardDeviationVolume = StatisticHelper.standardDeviation(seq.map(_.volume)),
+            averageVolume = StatisticHelper.avg(seq.map(_.volume)),
+            averageVariation = StatisticHelper.avg(seq.map(_.variation)),
+            standardDeviationVariation = StatisticHelper.standardDeviation(seq.map(_.variation)),
+            averageDerive = StatisticHelper.avg(seq.flatMap(_.derive)),
+            standardDeviationDerive = StatisticHelper.standardDeviation(seq.flatMap(_.derive)),
+            averageSecondDerive = StatisticHelper.avg(seq.flatMap(_.secondDerive)),
+            standardDeviationSecondDerive = StatisticHelper.standardDeviation(seq.flatMap(_.secondDerive)),
+            averageCount = StatisticHelper.avg(seq.filter(_.count.isDefined).map(_.count.get.toDouble)),
+            standardDeviationCount = StatisticHelper.standardDeviation(seq.filter(_.count.isDefined).map(_.count.get.toDouble))
         )
     }
     
@@ -173,14 +173,14 @@ object OHLCAndTradesExplorator {
         val dfWithNumberOfStableDay: DataFrame = dfWithImportantChanges
           .withColumn(numberOfStableDayColumnName, customSum(binaryEvolution).over(w))
 
-        val dfWithDerive = DataFrames.derive(
+        val dfWithDerive = DataFrameHelper.derive(
             df = dfWithNumberOfStableDay,
             yColumn = value,
             xColumn = datetime,
             newCol = derive)
 
         val dfWithSecondDerive: DataFrame =
-            DataFrames.derive(
+            DataFrameHelper.derive(
                 df = dfWithDerive,
                 yColumn = derive,
                 xColumn = datetime,
@@ -252,16 +252,16 @@ object OHLCAndTradesExplorator {
         import ss.implicits._
         val lastTimestampDS: Dataset[Timestamp] = allTargetedSegments.map(_.last.datetime)
         val lastTimestamp: Timestamp = lastTimestampDS.agg(max("value").as("max")).first().getAs[Timestamp](0)
-        val ts: Timestamps = Timestamps(lastTimestamp.getTime)
+        val ts: TimestampHelper = TimestampHelper(lastTimestamp.getTime)
         
         val lastCryptoPartitionKey = CryptoPartitionKey(
             asset = "XBT",
             currency = "EUR",
             provider = "KRAKEN",
             api = "TRADES",
-            year = ts.getYearString,
-            month = ts.getMonthString,
-            day = ts.getDayString)
+            year = ts.getYear,
+            month = ts.getMonth,
+            day = ts.getDay)
         
         val ohlcs = ohlcCryptoDsFromLastSegment(ss, lastTimestamp)
         val trades: Dataset[Crypto] = tradesFromLastSegment(ss, lastTimestamp, lastCryptoPartitionKey)

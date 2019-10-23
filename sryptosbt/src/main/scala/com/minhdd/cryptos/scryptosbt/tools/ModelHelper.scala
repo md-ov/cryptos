@@ -4,8 +4,9 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-object Models {
-    def saveModel(ss: SparkSession, model: CrossValidatorModel, modelPath: String) = {
+object ModelHelper {
+    
+    def saveModel(ss: SparkSession, model: CrossValidatorModel, modelPath: String): Unit = {
         ss.sparkContext.parallelize(Seq(model), 1).saveAsObjectFile(modelPath)
     }
     def getModel(ss: SparkSession, modelPath: String): CrossValidatorModel = {

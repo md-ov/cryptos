@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.constants.evolutionNone
 import org.apache.spark.sql.{Encoder, SparkSession}
 
 case class BeforeSplit(
@@ -28,5 +29,20 @@ object BeforeSplit {
     def encoderSeq(spark: SparkSession): Encoder[Seq[BeforeSplit]] = {
         import spark.implicits._
         implicitly[Encoder[Seq[BeforeSplit]]]
+    }
+    
+    def apply(krakenCrypto: KrakenCrypto): BeforeSplit = {
+        BeforeSplit(
+            datetime = krakenCrypto.datetime,
+            value = krakenCrypto.value,
+            evolution = evolutionNone,
+            variation = 0D,
+            derive = Some(0D),
+            secondDerive = Some(0),
+            ohlc_value = krakenCrypto.ohlcValue,
+            ohlc_volume = krakenCrypto.ohlcVolume,
+            volume = krakenCrypto.volume,
+            count = krakenCrypto.count,
+            importantChange = None)
     }
 }

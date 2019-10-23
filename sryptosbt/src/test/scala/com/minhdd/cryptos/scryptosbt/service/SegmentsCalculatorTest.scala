@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.service
 
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto, Segment}
-import com.minhdd.cryptos.scryptosbt.tools.Timestamps
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
@@ -12,7 +12,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     spark.sparkContext.setLogLevel("ERROR")
     
     val krakenCrypto1 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10535.2D,
         volume = 100D,
         count = None,
@@ -21,7 +21,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto2 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:00:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:00:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10608.7D,
         volume = 9800D,
         count = None,
@@ -30,7 +30,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto3 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:30:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:30:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10533.6D,
         volume = 9800D,
         count = None,
@@ -39,7 +39,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto4 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:45:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:45:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10490.5D,
         volume = 9800D,
         count = None,
@@ -48,7 +48,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto5 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 03:00:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 03:00:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10476.1D,
         volume = 9800D,
         count = None,
@@ -57,7 +57,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto11 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss"),
         value = 20535.2D,
         volume = 100D,
         count = None,
@@ -66,7 +66,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto1_10535 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 00:00:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 00:00:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10535.2D,
         volume = 100D,
         count = None,
@@ -75,7 +75,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto2_20535 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 00:15:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 00:15:00", "yyyy-MM-dd hh:mm:ss"),
         value = 20535.2D,
         volume = 100D,
         count = None,
@@ -84,7 +84,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto3_20535 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 00:30:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 00:30:00", "yyyy-MM-dd hh:mm:ss"),
         value = 20535.2D,
         volume = 100D,
         count = None,
@@ -93,7 +93,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto3_535 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 00:30:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 00:30:00", "yyyy-MM-dd hh:mm:ss"),
         value = 535.2D,
         volume = 100D,
         count = None,
@@ -102,7 +102,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto4_40535 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 00:45:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 00:45:00", "yyyy-MM-dd hh:mm:ss"),
         value = 40535.2D,
         volume = 100D,
         count = None,
@@ -111,26 +111,14 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     )
     
     val krakenCrypto5_10200 = KrakenCrypto(
-        datetime = Timestamps.getTimestamp("2019-07-04 02:30:00", "yyyy-MM-dd hh:mm:ss"),
+        datetime = TimestampHelper.getTimestamp("2019-07-04 02:30:00", "yyyy-MM-dd hh:mm:ss"),
         value = 10200.2D,
         volume = 100D,
         count = None,
         ohlcValue = Option(200.25D),
         ohlcVolume = Option(56.24D)
     )
-    
-    test("Seq()") {
-        val segments: Seq[Segment] = SegmentsCalculator.get(Seq())
-        
-        segments shouldBe empty
-    }
-    
-    test("one kraken crypto") {
-        val segments: Seq[Segment] = SegmentsCalculator.get(Seq(krakenCrypto1))
-        
-        segments should have length 1
-    }
-    
+   
     test("five kraken cryptos") {
         val seqKrakenCrypto = Seq(krakenCrypto1, krakenCrypto2, krakenCrypto3, krakenCrypto4, krakenCrypto5)
         val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
@@ -170,7 +158,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         seqBeforeSplit should have length 2
         
         seqBeforeSplit.head should have(
-            'datetime (Timestamps.getTimestamp("2019-07-04 02:00:00", "yyyy-MM-dd hh:mm:ss")),
+            'datetime (TimestampHelper.getTimestamp("2019-07-04 02:00:00", "yyyy-MM-dd hh:mm:ss")),
             'value (10608.7D),
             'derive (Some(11028.54444273231)),
             'secondDerive (Some(1.0999999998603016)),
@@ -179,7 +167,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         )
         
         seqBeforeSplit.apply(1) should have(
-            'datetime (Timestamps.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss")),
+            'datetime (TimestampHelper.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss")),
             'value (20535.2D),
             'derive (Some(11030.344442732589)),
             'secondDerive (Some(2.9000000001396984)),
