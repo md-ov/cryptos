@@ -9,5 +9,4 @@ object Implicits {
             t.recoverWith({ case e => Failure(f(e)) })
         }
     }
-    
 }

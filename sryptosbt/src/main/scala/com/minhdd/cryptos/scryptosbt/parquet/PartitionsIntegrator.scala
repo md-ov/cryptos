@@ -54,6 +54,4 @@ object PartitionsIntegrator {
             Crypto.getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
         toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
     }
-
-    
 }

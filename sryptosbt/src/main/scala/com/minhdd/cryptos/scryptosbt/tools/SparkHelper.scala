@@ -13,7 +13,6 @@ object SparkHelper {
         FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
     }
     
-    
     def parquetFromDs(ds: Dataset[_], parquetPath: String): Unit = {
         ds.write.parquet(parquetPath)
     }

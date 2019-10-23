@@ -11,5 +11,4 @@ object DatasetHelper {
         else if (ds2.isEmpty) ds1
         else Some(ds1.get.union(ds2.get))
     }
-    
 }

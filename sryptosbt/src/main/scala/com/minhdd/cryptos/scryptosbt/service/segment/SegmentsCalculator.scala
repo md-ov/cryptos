@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.service
+package com.minhdd.cryptos.scryptosbt.service.segment
 
 import java.sql.Timestamp
 

@@ -65,7 +65,7 @@ case class Predict(
 
 object CryptosApps extends CommandApp[CommandAppArgs] {
     
-    private def getMaster(master: String) = {
+    private def getMaster(master: String): String = {
         if (master == "local") "local[*]"
         else if (master == "ov") "local[*]"
         else "local[*]"

@@ -2,9 +2,20 @@ package com.minhdd.cryptos.scryptosbt.tools
 
 import java.sql.Timestamp
 
-import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object Derivative {
+    
+    def derive(df: DataFrame, yColumn: String, xColumn: String, newCol: String): DataFrame = {
+        import org.apache.spark.sql.expressions.Window
+        val window = Window.orderBy(xColumn)
+        import org.apache.spark.sql.functions.{lag, lead}
+        
+        df.withColumn(newCol,
+            (lead(yColumn, 1).over(window) - lag(yColumn, 1).over(window))
+              /
+              (lead(xColumn, 1).over(window) - lag(xColumn, 1).over(window)))
+    }
     
     def deriveTs(seqTs: Seq[Timestamp], values: Seq[Double]): Seq[Double] = {
         val seqTsDouble = seqTs.map(_.getTime.toDouble / 1000000D) // /1000 to have good derive values

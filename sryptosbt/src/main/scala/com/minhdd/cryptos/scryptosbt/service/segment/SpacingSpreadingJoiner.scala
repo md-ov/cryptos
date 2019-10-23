@@ -1,14 +1,14 @@
-package com.minhdd.cryptos.scryptosbt.service
+package com.minhdd.cryptos.scryptosbt.service.segment
 
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, collect_list, lead, struct}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
-import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 
 case class CryptoContainer(
                             timestamp: Timestamp,
@@ -48,12 +48,9 @@ object CryptoSpreadContainer {
         import spark.implicits._
         implicitly[Encoder[CryptoSpreadContainer]]
     }
-    
-    
 }
 
 object SpacingSpreadingJoiner {
-    
     
     def oneKrakenCrypto(timestamp: Timestamp, containersTrades: Seq[CryptoContainer], containersOhlcs: Seq[CryptoContainer]): KrakenCrypto = {
         

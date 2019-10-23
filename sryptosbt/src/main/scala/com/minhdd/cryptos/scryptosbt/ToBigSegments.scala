@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey, KrakenCrypto}
-import com.minhdd.cryptos.scryptosbt.service.{SegmentsCalculator, SpacingSpreadingJoiner, Splitter}
+import com.minhdd.cryptos.scryptosbt.service.segment.{SegmentsCalculator, SpacingSpreadingJoiner, Splitter}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object ToBigSegments {
