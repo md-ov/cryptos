@@ -4,6 +4,7 @@ import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, ev
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
+import org.scalatest.{FunSuite, Matchers}
 
 class SegmentsCalculatorTest extends FunSuite with Matchers {
     
