@@ -3,7 +3,8 @@ package com.minhdd.cryptos.scryptosbt.exploration
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
+import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Statistics, Timestamps}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
@@ -22,12 +23,7 @@ case class BeforeSplit( //représente l'élément juste avant le découpage en s
                       count: Option[Int],
                       importantChange: Option[Boolean])
 
-object BeforeSplit {
-    def encoderSeq(spark: SparkSession): Encoder[Seq[BeforeSplit]] = {
-        import spark.implicits._
-        implicitly[Encoder[Seq[BeforeSplit]]]
-    }
-}
+
 
 case class Segment (
                    begin: BeforeSplit,

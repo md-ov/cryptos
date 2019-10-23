@@ -1,16 +1,15 @@
 package com.minhdd.cryptos.scryptosbt.service
 
-import com.minhdd.cryptos.scryptosbt.domain.KrakenCrypto
-import com.minhdd.cryptos.scryptosbt.exploration.{BeforeSplit, Segment}
+import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto, Segment}
 import com.minhdd.cryptos.scryptosbt.tools.Timestamps
-import com.minhdd.cryptos.scryptosbt.constants.{evolutionNone, evolutionUp, evolutionDown}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class SegmentsCalculatorTest extends FunSuite with Matchers {
     
-    val ss: SparkSession = SparkSession.builder().appName("beforesplits").master("local[*]").getOrCreate()
-    ss.sparkContext.setLogLevel("ERROR")
+    val spark: SparkSession = SparkSession.builder().appName("beforesplits").master("local[*]").getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
     
     val krakenCrypto1 = KrakenCrypto(
         datetime = Timestamps.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss"),
@@ -138,27 +137,27 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         
         seqBeforeSplit should have length 5
         
-        seqBeforeSplit.head should have (
+        seqBeforeSplit.head should have(
             'derive (Some(-82.56666665413003)),
             'secondDerive (Some(44.48271602946816))
         )
         
-        seqBeforeSplit.apply(1) should have (
+        seqBeforeSplit.apply(1) should have(
             'derive (Some(-41.72222222114307)),
             'secondDerive (Some(32.07407406663621))
         )
         
-        seqBeforeSplit.apply(2) should have (
+        seqBeforeSplit.apply(2) should have(
             'derive (Some(-24.833333332691296)),
             'secondDerive (Some(5.432098765151156))
         )
         
-        seqBeforeSplit.apply(3) should have (
+        seqBeforeSplit.apply(3) should have(
             'derive (Some(-31.94444444361804)),
             'secondDerive (Some(5.40740740593949))
         )
         
-        seqBeforeSplit.apply(4) should have (
+        seqBeforeSplit.apply(4) should have(
             'derive (Some(-15.100000001748413)),
             'secondDerive (Some(19.61604938169875))
         )
@@ -167,10 +166,10 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     test("two kraken cryptos") {
         val seqKrakenCrypto = Seq(krakenCrypto11, krakenCrypto2)
         val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
-    
+        
         seqBeforeSplit should have length 2
-    
-        seqBeforeSplit.head should have (
+        
+        seqBeforeSplit.head should have(
             'datetime (Timestamps.getTimestamp("2019-07-04 02:00:00", "yyyy-MM-dd hh:mm:ss")),
             'value (10608.7D),
             'derive (Some(11028.54444273231)),
@@ -178,8 +177,8 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
             'variation (9926.5D),
             'evolution (evolutionNone)
         )
-    
-        seqBeforeSplit.apply(1) should have (
+        
+        seqBeforeSplit.apply(1) should have(
             'datetime (Timestamps.getTimestamp("2019-07-04 02:15:00", "yyyy-MM-dd hh:mm:ss")),
             'value (20535.2D),
             'derive (Some(11030.344442732589)),
@@ -190,32 +189,29 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     }
     
     test("kraken cryptos") {
-        import ss.implicits._
         
         val seqKrakenCrypto = Seq(krakenCrypto1_10535, krakenCrypto2_20535, krakenCrypto3_20535, krakenCrypto4_40535,
             krakenCrypto5_10200)
-    
+        
         val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
-    
+        
         assert(seqBeforeSplit.map(_.importantChange.get) == Seq(false, false, false, true, true))
         assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionNone, evolutionNone, evolutionUp, evolutionDown))
         
-        val ds: Dataset[BeforeSplit] = ss.createDataset(seqBeforeSplit)
+        val ds: Dataset[BeforeSplit] = spark.createDataset(seqBeforeSplit)(BeforeSplit.encoder(spark))
         ds.show(false)
     }
     
     test("kraken cryptos 2") {
-        import ss.implicits._
         
-        val seqKrakenCrypto = Seq(krakenCrypto1_10535, krakenCrypto2_20535, krakenCrypto3_535, krakenCrypto4_40535,
-            krakenCrypto5_10200)
+        val seqKrakenCrypto = Seq(krakenCrypto1_10535, krakenCrypto2_20535, krakenCrypto3_535, krakenCrypto4_40535, krakenCrypto5_10200)
         
         val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
-    
-        val ds: Dataset[BeforeSplit] = ss.createDataset(seqBeforeSplit)
+        
+        val ds: Dataset[BeforeSplit] = spark.createDataset(seqBeforeSplit)(BeforeSplit.encoder(spark))
         ds.show(false)
         
-        assert(seqBeforeSplit.map(_.importantChange.get) == Seq(false, true, true, true, true))
-        assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionUp, evolutionDown, evolutionUp, evolutionDown))
+        assert(seqBeforeSplit.map(_.importantChange.get) == Seq(false, false, true, true, false))
+        assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionNone, evolutionDown, evolutionUp, evolutionNone))
     }
 }

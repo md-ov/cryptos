@@ -1,8 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.predict
 
-import com.minhdd.cryptos.scryptosbt.domain.{Analytics, AnalyticsCrypto}
+import com.minhdd.cryptos.scryptosbt.domain.{Analytics, AnalyticsCrypto, Crypto, CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.exploration.Explorates
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue, Margin}
+import com.minhdd.cryptos.scryptosbt.parquet.{CryptoPartitionKey, CryptoValue, Margin}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.scalatest.FunSuite
 import com.minhdd.cryptos.scryptosbt.constants.evolutionUp

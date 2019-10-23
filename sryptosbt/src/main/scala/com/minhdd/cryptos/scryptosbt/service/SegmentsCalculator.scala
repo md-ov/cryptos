@@ -3,8 +3,7 @@ package com.minhdd.cryptos.scryptosbt.service
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.domain.KrakenCrypto
-import com.minhdd.cryptos.scryptosbt.exploration.{BeforeSplit, Segment}
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto, Segment}
 import com.minhdd.cryptos.scryptosbt.tools.{Derivative, SeqDoubleHelper}
 
 object SegmentsCalculator {

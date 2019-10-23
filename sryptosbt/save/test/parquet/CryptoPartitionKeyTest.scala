@@ -1,5 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
+import com.minhdd.cryptos.scryptosbt.domain.CryptoPartitionKey
 import org.scalatest.FunSuite
 
 class CryptoPartitionKeyTest extends FunSuite {

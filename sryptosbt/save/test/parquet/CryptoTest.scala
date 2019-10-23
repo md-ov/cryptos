@@ -2,7 +2,8 @@ package com.minhdd.cryptos.scryptosbt.parquet
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.parquet.Crypto.encoder
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue}
+import com.minhdd.cryptos.scryptosbt.domain.Crypto.encoder
 import com.minhdd.cryptos.scryptosbt.tools.{Files, Timestamps}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite

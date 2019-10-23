@@ -1,9 +1,7 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
-import com.minhdd.cryptos.scryptosbt.exploration.SamplerObj
-import com.minhdd.cryptos.scryptosbt.parquet.{CSVFromParquetObj, ExtractToCsvObj, ParquetFromCSVObj, ToParquetsFromCSV, ToParquetsFromTodayCSV}
-import com.minhdd.cryptos.scryptosbt.predict.ml2.Predictor
+import com.minhdd.cryptos.scryptosbt.parquet.{ToParquetsFromCSV, ToParquetsFromTodayCSV}
 
 sealed trait CommandAppArgs
 
@@ -25,13 +23,13 @@ case class ExtractToCsv(
                        ) extends CommandAppArgs
 
 case class Sampler(
-                         master: String,
-                         parquetsDir: String,
-                         csvpath: String,
-                         asset: String,
-                         currency: String,
-                         delta: Double
-                       ) extends CommandAppArgs
+                    master: String,
+                    parquetsDir: String,
+                    csvpath: String,
+                    asset: String,
+                    currency: String,
+                    delta: Double
+                  ) extends CommandAppArgs
 
 case class ParquetFromCsv(
                            api: String,
@@ -45,16 +43,16 @@ case class ToParquetsFromCsv(
                               master: String,
                               inputDir: String,
                               parquetsDir: String,
-                              minimum: Long  //minimum number for one partition
-                         ) extends CommandAppArgs
+                              minimum: Long //minimum number for one partition
+                            ) extends CommandAppArgs
 
 case class ToParquetsFromTodayCsv(
-                              api: String,
-                              master: String,
-                              inputDir: String,
-                              parquetsDir: String,
-                              minimum: Long  //minimum number for one partition
-                            ) extends CommandAppArgs
+                                   api: String,
+                                   master: String,
+                                   inputDir: String,
+                                   parquetsDir: String,
+                                   minimum: Long //minimum number for one partition
+                                 ) extends CommandAppArgs
 
 case class Predict(
                     dt: String,
@@ -65,7 +63,7 @@ case class Predict(
                     step: Option[Int]
                   ) extends CommandAppArgs
 
-object CryptosApps extends CommandApp[CommandAppArgs]{
+object CryptosApps extends CommandApp[CommandAppArgs] {
     
     private def getMaster(master: String) = {
         if (master == "local") "local[*]"
@@ -75,13 +73,8 @@ object CryptosApps extends CommandApp[CommandAppArgs]{
     
     override def run(options: CommandAppArgs, remainingArgs: RemainingArgs): Unit = {
         println(options match {
-            case args: Predict => Predictor.predictMain(args)
-            case args: ParquetFromCsv => ParquetFromCSVObj.run(args, getMaster(args.master))
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
             case args: ToParquetsFromTodayCsv => ToParquetsFromTodayCSV.run(args, getMaster(args.master))
-            case args: CSVFromParquet => CSVFromParquetObj.run(args, getMaster(args.master))
-            case args: ExtractToCsv => ExtractToCsvObj.run(args, getMaster(args.master))
-            case args: Sampler => SamplerObj.run(args, getMaster(args.master))
         })
     }
 }

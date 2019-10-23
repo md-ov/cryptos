@@ -1,9 +1,9 @@
 package com.minhdd.cryptos.scryptosbt
 
-import com.minhdd.cryptos.scryptosbt.exploration.OHLCAndTradesExplorator
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey}
+import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
 import org.apache.spark.sql.{Dataset, SparkSession}
 import com.minhdd.cryptos.scryptosbt.constants._
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 
 object Explorator {
     

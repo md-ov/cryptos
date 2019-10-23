@@ -35,8 +35,7 @@ object PartitionsIntegrator {
               .union(newDataset)
         }
         getPartitionKeys(ss, ds).map(key => {
-            val existingPartitionDataset: Option[Dataset[Crypto]] = Crypto.getPartitionFromPath(ss, key.getPartitionPath
-            (parquetsDir))
+            val existingPartitionDataset: Option[Dataset[Crypto]] = getPartitionFromPath(ss, key.getPartitionPath(parquetsDir))
             val filteredDataset = filterDataset(ds, key)
             val newDataset = unionDataset(existingPartitionDataset, filteredDataset)
             (key, newDataset)
@@ -51,7 +50,7 @@ object PartitionsIntegrator {
         
         ss.sparkContext.setLogLevel("WARN")
         val ds1: Dataset[Crypto] =
-            Crypto.getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
+            getPartitionFromPath(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/parquet").get
         toPartitions(ss, "file:///home/mdao/minh/git/cryptos/data/parquets/", ds1)
     }
 

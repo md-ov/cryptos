@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.tools
 import java.io.File
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.parquet.CryptoPartitionKey
+import com.minhdd.cryptos.scryptosbt.domain.CryptoPartitionKey
 
 import scala.io.{BufferedSource, Source}
 

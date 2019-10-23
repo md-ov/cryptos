@@ -1,7 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.service
 
 import java.sql.Timestamp
-import com.minhdd.cryptos.scryptosbt.exploration.BeforeSplit
+
+import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 
 object Splitter {
     def toSplit(b: BeforeSplit): Boolean = b.importantChange.getOrElse(false)

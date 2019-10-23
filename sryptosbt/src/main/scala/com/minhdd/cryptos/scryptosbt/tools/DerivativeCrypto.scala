@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
-import com.minhdd.cryptos.scryptosbt.parquet.Crypto
+import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 
 object DerivativeCrypto {

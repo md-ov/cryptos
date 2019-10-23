@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.{ParquetFromCsv}
+import com.minhdd.cryptos.scryptosbt.ParquetFromCsv
+import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.SparkSession
 
 object ParquetFromCSVObj {

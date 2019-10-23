@@ -3,7 +3,8 @@ package com.minhdd.cryptos.scryptosbt.exploration
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.Sampler
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue}
+import com.minhdd.cryptos.scryptosbt.parquet.{CryptoPartitionKey, CryptoValue}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Sparks, Timestamps}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.expressions.Window

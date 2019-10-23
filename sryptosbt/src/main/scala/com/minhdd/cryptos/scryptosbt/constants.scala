@@ -6,7 +6,7 @@ object constants {
     val evolutionNone = "-"
     val evolutionUp = "up"
     val evolutionDown = "down"
-    val numberOfMinutesBetweenTwoElement: Int = 15
+    val numberOfMinutesBetweenTwoElement: Int = 1
     // sampling every x minutes, 4 jours on one window
     val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / numberOfMinutesBetweenTwoElement)
     

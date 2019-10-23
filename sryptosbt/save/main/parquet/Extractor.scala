@@ -1,11 +1,11 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, Margin}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object Extractor {
-    def oneDayCryptoValue(ss: SparkSession, d: String, ds: Dataset[Crypto], keys: Seq[CryptoPartitionKey]): Crypto
-    = {
+    def oneDayCryptoValue(ss: SparkSession, d: String, ds: Dataset[Crypto], keys: Seq[CryptoPartitionKey]): Crypto = {
         import ss.implicits._
         val filteredDs: Dataset[Crypto] = ds.filter(c => keys.contains(c.partitionKey))
         val count: Long = filteredDs.count()

@@ -1,7 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.exploration
 
-import com.minhdd.cryptos.scryptosbt.domain.{AnalyticsCrypto, AnalyticsSegment, RegularSegment}
-import com.minhdd.cryptos.scryptosbt.parquet.Crypto
+import com.minhdd.cryptos.scryptosbt.domain.{AnalyticsCrypto, AnalyticsSegment, Crypto, RegularSegment}
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.tools.{DataFrames, Sparks}
 import org.apache.spark.sql.expressions.Window

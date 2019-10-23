@@ -1,7 +1,5 @@
 package com.minhdd.cryptos.scryptosbt.domain
 
-import com.minhdd.cryptos.scryptosbt.parquet.Crypto
-
 
 case class Analytics(
                       derive: Option[Double], 

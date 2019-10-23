@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import Crypto.getPartitionFromPath
+import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 

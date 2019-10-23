@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.parquet
+package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 
@@ -251,8 +251,8 @@ case class Crypto
   prediction : Option[CryptoPrediction]
 ) {
     def flatten: FlattenCrypto = {
-        import partitionKey._
         import cryptoValue._
+        import partitionKey._
         FlattenCrypto(
             asset =  asset,
             currency = currency,

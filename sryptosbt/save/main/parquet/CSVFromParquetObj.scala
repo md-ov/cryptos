@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.tools.Sparks
 import com.minhdd.cryptos.scryptosbt.CSVFromParquet
+import com.minhdd.cryptos.scryptosbt.domain.Crypto
 import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
@@ -26,6 +27,4 @@ object CSVFromParquetObj {
     
         "status|SUCCESS"
     }
-    
-    
 }

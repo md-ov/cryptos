@@ -1,35 +1,35 @@
 package com.minhdd.cryptos.scryptosbt.service
 
 import java.sql.Timestamp
+
 import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
-import com.minhdd.cryptos.scryptosbt.domain.KrakenCrypto
-import com.minhdd.cryptos.scryptosbt.exploration.SamplerObj.adjustSecond
-import com.minhdd.cryptos.scryptosbt.parquet.{Crypto, CryptoPartitionKey, CryptoValue}
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimes, Timestamps}
 import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{col, collect_list, lead, struct}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import org.joda.time.DateTime
-import org.apache.spark.sql.functions.{collect_list, lead, struct, col}
+import org.joda.time.format.DateTimeFormat
 
 case class CryptoContainer(
-    timestamp: Timestamp,
-    api: String,
-    partitionKey: CryptoPartitionKey,
-    cryptoValue: CryptoValue,
-    tradeMode: Option[String],
-    count: Option[Int]
-)
+                            timestamp: Timestamp,
+                            api: String,
+                            partitionKey: CryptoPartitionKey,
+                            cryptoValue: CryptoValue,
+                            tradeMode: Option[String],
+                            count: Option[Int]
+                          )
 
 case class CryptoSpreadContainer(
-  timestamp: Timestamp,
-  next: Timestamp,
-  value: Double,
-  volume: Double,
-  count: Option[Int],
-  ohlcValue: Option[Double],
-  ohlcVolume: Option[Double]
-) {
-    def toKrakenCrypto = KrakenCrypto(timestamp, value, volume, count, ohlcValue, ohlcVolume )
+                                  timestamp: Timestamp,
+                                  next: Timestamp,
+                                  value: Double,
+                                  volume: Double,
+                                  count: Option[Int],
+                                  ohlcValue: Option[Double],
+                                  ohlcVolume: Option[Double]
+                                ) {
+    def toKrakenCrypto = KrakenCrypto(timestamp, value, volume, count, ohlcValue, ohlcVolume)
 }
 
 object CryptoContainer {
@@ -50,7 +50,7 @@ object CryptoSpreadContainer {
         implicitly[Encoder[CryptoSpreadContainer]]
     }
     
-
+    
 }
 
 object SpacingSpreadingJoiner {
@@ -87,7 +87,7 @@ object SpacingSpreadingJoiner {
             val volumeTotal: Double = containersOhlcs.map(_.cryptoValue.volume).sum
             val length = containersOhlcs.length
             val countSum: Long = containersOhlcs.map(_.count.getOrElse(0)).sum
-            val countAverage = (countSum/length).toInt
+            val countAverage = (countSum / length).toInt
             val cryptoValue: CryptoValue = middleCryptoValue(containersOhlcs, length)
             KrakenCrypto(
                 datetime = timestamp,
@@ -113,8 +113,8 @@ object SpacingSpreadingJoiner {
             val lengthOhlc = containersOhlcs.length
             val lengthTrades = containersTrades.length
             val countSum: Long = containersOhlcs.map(_.count.getOrElse(0)).sum
-            val countAverage = (countSum/lengthOhlc).toInt
-            val volumeOhlcTotal : Double = containersOhlcs.map(_.cryptoValue.volume).sum
+            val countAverage = (countSum / lengthOhlc).toInt
+            val volumeOhlcTotal: Double = containersOhlcs.map(_.cryptoValue.volume).sum
             val volumeTotal: Double = containersTrades.map(_.cryptoValue.volume).sum + volumeOhlcTotal
             val cryptoValue: CryptoValue = middleCryptoValue(containersTrades ++ containersOhlcs, lengthOhlc + lengthTrades)
             val ohlcCryptoValue = middleCryptoValue(containersOhlcs, lengthOhlc)
@@ -135,11 +135,11 @@ object SpacingSpreadingJoiner {
     
     def fill(cryptoSpreadContainer: CryptoSpreadContainer, numberOfMinutesBetweenTwoElement: Int): Seq[KrakenCrypto] = {
         if (cryptoSpreadContainer.next == null) Seq(cryptoSpreadContainer.toKrakenCrypto) else {
-            val tss: Seq[Timestamp] = 
+            val tss: Seq[Timestamp] =
                 DateTimes.getTimestamps(
-                    cryptoSpreadContainer.timestamp, 
-                    cryptoSpreadContainer.next, 
-                numberOfMinutesBetweenTwoElement)
+                    cryptoSpreadContainer.timestamp,
+                    cryptoSpreadContainer.next,
+                    numberOfMinutesBetweenTwoElement)
             tss.map(ts => cryptoSpreadContainer.copy(timestamp = ts).toKrakenCrypto)
         }
     }
@@ -148,10 +148,10 @@ object SpacingSpreadingJoiner {
         val window = Window.orderBy("datetime")
         val cryptoSpreadContainers: Dataset[CryptoSpreadContainer] =
             spacedKrakenCryptos
-                .withColumn("timestamp", col("datetime"))
+              .withColumn("timestamp", col("datetime"))
               .withColumn("next", lead("datetime", 1).over(window))
               .as[CryptoSpreadContainer](CryptoSpreadContainer.encoder(spark))
-    
+        
         cryptoSpreadContainers.flatMap(fill(_, numberOfMinutesBetweenTwoElement))(KrakenCrypto.encoder(spark))
     }
     
@@ -202,6 +202,11 @@ object SpacingSpreadingJoiner {
         })(KrakenCrypto.encoder(spark))
         
         spacedKrakenCryptos
+    }
+    
+    private def adjustSecond(dt: DateTime): DateTime = {
+        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm'Z'")
+        DateTime.parse(formatter.print(dt), formatter)
     }
     
 }

@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.ExtractToCsv
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.tools.{Datasets, DateTimes, Sparks}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
