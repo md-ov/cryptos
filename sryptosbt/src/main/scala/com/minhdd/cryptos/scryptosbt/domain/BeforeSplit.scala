@@ -2,22 +2,23 @@ package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.constants.evolutionNone
 import org.apache.spark.sql.{Encoder, SparkSession}
 
 case class BeforeSplit(
-    datetime: Timestamp,
-    value: Double,
-    evolution: String,
-    variation: Double,
-    derive: Option[Double],
-    secondDerive: Option[Double],
-    ohlc_value: Option[Double],
-    ohlc_volume: Option[Double],
-    volume: Double,
-    count: Option[Int],
-    importantChange: Option[Boolean]
-)
+                        datetime: Timestamp,
+                        value: Double,
+                        evolution: String,
+                        variation: Double,
+                        derive: Option[Double],
+                        secondDerive: Option[Double],
+                        ohlc_value: Option[Double],
+                        ohlc_volume: Option[Double],
+                        volume: Double,
+                        count: Option[Int],
+                        importantChange: Option[Boolean]
+                      )
 
 object BeforeSplit {
     
@@ -43,6 +44,21 @@ object BeforeSplit {
             ohlc_volume = krakenCrypto.ohlcVolume,
             volume = krakenCrypto.volume,
             count = krakenCrypto.count,
+            importantChange = None)
+    }
+    
+    def apply(timestamp: Timestamp, value: Double): BeforeSplit = {
+        BeforeSplit(
+            datetime = timestamp,
+            value = value,
+            evolution = constants.evolutionNone,
+            variation = 0D,
+            derive = None,
+            secondDerive = None,
+            ohlc_value = None,
+            ohlc_volume = None,
+            volume = 0D,
+            count = None,
             importantChange = None)
     }
 }

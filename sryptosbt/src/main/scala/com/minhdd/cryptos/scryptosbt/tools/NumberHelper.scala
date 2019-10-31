@@ -18,11 +18,11 @@ object NumberHelper {
     }
     
     implicit class SeqDoubleImplicit(input: Seq[Double]) {
-    
+        
         def avg: Double = input.sum / input.size
-    
+        
         def variance: Double = input.map(d => math.pow(d - input.avg, 2)).sum / input.size
-    
+        
         def standardDeviation: Double = math.sqrt(input.variance)
         
         def getMax(windowLeftSize: Int, windowRightSize: Int): Seq[Int] = {
@@ -182,6 +182,23 @@ object NumberHelper {
                 position2
             }
         }
+        
+        def linear(margin: Double): Boolean = {
+            val head: Double = input.head
+            val last: Double = input.last
+            
+            input.indices.forall(i => {
+                i == 0 ||
+                  (last > head && input.apply(i) > input.apply(i - 1)) ||
+                  (last < head && input.apply(i) < input.apply(i - 1)) ||
+                  (input.apply(i).relativeVariation(input.apply(i - 1)) <= margin)
+            })
+        }
     }
     
+    implicit class DoubleImplicit(input: Double) {
+        def relativeVariation(other: Double): Double = {
+            math.abs(input - other) / input
+        }
+    }
 }

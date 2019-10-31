@@ -5,10 +5,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.minhdd.cryptos.scryptosbt.constants
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
-import DateTimeHelper.DateTimeImplicit
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
 
 object DateTimeHelper {
@@ -63,18 +62,19 @@ object DateTimeHelper {
     implicit class DateTimeImplicit(input: DateTime) {
         
         def toTimestamp: Timestamp = new Timestamp(input.getMillis)
-
+        
         def getAdjustedDatetime: DateTime = {
             val minutes = input.getMinuteOfHour
             val delta: Int = minutes % constants.numberOfMinutesBetweenTwoElement
             input.minusMinutes(delta)
         }
-    
+        
         def getAdjustedSecond: DateTime = {
             val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm'Z'")
             DateTime.parse(formatter.print(input), formatter)
         }
     }
+    
 }
 
 case class TimestampHelper(timestamp: Timestamp, datetime: DateTime) {
@@ -96,6 +96,8 @@ object TimestampHelper {
     
     val oneDayTimestampDelta = 86400000
     
+    val defaultFormat = "yyyy-MM-dd hh:mm:ss"
+    
     def apply(timestamp: Long): TimestampHelper = {
         new TimestampHelper(new Timestamp(timestamp), new DateTime(timestamp))
     }
@@ -103,6 +105,8 @@ object TimestampHelper {
     def now: Timestamp = {
         new Timestamp(DateTime.now().getMillis)
     }
+    
+    def getTimestamp(dateString: String): Timestamp = getTimestamp(dateString, defaultFormat)
     
     def getTimestamp(dateString: String, format: String): Timestamp = {
         val time = DateTimeHelper.getTime(dateString, format)
