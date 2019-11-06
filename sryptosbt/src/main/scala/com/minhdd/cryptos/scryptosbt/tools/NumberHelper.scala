@@ -191,14 +191,15 @@ object NumberHelper {
                 i == 0 ||
                   (last > head && input.apply(i) > input.apply(i - 1)) ||
                   (last < head && input.apply(i) < input.apply(i - 1)) ||
-                  (input.apply(i).relativeVariation(input.apply(i - 1)) <= margin)
+                  (input.apply(i).relativeVariation(input.apply(i - 1)).abs <= margin)
             })
         }
     }
     
     implicit class DoubleImplicit(input: Double) {
+        
         def relativeVariation(other: Double): Double = {
-            math.abs(input - other) / input
+            (input - other) / other
         }
     }
 }

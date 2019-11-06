@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.service.segment.{SegmentsCalculator, SpacingSpreadingJoiner, Splitter}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 object ToBigSegments {
     
@@ -18,25 +18,19 @@ object ToBigSegments {
           .master("local[*]").getOrCreate()
         
         spark.sparkContext.setLogLevel("ERROR")
-        import spark.implicits._
     
-        val ds = spark.read.parquet(s"$dataDirectory\\segments\\big1\\201316").as[Seq[BeforeSplit]]
-        ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime))
-        .sort("_2").show( 1000,true)
-        
-        
-//        val (lastTimestamp2016, ds2013to2016): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsBetween2013and2016(spark)
-//        
-//        val (lastTimestamp2017, ds2017): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
-//            lastTimestamp2016, "2017", "2016")
-//        
-//        val (lastTimestamp2018, ds2018): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
-//            lastTimestamp2016, "2018", "2017")
-//        
-//        val (lastTimestamp2019, ds2019): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
-//            lastTimestamp2016, "2019", "2018")
-//        
-        //        val smallSegments: Dataset[Seq[BeforeSplit]] = ds.flatMap(BigSegmentToSegment.get)(BeforeSplit.encoderSeq(spark))
+       
+        val (lastTimestamp2016, ds2013to2016): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsBetween2013and2016(spark)
+
+        val (lastTimestamp2017, ds2017): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
+            lastTimestamp2016, "2017", "2016")
+
+        val (lastTimestamp2018, ds2018): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
+            lastTimestamp2016, "2018", "2017")
+
+        val (lastTimestamp2019, ds2019): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
+            lastTimestamp2016, "2019", "2018")
+
     }
     
     def tradesCryptoDs(year: String, ss: SparkSession): Dataset[Crypto] = {

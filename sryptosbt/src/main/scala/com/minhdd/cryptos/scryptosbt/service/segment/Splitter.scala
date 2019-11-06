@@ -26,20 +26,33 @@ object Splitter {
         if (seq.size <= 2 || seq.map(_.value).linear(constants.relativeMinDelta)) {
             Seq(seq)
         } else {
-            val head: BeforeSplit = seq.head
             val length = seq.length
-            val variationsWithLastPoint: Seq[Double] = seq.slice(1, length - 1).map(_.value.relativeVariation(head.value))
-            val maybeSplitIndices =
-                variationsWithLastPoint.indices.filter(variationsWithLastPoint.apply(_) > constants.relativeMinDelta)
+            val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+            val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+            val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
             
-            if (maybeSplitIndices.size == 1) {
-                val splitPoint = maybeSplitIndices.head + 1
-                Seq(seq.slice(0, splitPoint + 1), seq.slice(splitPoint, length))
+            val superiorSplit: Option[Int] = 
+                if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
+                Option(superiorMaybeSplit._2)
             } else {
-                ???
+                None
+            }
+            val inferiorSplit: Option[Int] = 
+                if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
+                Option(inferiorMaybeSplit._2)
+            } else {
+                None
+            }
+    
+            val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+    
+            if (splitPoints.length == 1) {
+                Seq(seq.slice(0, splitPoints.head + 1), seq.slice(splitPoints.head, length))
+            } else if (splitPoints.length == 2) {
+                Seq(seq.slice(0, splitPoints.head + 1), seq.slice(splitPoints.head, splitPoints.last + 1), seq.slice(splitPoints.last, length))
+            } else {
+                Seq(seq)
             }
         }
     }
-    
-
 }
