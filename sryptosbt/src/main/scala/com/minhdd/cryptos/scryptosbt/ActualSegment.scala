@@ -9,8 +9,8 @@ import com.minhdd.cryptos.scryptosbt.service.segment.SegmentsCalculator
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-//after ToSmallSegments
-object CompleteSmallSegments {
+//after CompleteSmallSegments
+object ActualSegment {
     
     def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
                               lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
@@ -30,11 +30,11 @@ object CompleteSmallSegments {
       .master("local[*]").getOrCreate()
     
     spark.sparkContext.setLogLevel("ERROR")
-    
     import spark.implicits._
     
     def main(args: Array[String]): Unit = {
-        val smallSegments: Dataset[Seq[BeforeSplit]] = spark.read.parquet(s"$dataDirectory\\segments\\small\\20191113").as[Seq[BeforeSplit]]
+        val smallSegments: Dataset[Seq[BeforeSplit]] = 
+            spark.read.parquet(s"$dataDirectory\\segments\\small\\20191115").as[Seq[BeforeSplit]] 
         
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
@@ -54,12 +54,10 @@ object CompleteSmallSegments {
         val newTrades: Dataset[Crypto] = tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
         val newOHLCs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
         
-        val newBigs: Dataset[Seq[BeforeSplit]] = SegmentsCalculator.toBigSegments(spark, newTrades, newOHLCs)._2
-        val newSmalls: Dataset[Seq[BeforeSplit]] = ToSmallSegments.cut(newBigs)
-        
-        newSmalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
-        
-        val allSmalls: Dataset[Seq[BeforeSplit]] = newSmalls.union(smallSegments)
-        allSmalls.write.parquet(s"$dataDirectory\\segments\\small\\20191115")
+        val actualSegment: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(spark, newTrades, newOHLCs)
+    
+        println(actualSegment.size)
+        println(actualSegment.head.datetime)
+        println(actualSegment.last.datetime)
     }
 }

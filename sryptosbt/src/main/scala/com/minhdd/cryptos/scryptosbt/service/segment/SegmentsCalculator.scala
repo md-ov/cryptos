@@ -3,11 +3,26 @@ package com.minhdd.cryptos.scryptosbt.service.segment
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto}
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.Derivative
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 object SegmentsCalculator {
+    
+    def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
+        val beforeSplits: Seq[BeforeSplit] = toBeforeSplits(spark, trades, ohlcs)
+        val (bigSegments, lastTimestamp): (Seq[Seq[BeforeSplit]], Timestamp) = Splitter.toBigSegmentsAndLastTimestamp(beforeSplits)
+        val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(bigSegments)(BeforeSplit.encoderSeq(spark))
+        
+        (lastTimestamp, ds)
+    }
+    
+    def toBeforeSplits(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): Seq[BeforeSplit] = {
+        val joined: Dataset[KrakenCrypto] = SpacingSpreadingJoiner.join(spark, trades, ohlcs)
+        val collected: Seq[KrakenCrypto] = joined.collect().toSeq
+        toBeforeSplits(collected)
+    }
     
     def toBeforeSplits(krakenCryptos: Seq[KrakenCrypto]): Seq[BeforeSplit] = {
         if (krakenCryptos.isEmpty) {
