@@ -89,7 +89,7 @@ object ToBigSegments {
         (lastTimestamp, ds)
     }
     
-    private def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
+    def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
         val joined: Dataset[KrakenCrypto] = SpacingSpreadingJoiner.join(spark, trades, ohlcs)
         val collected: Seq[KrakenCrypto] = joined.collect().toSeq
         val beforeSplits: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(collected)

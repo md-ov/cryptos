@@ -5,12 +5,12 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.service.segment.Splitter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
+//after ToBigSegments
 object ToSmallSegments {
     def cut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
         import ds.sparkSession.implicits._
         val count = ds.count
         val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(Splitter.toSmallSegments)
-        print(s"=> ${smallers.count} smaller segments ")
         if (smallers.count > count) {
             cut(smallers)
         } else {
