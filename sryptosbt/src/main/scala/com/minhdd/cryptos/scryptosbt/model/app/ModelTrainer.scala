@@ -31,10 +31,10 @@ object ModelTrainer {
         
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed=42)
         val gbt = new GBTRegressor()
-        gbt.setSeed(273).setMaxIter(2)
+        gbt.setSeed(273).setMaxIter(5)
         
         val pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler, gbt))
-        val paramGrid = new ParamGridBuilder().addGrid(gbt.maxIter, Array(5, 100)).build()
+        val paramGrid = new ParamGridBuilder().addGrid(gbt.maxIter, Array(5, 10, 20, 50, 100)).build()
         val evaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
         val cv = new CrossValidator()
           .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
