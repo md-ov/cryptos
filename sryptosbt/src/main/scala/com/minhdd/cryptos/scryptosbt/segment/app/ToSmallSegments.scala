@@ -9,9 +9,9 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 object ToSmallSegments {
     
     def cut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-        val count = seq.count
+        val length = seq.length
         val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(Splitter.toSmallSegments)
-        if (smallers.count > count) {
+        if (smallers.length > length) {
             cut(smallers)
         } else {
             smallers
