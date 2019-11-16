@@ -7,6 +7,17 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 //after ToBigSegments
 object ToSmallSegments {
+    
+    def cut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
+        val count = seq.count
+        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(Splitter.toSmallSegments)
+        if (smallers.count > count) {
+            cut(smallers)
+        } else {
+            smallers
+        }
+    }
+    
     def cut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
         import ds.sparkSession.implicits._
         val count = ds.count
@@ -30,19 +41,12 @@ object ToSmallSegments {
         spark.sparkContext.setLogLevel("ERROR")
         import spark.implicits._
         
-        val aa: Seq[(String, String)] = 
-            Seq("1", "5", "15").flatMap(x => Seq("201316", "2017", "2018", "2019").map(y => (x, y)))
-    
-        val bb: Dataset[Seq[BeforeSplit]] = aa.map(c => {
-            println(c)
-            
-            val level = c._1
-            val year = c._2
-            val bigs: Dataset[Seq[BeforeSplit]] = spark.read.parquet(s"$dataDirectory\\segments\\big$level\\$year").as[Seq[BeforeSplit]]
-            print(bigs.count + " big segments ")
+        val bb: Dataset[Seq[BeforeSplit]] = Seq("201316", "2017", "2018", "2019").map(year => {
+            val bigs: Dataset[Seq[BeforeSplit]] = 
+                spark.read.parquet(s"$dataDirectory\\segments\\big\\big15\\$year").as[Seq[BeforeSplit]]
             cut(bigs)
         }).reduce(_.union(_))
         
-        bb.write.parquet(s"$dataDirectory\\segments\\small\\20191113")
+        bb.write.parquet(s"$dataDirectory\\segments\\small\\15\\20191116")
     }
 }
