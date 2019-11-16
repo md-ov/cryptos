@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.service.segment
+package com.minhdd.cryptos.scryptosbt.segment.service
 
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto}
@@ -121,7 +121,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
    
     test("five kraken cryptos") {
         val seqKrakenCrypto = Seq(krakenCrypto1, krakenCrypto2, krakenCrypto3, krakenCrypto4, krakenCrypto5)
-        val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
+        val seqBeforeSplit: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(seqKrakenCrypto)
         
         seqBeforeSplit should have length 5
         
@@ -153,7 +153,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
     
     test("two kraken cryptos") {
         val seqKrakenCrypto = Seq(krakenCrypto11, krakenCrypto2)
-        val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
+        val seqBeforeSplit: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(seqKrakenCrypto)
         
         seqBeforeSplit should have length 2
         
@@ -181,7 +181,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         val seqKrakenCrypto = Seq(krakenCrypto1_10535, krakenCrypto2_20535, krakenCrypto3_20535, krakenCrypto4_40535,
             krakenCrypto5_10200)
         
-        val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
+        val seqBeforeSplit: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(seqKrakenCrypto)
         
         assert(seqBeforeSplit.map(_.importantChange.get) == Seq(false, false, false, true, true))
         assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionNone, evolutionNone, evolutionUp, evolutionDown))
@@ -194,7 +194,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         
         val seqKrakenCrypto = Seq(krakenCrypto1_10535, krakenCrypto2_20535, krakenCrypto3_535, krakenCrypto4_40535, krakenCrypto5_10200)
         
-        val seqBeforeSplit: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(seqKrakenCrypto)
+        val seqBeforeSplit: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(seqKrakenCrypto)
         
         val ds: Dataset[BeforeSplit] = spark.createDataset(seqBeforeSplit)(BeforeSplit.encoder(spark))
         ds.show(false)

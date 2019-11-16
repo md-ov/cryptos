@@ -1,11 +1,11 @@
-package com.minhdd.cryptos.scryptosbt
+package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.ToBigSegments.ohlcCryptoDs
 import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
-import com.minhdd.cryptos.scryptosbt.service.segment.SegmentsCalculator
+import com.minhdd.cryptos.scryptosbt.segment.app.ToBigSegments.ohlcCryptoDs
+import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -54,7 +54,7 @@ object ActualSegment {
         val newTrades: Dataset[Crypto] = tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
         val newOHLCs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
         
-        val actualSegment: Seq[BeforeSplit] = SegmentsCalculator.toBeforeSplits(spark, newTrades, newOHLCs)
+        val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
     
         println(actualSegment.size)
         println(actualSegment.head.datetime)

@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.service.segment
+package com.minhdd.cryptos.scryptosbt.segment.service
 
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper

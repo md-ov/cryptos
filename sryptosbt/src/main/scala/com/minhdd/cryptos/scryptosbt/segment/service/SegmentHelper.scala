@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.service.segment
+package com.minhdd.cryptos.scryptosbt.segment.service
 
 import java.sql.Timestamp
 
@@ -8,7 +8,7 @@ import com.minhdd.cryptos.scryptosbt.tools.Derivative
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-object SegmentsCalculator {
+object SegmentHelper {
     
     def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
         val beforeSplits: Seq[BeforeSplit] = toBeforeSplits(spark, trades, ohlcs)

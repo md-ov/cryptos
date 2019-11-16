@@ -1,8 +1,7 @@
-package com.minhdd.cryptos.scryptosbt
+package com.minhdd.cryptos.scryptosbt.segment.app
 
 import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.service.segment.Splitter
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object Viewer {

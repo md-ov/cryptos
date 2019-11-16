@@ -1,10 +1,10 @@
-package com.minhdd.cryptos.scryptosbt.service.segment
+package com.minhdd.cryptos.scryptosbt.segment.service
 
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey, CryptoValue, KrakenCrypto}
-import com.minhdd.cryptos.scryptosbt.service.segment.CryptoContainer.SeqCryptoContainerImplicit
+import com.minhdd.cryptos.scryptosbt.segment.service.CryptoContainer.SeqCryptoContainerImplicit
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import org.apache.spark.sql.expressions.Window
