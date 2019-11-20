@@ -8,8 +8,6 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import ml2.{label, predict, prediction}
 
-case class Rates(truePositive: Double, falsePositive: Double, trueRate: Double, falseNegative: Double)
-
 object Regressor {
     val segmentDirectory = "all-190705-from-brut"
     
@@ -41,28 +39,6 @@ object Regressor {
         exploreDfAndFindThreshold(ss, df)
     }
     
-    def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): (Double, Rates) = {
-        for (i <- 0 to 10) {
-            val binarizerForSegmentDetection = new Binarizer()
-              .setInputCol(prediction)
-              .setOutputCol(predict)
-            println("threshold : " + i.toDouble/10)
-            binarizerForSegmentDetection.setThreshold(i.toDouble/10)
-            val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
-            val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
-            counts.show()
-        }
     
-        val t: (Double, Rates) = ThresholdCalculator.getThreshold(ss, df)
-        println(t)
-        val binarizerForSegmentDetection = new Binarizer()
-          .setInputCol(prediction)
-          .setOutputCol(predict)
-        binarizerForSegmentDetection.setThreshold(t._1)
-        val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
-        val counts: DataFrame = segmentDetectionBinaryResults.groupBy(label, predict).count()
-        counts.show()
-        t
-    }
 
 }
