@@ -32,16 +32,13 @@ object ActualSegment {
     spark.sparkContext.setLogLevel("ERROR")
     import spark.implicits._
     
-    def main(args: Array[String]): Unit = {
-        val smallSegments: Dataset[Seq[BeforeSplit]] = 
-            spark.read.parquet(s"$dataDirectory\\segments\\small\\20191115").as[Seq[BeforeSplit]] 
-        
+    def getActualSegment: Seq[Seq[BeforeSplit]] = {
+        val smallSegments: Dataset[Seq[BeforeSplit]] =
+            spark.read.parquet(s"$dataDirectory\\segments\\small\\15\\20191116-all").as[Seq[BeforeSplit]]
+    
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
-        println(lastSegment.size)
-        println(lastSegment.head.datetime)
-        println(lastTimestamp)
-        
+    
         val lastTsHelper: TimestampHelper = TimestampHelper(lastTimestamp.getTime)
         val lastCryptoPartitionKey = CryptoPartitionKey(
             asset = "XBT",
@@ -53,12 +50,17 @@ object ActualSegment {
             day = lastTsHelper.getDay)
         val newTrades: Dataset[Crypto] = tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
         val newOHLCs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
-        
-        val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
-        val actualSmallSegments: Seq[Seq[BeforeSplit]] = ToSmallSegments.cut(Seq(actualSegment))
     
-        println(actualSegment.size)
-        println(actualSegment.head.datetime)
-        println(actualSegment.last.datetime)
+        val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
+        ToSmallSegments.cut(Seq(actualSegment))
+    }
+    
+    def main(args: Array[String]): Unit = {
+        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegment
+    
+        println(actualSegments.size)
+        println(actualSegments.last.size)
+        println(actualSegments.last.head.datetime)
+        println(actualSegments.last.last.datetime)
     }
 }
