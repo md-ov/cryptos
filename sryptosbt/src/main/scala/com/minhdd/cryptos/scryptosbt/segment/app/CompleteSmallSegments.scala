@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
+import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.segment.app.ToBigSegments.ohlcCryptoDs
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
@@ -61,6 +61,6 @@ object CompleteSmallSegments {
         newSmalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
         
         val allSmalls: Dataset[Seq[BeforeSplit]] = newSmalls.union(smallSegments)
-        allSmalls.write.parquet(s"$dataDirectory\\segments\\small\\15\\20191116-all")
+        allSmalls.write.parquet(s"$dataDirectory\\segments\\small\\15\\$directoryNow")
     }
 }
