@@ -34,7 +34,7 @@ object ModelTrainer {
                                                              structypePath: String,
                                                              modelPath: String,
                                                              resultPath: String): Unit = {
-        val df: DataFrame = spark.read.parquet(segmentsPath).limit(10)
+        val df: DataFrame = spark.read.parquet(segmentsPath)
         
         val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark, structypePath)
         
