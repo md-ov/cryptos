@@ -31,8 +31,8 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
 
 object Expansion {
     
-    def getTransformer(spark: SparkSession): ExpansionSegmentsTransformer = {
-        new ExpansionSegmentsTransformer(spark, spark.read.parquet("file://" + getClass.getResource("/expansion").getPath).schema)
+    def getTransformer(spark: SparkSession, structTypeFilePath: String): ExpansionSegmentsTransformer = {
+        new ExpansionSegmentsTransformer(spark, spark.read.parquet(structTypeFilePath).schema)
     }
     
     def expansion(ss: SparkSession, ds: Dataset[Seq[BeforeSplit]]): DataFrame = {

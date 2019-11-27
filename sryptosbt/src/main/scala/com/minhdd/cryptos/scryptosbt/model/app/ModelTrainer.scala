@@ -13,23 +13,30 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 object ModelTrainer {
     
     def main(args: Array[String]): Unit = {
-        trainingModelAndWriteModelAndTestDfWithRawPrediction
+        val spark: SparkSession = SparkSession.builder()
+          .config("spark.driver.maxResultSize", "3g")
+          .config("spark.network.timeout", "600s")
+          .config("spark.executor.heartbeatInterval", "60s")
+          .appName("big segments")
+          .master("local[*]").getOrCreate()
+        
+        spark.sparkContext.setLogLevel("ERROR")
+        
+        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
+        val modelPath = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val resultPath = s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
     }
     
-    val spark: SparkSession = SparkSession.builder()
-      .config("spark.driver.maxResultSize", "3g")
-      .config("spark.network.timeout", "600s")
-      .config("spark.executor.heartbeatInterval", "60s")
-      .appName("big segments")
-      .master("local[*]").getOrCreate()
-    
-    spark.sparkContext.setLogLevel("ERROR")
-    
-    private def trainingModelAndWriteModelAndTestDfWithRawPrediction() = {
-        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-        val df: DataFrame = spark.read.parquet(path)
+    def trainingModelAndWriteModelAndTestDfWithRawPrediction(spark: SparkSession,
+                                                             segmentsPath: String,
+                                                             structypePath: String,
+                                                             modelPath: String,
+                                                             resultPath: String): Unit = {
+        val df: DataFrame = spark.read.parquet(segmentsPath).limit(10)
         
-        val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark)
+        val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark, structypePath)
         
         val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed = 42)
         val gbt = new GBTRegressor()
@@ -43,10 +50,10 @@ object ModelTrainer {
           .setNumFolds(3).setSeed(27)
         
         val model: CrossValidatorModel = cv.fit(trainDF)
-        ModelHelper.saveModel(spark, model, s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        ModelHelper.saveModel(spark, model, modelPath)
         
         val testDfWithRawPrediction: DataFrame = model.transform(testDF)
         testDfWithRawPrediction.show(false)
-        testDfWithRawPrediction.write.parquet(s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        testDfWithRawPrediction.write.parquet(resultPath)
     }
 }
