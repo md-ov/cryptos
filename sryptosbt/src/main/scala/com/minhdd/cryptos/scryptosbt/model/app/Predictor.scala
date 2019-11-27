@@ -1,11 +1,14 @@
 package com.minhdd.cryptos.scryptosbt.model.app
 
+import java.sql.Timestamp
+
 import com.minhdd.cryptos.scryptosbt.constants.{dataDirectory, directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegment
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
 import org.apache.spark.ml.tuning.CrossValidatorModel
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{array_contains, col, lit}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Predictor {
     
@@ -22,19 +25,28 @@ object Predictor {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    def getDataFrameFromSegments(segments: Seq[Seq[BeforeSplit]]): DataFrame = {
+    def getDataFrameFromSegments(seq: Seq[Seq[BeforeSplit]]): (Array[(Timestamp, Int)], DataFrame) = {
         import spark.implicits._
-        spark.createDataset(segments).toDF()
-//        spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").limit(5)
+        val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(seq).cache()
+        //        val segments: DataFrame = Expansion.expansion(spark, ds)
+        //        segments.filter(col("numberOfElement") === 2).show(10, false)
+        val beginDtAndLengths: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
+        (beginDtAndLengths, ds.toDF())
+        //        spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").limit(5)
     }
     
     def predict() = {
-        def df: DataFrame = getDataFrameFromSegments(getActualSegment)
-        df.show(5, false)
-        val model: CrossValidatorModel = ModelHelper.getModel(spark, s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        val (s, df): (Array[(Timestamp, Int)], DataFrame) = getDataFrameFromSegments(getActualSegment)
+        s.foreach(println)
+        println(df.count())
+        val modelPath: String = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df)
         println(segmentsWithRawPrediction.count())
-        segmentsWithRawPrediction.show(5, false)
+        segmentsWithRawPrediction
+          .filter(array_contains(lit(s.map(_._2)), col("numberOfElement")))
+          .select("begindt", "enddt", "beginEvolution", "endEvolution", "numberOfElement", "label", "prediction")
+          .show(100, false)
     }
     
 }

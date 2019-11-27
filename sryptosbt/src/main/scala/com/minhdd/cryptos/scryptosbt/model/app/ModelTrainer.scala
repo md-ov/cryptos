@@ -26,7 +26,8 @@ object ModelTrainer {
     spark.sparkContext.setLogLevel("ERROR")
     
     private def trainingModelAndWriteModelAndTestDfWithRawPrediction() = {
-        val df: DataFrame = spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val df: DataFrame = spark.read.parquet(path)
         
         val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark)
         

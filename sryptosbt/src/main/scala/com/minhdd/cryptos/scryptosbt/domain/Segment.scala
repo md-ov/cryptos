@@ -3,21 +3,21 @@ package com.minhdd.cryptos.scryptosbt.domain
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 
 case class Segment(
-                    begin: BeforeSplit,
-                    end: BeforeSplit,
-                    standardDeviationVolume: Double,
-                    sameEvolution: Boolean,
-                    numberOfElement: Int,
-                    averageVolume: Double,
-                    averageVariation: Double,
-                    standardDeviationVariation: Double,
-                    averageDerive: Double,
-                    standardDeviationDerive: Double,
-                    averageSecondDerive: Double,
-                    standardDeviationSecondDerive: Double,
-                    averageCount: Double,
-                    standardDeviationCount: Double
-                  )
+    begin: BeforeSplit,
+    end: BeforeSplit,
+    standardDeviationVolume: Double,
+    sameEvolution: Boolean,
+    numberOfElement: Int,
+    averageVolume: Double,
+    averageVariation: Double,
+    standardDeviationVariation: Double,
+    averageDerive: Double,
+    standardDeviationDerive: Double,
+    averageSecondDerive: Double,
+    standardDeviationSecondDerive: Double,
+    averageCount: Double,
+    standardDeviationCount: Double
+)
 
 object Segment {
     def apply(seq: Seq[BeforeSplit], last: BeforeSplit): Segment = {
@@ -41,8 +41,8 @@ object Segment {
     }
     
     def segments(seq: Seq[BeforeSplit]): Seq[Segment] = {
-        def size = seq.size
-        
+        val size: Int = seq.size
+        //why 2 to size : a segment has at least 2 elements and at most size elements
         (2 to size).map(i => {
             val s = seq.take(i)
             Segment(s, seq.last)

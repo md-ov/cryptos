@@ -15,21 +15,16 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
     override def transform(ds: Dataset[_]): DataFrame = {
         import spark.implicits._
         Expansion.expansion(spark, ds.as[Seq[BeforeSplit]])
-          .filter(!(col("beginEvolution") === evolutionNone))
+//          .filter(!(col("beginEvolution") === evolutionNone)) //TODO il faut pas car il y a beaucoup de evolutionNone
           .withColumn("label",
               when(col("endEvolution") === evolutionUp, 1)
                 .when(col("endEvolution") === evolutionDown, 0)
                 .otherwise(-1))
     }
     
-    override def copy(extra: ParamMap): ExpansionSegmentsTransformer = {
-        this
-    }
+    override def copy(extra: ParamMap): ExpansionSegmentsTransformer = this
     
-    override def transformSchema(schema: StructType): StructType = {
-        //il faut retourner le schema de sortie ici
-        transformedDataSchema
-    }
+    override def transformSchema(schema: StructType): StructType = transformedDataSchema
     
     override val uid: String = UUID.randomUUID().toString()
 }
@@ -40,42 +35,10 @@ object Expansion {
         new ExpansionSegmentsTransformer(spark, spark.read.parquet("file://" + getClass.getResource("/expansion").getPath).schema)
     }
     
-    def expansion(ss: SparkSession, beforeSplitsSeqDataset: Dataset[Seq[BeforeSplit]]): DataFrame = {
+    def expansion(ss: SparkSession, ds: Dataset[Seq[BeforeSplit]]): DataFrame = {
         import ss.implicits._
-        val expandedSegments: Dataset[Segment] = beforeSplitsSeqDataset.flatMap(Segment.segments)
-        
-        val segmentsDF: DataFrame =
-            expandedSegments
-              .withColumn("begindt", col("begin.datetime"))
-              .withColumn("enddt", col("end.datetime"))
-              .withColumn("beginvalue", col("begin.value"))
-              .withColumn("endvalue", col("end.value"))
-              .withColumn("beginderive", col("begin.derive"))
-              .withColumn("endderive", col("end.derive"))
-              .withColumn("beginsecondderive", col("begin.secondDerive"))
-              .withColumn("endsecondderive", col("end.secondDerive"))
-              .withColumn("beginEvolution", col("begin.evolution"))
-              .withColumn("endEvolution", col("end.evolution"))
-              .withColumn("beginVariation", col("begin.variation"))
-              .withColumn("endVariation", col("end.variation"))
-              .withColumn("beginVolume", col("begin.volume"))
-              .withColumn("endVolume", col("end.volume"))
-              .withColumn("beginCount", col("begin.count"))
-              .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
-              .select(
-                  "begindt", "enddt", "beginvalue", "endvalue",
-                  "beginEvolution", "beginVariation", "beginVolume",
-                  "endEvolution", "endVariation", "endVolume",
-                  "standardDeviationVolume",
-                  "sameEvolution", "numberOfElement", "averageVolume",
-                  "averageVariation", "standardDeviationVariation",
-                  "averageDerive", "standardDeviationDerive",
-                  "averageSecondDerive", "standardDeviationSecondDerive",
-                  "averageCount", "standardDeviationCount",
-                  "beginCount", "ohlcBeginVolume",
-                  "beginderive", "endderive", "beginsecondderive", "endsecondderive"
-              )
-        segmentsDF
+        val expandedSegments: Dataset[Segment] = ds.flatMap(Segment.segments)
+        ml.toDataFrame(expandedSegments)
     }
 }
 
