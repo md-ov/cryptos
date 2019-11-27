@@ -46,10 +46,10 @@ object ml {
           .withColumn("beginCount", col("begin.count"))
           .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
           .select(
-              "begindt", "enddt", "beginvalue", "endvalue",
+              "begindt", "enddt", "evolutionDirection", "beginvalue", "endvalue",
               "beginEvolution", "beginVariation", "beginVolume",
               "endEvolution", "endVariation", "endVolume",
-              "standardDeviationVolume", "sameEvolution", "numberOfElement", 
+              "standardDeviationVolume", "numberOfElement", 
               "averageVolume", "averageVariation", "standardDeviationVariation",
               "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive",
               "averageCount", "standardDeviationCount",

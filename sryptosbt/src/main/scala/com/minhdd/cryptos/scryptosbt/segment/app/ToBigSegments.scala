@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
+import com.minhdd.cryptos.scryptosbt.constants.{dataDirectory, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -62,7 +62,7 @@ object ToBigSegments {
         val (nextLastTimestamp: Timestamp, ds: Dataset[Seq[BeforeSplit]]) =
             SegmentHelper.toBigSegments(spark, trades, ohlcs)
         
-        ds.write.parquet(s"$dataDirectory\\segments\\big\\$year")
+        ds.write.parquet(s"$dataDirectory\\segments\\big\\big$numberOfMinutesBetweenTwoElement\\$year")
         
         ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(1000, true)
         
@@ -84,7 +84,7 @@ object ToBigSegments {
         val (lastTimestamp: Timestamp, ds: Dataset[Seq[BeforeSplit]]) =
             SegmentHelper.toBigSegments(spark, trades, ohlcs)
         
-        ds.write.parquet(s"$dataDirectory\\segments\\big\\201316")
+        ds.write.parquet(s"$dataDirectory\\segments\\big\\big$numberOfMinutesBetweenTwoElement\\201316")
         
         ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(1000, true)
         

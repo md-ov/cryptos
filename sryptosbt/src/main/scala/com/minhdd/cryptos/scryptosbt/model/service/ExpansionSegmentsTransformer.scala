@@ -17,8 +17,8 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
         Expansion.expansion(spark, ds.as[Seq[BeforeSplit]])
 //          .filter(!(col("beginEvolution") === evolutionNone)) //TODO il faut pas car il y a beaucoup de evolutionNone
           .withColumn("label",
-              when(col("endEvolution") === evolutionUp, 1)
-                .when(col("endEvolution") === evolutionDown, 0)
+              when(col("evolutionDirection") === evolutionUp, 1)
+                .when(col("evolutionDirection") === evolutionDown, 0)
                 .otherwise(-1))
     }
     

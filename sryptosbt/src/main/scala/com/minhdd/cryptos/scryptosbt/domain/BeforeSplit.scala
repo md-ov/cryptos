@@ -17,7 +17,8 @@ case class BeforeSplit(
                         ohlc_volume: Option[Double],
                         volume: Double,
                         count: Option[Int],
-                        importantChange: Option[Boolean]
+                        importantChange: Option[Boolean],
+                        isEndOfSegment: Boolean
                       )
 
 object BeforeSplit {
@@ -44,7 +45,8 @@ object BeforeSplit {
             ohlc_volume = krakenCrypto.ohlcVolume,
             volume = krakenCrypto.volume,
             count = krakenCrypto.count,
-            importantChange = None)
+            importantChange = None,
+            isEndOfSegment = false)
     }
     
     def apply(timestamp: Timestamp, value: Double): BeforeSplit = {
@@ -59,6 +61,7 @@ object BeforeSplit {
             ohlc_volume = None,
             volume = 0D,
             count = None,
-            importantChange = None)
+            importantChange = None,
+            isEndOfSegment = false)
     }
 }

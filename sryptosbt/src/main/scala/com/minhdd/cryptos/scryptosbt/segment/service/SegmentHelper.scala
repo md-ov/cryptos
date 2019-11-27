@@ -53,7 +53,8 @@ object SegmentHelper {
                 ohlc_volume = sortedKrakenCryptos.apply(i).ohlcVolume,
                 volume = sortedKrakenCryptos.apply(i).volume,
                 count = sortedKrakenCryptos.apply(i).count,
-                importantChange = Option(importantChanges.apply(i))
+                importantChange = Option(importantChanges.apply(i)),
+                isEndOfSegment = true
             ))
         }
     }

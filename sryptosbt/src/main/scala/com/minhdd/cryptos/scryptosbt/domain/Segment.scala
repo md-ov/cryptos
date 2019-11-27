@@ -1,12 +1,13 @@
 package com.minhdd.cryptos.scryptosbt.domain
 
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
+import com.minhdd.cryptos.scryptosbt.constants.{evolutionNone, evolutionUp, evolutionDown}
 
 case class Segment(
     begin: BeforeSplit,
-    end: BeforeSplit,
+    end: Option[BeforeSplit],
+    evolutionDirection: String,
     standardDeviationVolume: Double,
-    sameEvolution: Boolean,
     numberOfElement: Int,
     averageVolume: Double,
     averageVariation: Double,
@@ -20,13 +21,20 @@ case class Segment(
 )
 
 object Segment {
-    def apply(seq: Seq[BeforeSplit], last: BeforeSplit): Segment = {
+    def apply(seq: Seq[BeforeSplit], last: Option[BeforeSplit]): Segment = {
         val begin = seq.head
+        val evolutionDirection = if (last.isEmpty){
+            evolutionNone
+        } else if (last.get.value > begin.value) {
+            evolutionUp
+        } else {
+            evolutionDown
+        }
         new Segment(
             begin = begin,
             end = last,
+            evolutionDirection = evolutionDirection,
             numberOfElement = seq.size,
-            sameEvolution = begin.evolution == last.evolution,
             standardDeviationVolume = seq.map(_.volume).standardDeviation,
             averageVolume = seq.map(_.volume).avg,
             averageVariation = seq.map(_.variation).avg,
@@ -41,11 +49,13 @@ object Segment {
     }
     
     def segments(seq: Seq[BeforeSplit]): Seq[Segment] = {
-        val size: Int = seq.size
+        val last = seq.last
+        val lastOption = if (last.isEndOfSegment) Option(last) else None
+        
         //why 2 to size : a segment has at least 2 elements and at most size elements
-        (2 to size).map(i => {
+        (2 to seq.size).map(i => {
             val s = seq.take(i)
-            Segment(s, seq.last)
+            Segment(s, lastOption)
         })
     }
     
