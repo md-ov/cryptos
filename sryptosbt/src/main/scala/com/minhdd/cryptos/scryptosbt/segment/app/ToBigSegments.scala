@@ -7,6 +7,7 @@ import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitio
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
+//run first
 object ToBigSegments {
     
     def main(args: Array[String]): Unit = {
