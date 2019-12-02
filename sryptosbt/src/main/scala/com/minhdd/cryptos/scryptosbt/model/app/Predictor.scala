@@ -2,7 +2,8 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants.{dataDirectory, directoryNow, numberOfMinutesBetweenTwoElement}
+import com.minhdd.cryptos.scryptosbt.env.dataDirectory
+import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegment
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper

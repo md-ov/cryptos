@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.segment.app
 
-import com.minhdd.cryptos.scryptosbt.constants.{dataDirectory, directoryNow, numberOfMinutesBetweenTwoElement}
+import com.minhdd.cryptos.scryptosbt.env._
+import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
 import org.apache.spark.sql.{Dataset, SparkSession}

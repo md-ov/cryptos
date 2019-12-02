@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
+import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{indexerBegin, vectorAssembler, _}
 import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformer}
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper

@@ -2,6 +2,8 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
+
+import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.segment.app.ToBigSegments.ohlcCryptoDs
@@ -14,8 +16,9 @@ object CompleteSmallSegments {
     
     def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
                               lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
-        val parquetPath = "D://ws//cryptos//data//parquets"
-        val todayPath = "D://ws//cryptos//data//parquets//XBT//EUR//TRADES//today//parquet"
+        val parquetPath = s"${dataDirectory.replaceAll("\\", "//")}//parquets"
+        val todayPath = s"${dataDirectory.replaceAll("\\", "//")}//parquets//XBT//EUR//TRADES//today//parquet"
+        
         Crypto.getPartitionsUniFromPathFromLastTimestamp(
             ss = ss, prefix = "file:///",
             path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,

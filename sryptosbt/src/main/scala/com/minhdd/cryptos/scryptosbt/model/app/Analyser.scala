@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
+import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.model.service.ThresholdCalculator
 import org.apache.spark.sql.{DataFrame, SparkSession}
 

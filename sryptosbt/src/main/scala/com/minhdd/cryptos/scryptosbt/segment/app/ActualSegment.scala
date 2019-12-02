@@ -2,7 +2,8 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants.{dataDirectory, directoryNow, numberOfMinutesBetweenTwoElement}
+import com.minhdd.cryptos.scryptosbt.env.dataDirectory
+import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.segment.app.ToBigSegments.ohlcCryptoDs
 import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}

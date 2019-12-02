@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.segment.app
 
-import com.minhdd.cryptos.scryptosbt.constants.dataDirectory
+import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import org.apache.spark.sql.{Dataset, SparkSession}
 
