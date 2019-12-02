@@ -16,11 +16,11 @@ object CompleteSmallSegments {
     
     def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
                               lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
-        val parquetPath = s"${dataDirectory.replaceAll("\\", "//")}//parquets"
-        val todayPath = s"${dataDirectory.replaceAll("\\", "//")}//parquets//XBT//EUR//TRADES//today//parquet"
+        val parquetPath = s"$dataDirectoryy//parquets"
+        val todayPath = s"$dataDirectoryy//parquets//XBT//EUR//TRADES//today//parquet"
         
         Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            ss = ss, prefix = "file:///",
+            spark = ss, prefix = "file:///",
             path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
             ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }

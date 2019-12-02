@@ -199,7 +199,7 @@ object OHLCAndTradesExplorator {
         val parquetPath = "D://ws//cryptos//data//parquets"
         val todayPath = "D://ws//cryptos//data//parquets//XBT//EUR//TRADES//today//parquet"
         Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            ss = ss, prefix = "file:///",
+            spark = ss, prefix = "file:///",
             path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
             ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }
