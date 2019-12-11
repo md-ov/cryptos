@@ -50,7 +50,12 @@ object ToBigSegments {
     def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
             parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
-        Crypto.getPartitionFromPath(ss, parquetPath).get
+        val optionDS = Crypto.getPartitionFromPath(ss, parquetPath)
+        if (optionDS.isEmpty) {
+            throw new RuntimeException("There is no OHLC data")
+        } else {
+            optionDS.get
+        }
     }
     
     def toBigSegmentsAfter2016(spark: SparkSession, lastTimestamp: Timestamp, year: String, lastYear: String): (Timestamp,

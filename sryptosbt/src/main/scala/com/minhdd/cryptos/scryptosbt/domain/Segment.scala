@@ -4,8 +4,6 @@ import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
 import org.apache.spark.sql.{Encoder, SparkSession}
 
-
-//if you modify this case class, you need to modify also manually the parquet /expansion
 case class Segment(
     begin: BeforeSplit,
     end: Option[BeforeSplit],
@@ -60,13 +58,16 @@ object Segment {
     
     def segments(seq: Seq[BeforeSplit]): Seq[Segment] = {
         val last = seq.last
-        val lastOption = if (last.isEndOfSegment) Option(last) else None
-        
-        //why 2 to size : a segment has at least 2 elements and at most size elements
-        (2 to seq.size).map(i => {
-            val s = seq.take(i)
-            Segment(s, lastOption)
-        })
+    
+        if (last.isEndOfSegment) {
+            //why 2 to size : a segment has at least 2 elements and at most size elements
+            (2 to seq.size).map(i => {
+                val s = seq.take(i)
+                Segment(s, Option(last))
+            })
+        } else {
+            Seq(Segment(seq, None))
+        }
     }
     
 }

@@ -38,12 +38,12 @@ object Predictor {
     
     def predict() = {
         val (s, df): (Array[(Timestamp, Int)], DataFrame) = getDataFrameFromSegments(getActualSegment)
-        s.foreach(println)
-        println(df.count())
+//        s.foreach(println)
+//        println(df.count())
         val modelPath: String = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df)
-        println(segmentsWithRawPrediction.count())
+//        println(segmentsWithRawPrediction.count())
         segmentsWithRawPrediction
           .filter(array_contains(lit(s.map(_._2)), col("numberOfElement")))
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection", "beginvalue", "endvalue",

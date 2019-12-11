@@ -11,10 +11,13 @@ object NumberHelper {
         else s.toString
     }
     
-    def fromStringToInt(s: String): Option[Int] = {
+    def fromStringToInt(s: String, ignoreException: Boolean = true): Option[Int] = {
         Try {
             s.toInt
-        }.mapException(e => new Exception(s"Not a number : $s", e)).toOption
+        }.mapException(e => {
+            if (!ignoreException) println(e.getMessage)
+            new Exception(s"Not a number : $s", e)
+        }).toOption
     }
     
     implicit class SeqDoubleImplicit(input: Seq[Double]) {
