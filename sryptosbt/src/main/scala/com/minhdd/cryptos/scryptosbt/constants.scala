@@ -7,10 +7,11 @@ object constants {
     val evolutionDown = "down"
     val numberOfMinutesBetweenTwoElement: Int = 15
     // sampling every x minutes, 4 jours on one window
-    val numberOfCryptoOnOneWindow: Int = (4 * 24 *60 / numberOfMinutesBetweenTwoElement)
+    val numberOfCryptoOnOneWindow: Int = (4 * 24 * 60 / numberOfMinutesBetweenTwoElement)
     
     val minDeltaValue = 150
     val relativeMinDelta = 0.02
     
-    val directoryNow = "20191202"
+    val directoryNow = "20191204"
+    val thisYear = "2019"
 }
