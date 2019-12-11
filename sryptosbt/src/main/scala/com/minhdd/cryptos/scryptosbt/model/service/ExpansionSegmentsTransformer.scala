@@ -17,8 +17,8 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
         Expansion.expansion(spark, ds.as[Seq[BeforeSplit]])
 //          .filter(!(col("beginEvolution") === evolutionNone)) //TODO il faut pas car il y a beaucoup de evolutionNone
           .withColumn("label",
-              when(col("evolutionDirection") === evolutionUp, 1)
-                .when(col("evolutionDirection") === evolutionDown, 0)
+              when(col("evolutionDirection") === evolutionUp && col("isSegmentEnd") === true, 1)
+                .when(col("evolutionDirection") === evolutionDown && col("isSegmentEnd") === true, 0)
                 .otherwise(-1))
     }
     
@@ -38,7 +38,16 @@ object Expansion {
     def expansion(ss: SparkSession, ds: Dataset[Seq[BeforeSplit]]): DataFrame = {
         import ss.implicits._
         val expandedSegments: Dataset[Segment] = ds.flatMap(Segment.segments)
-        ml.toDataFrame(expandedSegments)
+//        println("expandedSegments")
+//        expandedSegments.show(2, false)
+//        println("----------------")
+        
+        val df = ml.toDataFrame(expandedSegments)
+//        println("dataframe")
+//        df.show(2, false)
+//        println("----------------")
+        
+        df
     }
 }
 

@@ -1,8 +1,11 @@
 package com.minhdd.cryptos.scryptosbt.domain
 
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
-import com.minhdd.cryptos.scryptosbt.constants.{evolutionNone, evolutionUp, evolutionDown}
+import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
+import org.apache.spark.sql.{Encoder, SparkSession}
 
+
+//if you modify this case class, you need to modify also manually the parquet /expansion
 case class Segment(
     begin: BeforeSplit,
     end: Option[BeforeSplit],
@@ -17,10 +20,16 @@ case class Segment(
     averageSecondDerive: Double,
     standardDeviationSecondDerive: Double,
     averageCount: Double,
-    standardDeviationCount: Double
+    standardDeviationCount: Double,
+    isSegmentEnd: Boolean
 )
 
 object Segment {
+    def encoder(spark: SparkSession): Encoder[Segment] = {
+        import spark.implicits._
+        implicitly[Encoder[Segment]]
+    }
+    
     def apply(seq: Seq[BeforeSplit], last: Option[BeforeSplit]): Segment = {
         val begin = seq.head
         val evolutionDirection = if (last.isEmpty){
@@ -44,7 +53,8 @@ object Segment {
             averageSecondDerive = seq.flatMap(_.secondDerive).avg,
             standardDeviationSecondDerive = seq.flatMap(_.secondDerive).standardDeviation,
             averageCount = seq.filter(_.count.isDefined).map(_.count.get.toDouble).avg,
-            standardDeviationCount = seq.filter(_.count.isDefined).map(_.count.get.toDouble).standardDeviation
+            standardDeviationCount = seq.filter(_.count.isDefined).map(_.count.get.toDouble).standardDeviation,
+            isSegmentEnd = last.exists(_.isEndOfSegment)
         )
     }
     

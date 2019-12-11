@@ -45,8 +45,9 @@ object ml {
           .withColumn("endVolume", col("end.volume"))
           .withColumn("beginCount", col("begin.count"))
           .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
+          .withColumn("isSegmentEnd", col("isSegmentEnd"))
           .select(
-              "begindt", "enddt", "evolutionDirection", "beginvalue", "endvalue",
+              "begindt", "enddt", "isSegmentEnd", "evolutionDirection", "beginvalue", "endvalue",
               "beginEvolution", "beginVariation", "beginVolume",
               "endEvolution", "endVariation", "endVolume",
               "standardDeviationVolume", "numberOfElement", 

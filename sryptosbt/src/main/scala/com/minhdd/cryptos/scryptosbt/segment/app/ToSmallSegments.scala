@@ -26,21 +26,17 @@ object ToSmallSegments {
         if (smallers.count > count) {
             cut(smallers)
         } else {
-            smallers.map(seq => {
-                val last = seq.last
-                val newLast = last.copy(isEndOfSegment = true)
-                seq.slice(0, seq.size - 1) :+ newLast
-            })
+            smallers
         }
     }
     
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder()
-          .config("spark.driver.maxResultSize", "3g")
-          .config("spark.network.timeout", "600s")
-          .config("spark.executor.heartbeatInterval", "60s")
-          .appName("small segments")
-          .master("local[*]").getOrCreate()
+            .config("spark.driver.maxResultSize", "3g")
+            .config("spark.network.timeout", "600s")
+            .config("spark.executor.heartbeatInterval", "60s")
+            .appName("small segments")
+            .master("local[*]").getOrCreate()
         
         spark.sparkContext.setLogLevel("ERROR")
         import spark.implicits._
@@ -51,6 +47,8 @@ object ToSmallSegments {
             cut(bigs)
         }).reduce(_.union(_))
         
-        bb.write.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        bb.filter(_.last.isEndOfSegment == false).show(5, false)
+        
+                bb.write.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
     }
 }

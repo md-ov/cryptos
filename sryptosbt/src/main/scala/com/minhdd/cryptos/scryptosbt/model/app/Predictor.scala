@@ -46,9 +46,8 @@ object Predictor {
         println(segmentsWithRawPrediction.count())
         segmentsWithRawPrediction
           .filter(array_contains(lit(s.map(_._2)), col("numberOfElement")))
-          .select("begindt", "enddt", "beginEvolution", "endEvolution", "evolutionDirection", "beginvalue", "endvalue",
+          .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection", "beginvalue", "endvalue",
               "numberOfElement", "label", "prediction")
           .show(100, false)
     }
-    
 }

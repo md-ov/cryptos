@@ -16,7 +16,10 @@ object Splitter {
         val beginAndEndIndices: Seq[(Int, Int)] = splitIndices.foldLeft((0, Seq.empty[(Int, Int)])) {
             (acc, newP) => (newP, acc._2 ++ Seq((acc._1, newP)))
         }._2
-        val bigSegments: Seq[Seq[BeforeSplit]] = beginAndEndIndices.map(x => beforeSplits.slice(x._1, x._2 + 1))
+        val bigSegments: Seq[Seq[BeforeSplit]] = beginAndEndIndices.map(x => {
+            val last = beforeSplits.apply(x._2).copy(isEndOfSegment = true)
+            beforeSplits.slice(x._1, x._2) :+ last
+        })
         
         val lastTimestamp: Timestamp = beforeSplits.apply(splitIndices.last).datetime
         (bigSegments, lastTimestamp)
@@ -47,9 +50,14 @@ object Splitter {
             val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
     
             if (splitPoints.length == 1) {
-                Seq(seq.slice(0, splitPoints.head + 1), seq.slice(splitPoints.head, length))
+                val splitPointElement = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
+                Seq(seq.slice(0, splitPoints.head) :+ splitPointElement, seq.slice(splitPoints.head, length))
             } else if (splitPoints.length == 2) {
-                Seq(seq.slice(0, splitPoints.head + 1), seq.slice(splitPoints.head, splitPoints.last + 1), seq.slice(splitPoints.last, length))
+                val splitPointElement1 = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
+                val splitPointElement2 = seq.apply(splitPoints.last).copy(isEndOfSegment = true)
+                Seq(seq.slice(0, splitPoints.head) :+ splitPointElement1,
+                    seq.slice(splitPoints.head, splitPoints.last) :+ splitPointElement2,
+                    seq.slice(splitPoints.last, length))
             } else {
                 Seq(seq)
             }

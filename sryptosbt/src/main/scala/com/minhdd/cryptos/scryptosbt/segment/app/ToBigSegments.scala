@@ -2,8 +2,8 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.env.dataDirectory
-import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
+import com.minhdd.cryptos.scryptosbt.env.{dataDirectory, todayPath}
+import com.minhdd.cryptos.scryptosbt.constants.{numberOfMinutesBetweenTwoElement, thisYear}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -57,8 +57,13 @@ object ToBigSegments {
       Dataset[Seq[BeforeSplit]]) = {
         import spark.implicits._
         val trades: Dataset[Crypto] = tradesCryptoDs(year, spark)
+        val todayPartitionKey: CryptoPartitionKey = spark.read.parquet(todayPath).as[Crypto].head().partitionKey
+        val todayMonth = todayPartitionKey.month
+        val todayDay = todayPartitionKey.day
+        
         val ohlcs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => {
-            x.partitionKey.year == year || (x.partitionKey.year == lastYear && x.cryptoValue.datetime.after(lastTimestamp))
+            (year != thisYear || x.partitionKey.month != todayMonth || x.partitionKey.day != todayDay) &&
+                (x.partitionKey.year == year || (x.partitionKey.year == lastYear && x.cryptoValue.datetime.after(lastTimestamp)))
         })
         
         val (nextLastTimestamp: Timestamp, ds: Dataset[Seq[BeforeSplit]]) =
