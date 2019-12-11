@@ -54,7 +54,7 @@ object SegmentHelper {
                 volume = sortedKrakenCryptos.apply(i).volume,
                 count = sortedKrakenCryptos.apply(i).count,
                 importantChange = Option(importantChanges.apply(i)),
-                isEndOfSegment = true
+                isEndOfSegment = false
             ))
         }
     }

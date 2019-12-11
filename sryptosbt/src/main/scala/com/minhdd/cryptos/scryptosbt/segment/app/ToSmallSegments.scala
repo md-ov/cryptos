@@ -44,11 +44,14 @@ object ToSmallSegments {
         val bb: Dataset[Seq[BeforeSplit]] = Seq("201316", "2017", "2018", "2019").map(year => {
             val bigs: Dataset[Seq[BeforeSplit]] =
                 spark.read.parquet(s"$dataDirectory\\segments\\big\\big$numberOfMinutesBetweenTwoElement\\$year").as[Seq[BeforeSplit]]
+            bigs.filter(_.head.isEndOfSegment == true).show(5, false)
+            
             cut(bigs)
         }).reduce(_.union(_))
         
+        bb.filter(_.head.isEndOfSegment == true).show(5, false)
         bb.filter(_.last.isEndOfSegment == false).show(5, false)
         
-                bb.write.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+        bb.write.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
     }
 }

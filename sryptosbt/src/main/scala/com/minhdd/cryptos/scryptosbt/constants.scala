@@ -12,6 +12,6 @@ object constants {
     val minDeltaValue = 150
     val relativeMinDelta = 0.02
     
-    val directoryNow = "20191204"
+    val directoryNow = "20191211"
     val thisYear = "2019"
 }
