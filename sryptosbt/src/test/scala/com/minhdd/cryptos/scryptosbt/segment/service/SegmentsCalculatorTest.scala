@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.segment.service
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class SegmentsCalculatorTest extends FunSuite with Matchers {
@@ -118,7 +118,7 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         ohlcValue = Option(200.25D),
         ohlcVolume = Option(56.24D)
     )
-   
+    
     test("five kraken cryptos") {
         val seqKrakenCrypto = Seq(krakenCrypto1, krakenCrypto2, krakenCrypto3, krakenCrypto4, krakenCrypto5)
         val seqBeforeSplit: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(seqKrakenCrypto)
@@ -201,5 +201,11 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         
         assert(seqBeforeSplit.map(_.importantChange.get) == Seq(false, false, true, true, false))
         assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionNone, evolutionDown, evolutionUp, evolutionNone))
+    }
+    
+    test("getds") {
+        val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
+        val df: DataFrame = spark.read.parquet(expansionStrucTypePath)
+        df.show(4, false)
     }
 }
