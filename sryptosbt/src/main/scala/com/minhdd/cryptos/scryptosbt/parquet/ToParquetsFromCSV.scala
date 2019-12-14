@@ -32,7 +32,7 @@ object ToParquetsFromCSV {
     def run(args: ToParquetsFromCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
-        ss.sparkContext.setLogLevel("WARN")
+        ss.sparkContext.setLogLevel("ERROR")
         if (apiLowercased == "ohlc") {
             val fileList: Seq[String] = getListOfFiles(args.inputDir).map(_.getAbsolutePath)
             val dss: Seq[(CryptoPartitionKey, Dataset[String])] = 

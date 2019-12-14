@@ -34,7 +34,7 @@ object ToParquetsFromTodayCSV {
     def run(args: ToParquetsFromTodayCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
         val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
-        ss.sparkContext.setLogLevel("WARN")
+        ss.sparkContext.setLogLevel("ERROR")
         if (apiLowercased == "ohlc") {
 
             "status|NOT_PROCESSED"
