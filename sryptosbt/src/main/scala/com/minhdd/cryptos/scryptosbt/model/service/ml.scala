@@ -96,6 +96,6 @@ object ml {
     val label = "label"
     val predict = "predict"
     
-    val minimumTruePositiveRate = 0.7
-    val minimumPositiveRate = 0.1
+    val minimumTruePositiveRate = 0.8
+    val minimumPositiveRate = 0.4
 }
