@@ -11,6 +11,8 @@ import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+
+// it takes 20h to run this trainer of model
 object ModelTrainer {
     
     def main(args: Array[String]): Unit = {
