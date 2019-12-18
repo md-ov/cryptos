@@ -4,7 +4,7 @@ case class Rates(
   truePositiveOnPositive: Double,
   trueNegativeOnNegative: Double,
   positiveRate: Double,
-  nagativeRate: Double,
+  negativeRate: Double,
   trueRate: Double
 )
 

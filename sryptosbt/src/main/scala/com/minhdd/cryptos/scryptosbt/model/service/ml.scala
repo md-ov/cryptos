@@ -98,4 +98,7 @@ object ml {
     
     val minimumTruePositiveRate = 0.8
     val minimumPositiveRate = 0.4
+    
+    val minimumTrueNegativeRate = 0.9
+    val minimumNegativeRate = 0.34
 }

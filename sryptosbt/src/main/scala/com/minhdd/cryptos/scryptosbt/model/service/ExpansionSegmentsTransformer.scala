@@ -16,7 +16,6 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
     override def transform(ds: Dataset[_]): DataFrame = {
         import spark.implicits._
         Expansion.expansion(spark, ds.as[Seq[BeforeSplit]])
-//          .filter(!(col("beginEvolution") === evolutionNone)) //TODO il faut pas car il y a beaucoup de evolutionNone
           .withColumn(label,
               when(col("evolutionDirection") === evolutionUp && col("isSegmentEnd") === true, 1)
                 .when(col("evolutionDirection") === evolutionDown && col("isSegmentEnd") === true, 0)

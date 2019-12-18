@@ -9,7 +9,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object ThresholdCalculator {
     
-    def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): (Double, Rates) = {
+    def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): ((Double, Rates), (Double, Rates)) = {
 //        for (i <- 0 to 10) {
 //            val binarizerForSegmentDetection = new Binarizer()
 //              .setInputCol(prediction)
@@ -20,22 +20,31 @@ object ThresholdCalculator {
 //            val counts = segmentDetectionBinaryResults.groupBy(label, predict).count()
 //            counts.show()
 //        }
-        
-        val t: (Double, Rates) = ThresholdCalculator.getThreshold(ss, df)
+        val rates: Seq[(Double, Rates)] = getRates(df)
         val binarizerForSegmentDetection = new Binarizer()
           .setInputCol(prediction)
           .setOutputCol(predict)
-        binarizerForSegmentDetection.setThreshold(t._1)
-        val segmentDetectionBinaryResults = binarizerForSegmentDetection.transform(df)
-        val counts: DataFrame = segmentDetectionBinaryResults.groupBy(label, predict).count()
-        counts.show()
-        t
-    }
+        
+        val centeredThresholdForPositive: (Double, Rates) = bestRateForPositive(rates)
+        println("center threshold for positive : " + centeredThresholdForPositive._1 + " - " + centeredThresholdForPositive._2)
+        val thresholdForPositive: (Double, Rates) = getAdjustedThresholdForPositive(df, centeredThresholdForPositive._1, precision = 10)
+        println("threshold for positive: " + thresholdForPositive)
+        println("results for positive: ")
+        binarizerForSegmentDetection.setThreshold(thresholdForPositive._1)
+        val segmentDetectionBinaryResultsForPositive = binarizerForSegmentDetection.transform(df)
+        val countsForPositive: DataFrame = segmentDetectionBinaryResultsForPositive.groupBy(label, predict).count()
+        countsForPositive.show()
     
-    private def getThreshold(ss: SparkSession, df: DataFrame, precision: Int = 10): (Double, Rates) = {
-        val centeredThreshold: (Double, Rates) = getCenteredThreshold(ss, df)
-        println("center threshold : " + centeredThreshold._1 + " - " + centeredThreshold._2)
-        getAdjustedThreshold(ss, df, centeredThreshold._1, precision)
+        val centeredThresholdForNegative: (Double, Rates) = bestRateForNegative(rates)
+        val thresholdForNegative: (Double, Rates) = getAdjustedThresholdForNegative(df, centeredThresholdForNegative._1, precision = 10)
+        println("threshold for negative: " + thresholdForNegative)
+        println("results for negative: ")
+        binarizerForSegmentDetection.setThreshold(thresholdForNegative._1)
+        val segmentDetectionBinaryResultsForNegative = binarizerForSegmentDetection.transform(df)
+        val countsForNegative: DataFrame = segmentDetectionBinaryResultsForNegative.groupBy(label, predict).count()
+        countsForNegative.show()
+        
+        (thresholdForPositive, thresholdForNegative)
     }
     
     private def getCountsDf(df: DataFrame, threshold: Double): DataFrame = {
@@ -78,32 +87,49 @@ object ThresholdCalculator {
         (threshold, Rates(rate1, rate2, rate3, rate4, rate5))
     }
     
-    private def bestRate(rates: Seq[(Double, Rates)]): (Double, Rates) = {
+    private def bestRateForPositive(rates: Seq[(Double, Rates)]): (Double, Rates) = {
         rates
           .filter(_._2.truePositiveOnPositive > minimumTruePositiveRate)
           .filter(_._2.positiveRate > minimumPositiveRate)
           .maxBy(_._2.truePositiveOnPositive)
     }
     
-    private def getCenteredThreshold(ss: SparkSession, df: DataFrame): (Double, Rates) = {
-        import ss.implicits._
+    private def bestRateForNegative(rates: Seq[(Double, Rates)]): (Double, Rates) = {
+        rates
+          .filter(_._2.trueNegativeOnNegative > minimumTrueNegativeRate)
+          .filter(_._2.negativeRate > minimumNegativeRate)
+          .maxBy(_._2.trueNegativeOnNegative)
+    }
+    
+    private def getRates(df: DataFrame): Seq[(Double, Rates)] = {
+        import df.sparkSession.implicits._
         val minAndMaxDataFrame: DataFrame = df.agg(min(prediction), max(prediction))
         val minValue: Double = minAndMaxDataFrame.map(_.getDouble(0)).first()
         val maxValue: Double = minAndMaxDataFrame.map(_.getDouble(1)).first()
         val diff: Double = maxValue - minValue
         val samplingThresholds: Seq[Int] = 0 until 40
-        val thresholds: Seq[Double] = samplingThresholds.map(s => minValue + (s * (diff/(samplingThresholds.length - 1))))
+        val thresholds: Seq[Double] = samplingThresholds.map(s => minValue + (s * (diff / (samplingThresholds.length - 1))))
         val rates: Seq[(Double, Rates)] = getRates(thresholds, df)
-        println(rates)
-        bestRate(rates)
+        rates.foreach(println)
+        rates
     }
     
-    private def getAdjustedThreshold(ss: SparkSession, df: DataFrame, centeredThreshold: Double, precision: Int): (Double, Rates) = {
+    private def getAdjustedThresholdForPositive(df: DataFrame, centeredThreshold: Double, precision: Int): (Double, Rates) = {
+        val rates: Seq[(Double, Rates)] = getThresholdAndRatesAroundCenter(df, centeredThreshold, precision)
+        bestRateForPositive(rates)
+    }
+    
+    private def getAdjustedThresholdForNegative(df: DataFrame, centeredThreshold: Double, precision: Int): (Double, Rates) = {
+        val rates: Seq[(Double, Rates)] = getThresholdAndRatesAroundCenter(df, centeredThreshold, precision)
+        bestRateForNegative(rates)
+    }
+    
+    private def getThresholdAndRatesAroundCenter(df: DataFrame, centeredThreshold: Double, precision: Int) = {
         val epsilon = 0.005
-        val thresholds = (-precision until precision).map(e => centeredThreshold + e*epsilon)
-        val rates = getRates(thresholds, df)
+        val thresholds = (-precision until precision).map(e => centeredThreshold + e * epsilon)
+        val rates: Seq[(Double, Rates)] = getRates(thresholds, df)
         rates.foreach(println)
         println("----------")
-        bestRate(rates)
+        rates
     }
 }

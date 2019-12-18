@@ -25,7 +25,8 @@ object Distributions {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+    val df: DataFrame = spark.read.parquet(
+        s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\${directoryNow}percentiles")
     val threshold = 0.9455041916498401
     
     val binarizerForSegmentDetection = new Binarizer()
@@ -38,8 +39,7 @@ object Distributions {
     val notok = binarizedResults.filter(!(col(predict) === col(label)))
     val notokPositive =
         binarizedResults.filter(!(col(predict) === col(label))).filter(col(predict) === 1.0)
-    val notokNegative = binarizedResults.filter(!(col(predict) === col(label))).filter(col(predict)
-      === 0.0)
+    val notokNegative = binarizedResults.filter(!(col(predict) === col(label))).filter(col(predict) === 0.0)
     val okPositive = binarizedResults.filter(col(predict) === col(label)).filter(col(predict) === 1.0)
     val okNegative = binarizedResults.filter(col(predict) === col(label)).filter(col(predict) === 0.0)
     

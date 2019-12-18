@@ -21,11 +21,13 @@ object Analyser {
     def main(args: Array[String]): Unit = {
         println(df.count())
         df.select("numberOfElement", "label", "prediction").show(5, false)
-        val (t, rates) = ThresholdCalculator.exploreDfAndFindThreshold(spark, df)
+        val ((t1, ratesForPositive), (t2, ratesForNegative)) = ThresholdCalculator.exploreDfAndFindThreshold(spark, df)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 0.726536009649354)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 1.0095808099039112)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 0.44899120939479653)
-        println(t)
-        println(rates)
+        println(t1)
+        println(ratesForPositive)
+        println(t2)
+        println(ratesForNegative)
     }
 }
