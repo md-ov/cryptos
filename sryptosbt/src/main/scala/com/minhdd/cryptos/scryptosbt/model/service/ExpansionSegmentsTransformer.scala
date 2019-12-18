@@ -3,6 +3,7 @@ package com.minhdd.cryptos.scryptosbt.model.service
 import java.util.UUID
 
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
+import ml.label
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Segment}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
@@ -16,7 +17,7 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
         import spark.implicits._
         Expansion.expansion(spark, ds.as[Seq[BeforeSplit]])
 //          .filter(!(col("beginEvolution") === evolutionNone)) //TODO il faut pas car il y a beaucoup de evolutionNone
-          .withColumn("label",
+          .withColumn(label,
               when(col("evolutionDirection") === evolutionUp && col("isSegmentEnd") === true, 1)
                 .when(col("evolutionDirection") === evolutionDown && col("isSegmentEnd") === true, 0)
                 .otherwise(-1))
@@ -24,7 +25,12 @@ class ExpansionSegmentsTransformer(spark: SparkSession, transformedDataSchema: S
     
     override def copy(extra: ParamMap): ExpansionSegmentsTransformer = this
     
-    override def transformSchema(schema: StructType): StructType = transformedDataSchema
+    override def transformSchema(schema: StructType): StructType = {
+        if (schema.fieldNames.contains(label)) {
+            throw new IllegalArgumentException(s"Output column ${label} already exists.")
+        }
+        transformedDataSchema
+    }
     
     override val uid: String = UUID.randomUUID().toString()
 }
