@@ -10,6 +10,7 @@ import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.functions.{array_contains, col, lit}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import shapeless.DefaultSymbolicLabelling
 
 object Predictor {
     
@@ -37,17 +38,20 @@ object Predictor {
     }
     
     def predict() = {
-        val (s, df): (Array[(Timestamp, Int)], DataFrame) = getDataFrameFromSegments(getActualSegment)
-//        s.foreach(println)
+        val (mapBegindtAndSegmentLength, df): (Array[(Timestamp, Int)], DataFrame) = getDataFrameFromSegments(getActualSegment)
+//        mapBegindtAndSegmentLength.foreach(println)
 //        println(df.count())
         val modelPath: String = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df)
 //        println(segmentsWithRawPrediction.count())
         segmentsWithRawPrediction
-          .filter(array_contains(lit(s.map(_._2)), col("numberOfElement")))
-          .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection", "beginvalue", "endvalue",
-              "numberOfElement", "label", "prediction")
-          .show(100, false)
+          .filter(row => !row.getAs[Boolean]("isSegmentEnd") && {
+              val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
+              foundElement.get._2 == row.getAs[Int]("numberOfElement")
+          })
+          .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection", 
+              "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
+          .show(false)
     }
 }
