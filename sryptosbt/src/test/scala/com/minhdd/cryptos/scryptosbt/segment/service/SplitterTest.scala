@@ -34,7 +34,7 @@ class SplitterTest extends FunSuite {
         assert(splits.size == 2)
         assert(splits.head.size == 2)
         assert(splits.head.contains(beforeSplit1))
-        assert(splits.head.contains(beforeSplit2))
+        assert(splits.head.contains(beforeSplit2.copy(isEndOfSegment = true)))
         assert(splits.last.size == 2)
         assert(splits.last.contains(beforeSplit3))
         assert(splits.last.contains(beforeSplit2))
