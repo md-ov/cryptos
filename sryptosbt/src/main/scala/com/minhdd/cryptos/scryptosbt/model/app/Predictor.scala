@@ -50,14 +50,15 @@ object Predictor {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
         //        println(segmentsWithRawPrediction.count())
-        segmentsWithRawPrediction
+        val predictionOfLastSegment = segmentsWithRawPrediction
           .filter(row => !row.getAs[Boolean]("isSegmentEnd") && {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           })
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-          .show(false)
+        predictionOfLastSegment.show(false)
+        
         println("number of predicted elements: " + segmentsWithRawPrediction.count())
         val targeted: DataFrame = segmentsWithRawPrediction.filter(_.getAs[Boolean]("isSegmentEnd")).cache()
         val targetedCount: Long = targeted.count()
