@@ -35,6 +35,7 @@ object Predictor {
     def getDataFrameFromSegments(seq: Seq[Seq[BeforeSplit]]): (Array[(Timestamp, Int)], DataFrame) = {
         import spark.implicits._
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(seq).cache()
+        println(ds.collect.last.last)
         //        val segments: DataFrame = Expansion.expansion(spark, ds)
         //        segments.filter(col("numberOfElement") === 2).show(10, false)
         val beginDtAndLengths: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
