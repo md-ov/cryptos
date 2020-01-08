@@ -33,7 +33,7 @@ object ActualSegment {
     spark.sparkContext.setLogLevel("ERROR")
     import spark.implicits._
     
-    def getActualSegment: Seq[Seq[BeforeSplit]] = {
+    def getActualSegments: Seq[Seq[BeforeSplit]] = {
         val smallSegments: Dataset[Seq[BeforeSplit]] =
             spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").as[Seq[BeforeSplit]]
     
@@ -57,7 +57,7 @@ object ActualSegment {
     }
     
     def main(args: Array[String]): Unit = {
-        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegment
+        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
     
         println(actualSegments.size)
         println(actualSegments.last.size)

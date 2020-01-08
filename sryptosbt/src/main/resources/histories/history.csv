@@ -1,2 +1,3 @@
-prediction-dt;model-path;number-of-targeted;positive-rate;negative-rate;threshold-positive;threshold-negative;
-2020-01-08;15/20191211;2239;422/423;1816/1816;0.9455041916498401;0.10381390129891797;
+prediction-dt;model-path;number-of-targeted;positive-rate;negative-rate;threshold-positive;threshold-negative;first-ts;last-ts;number-segments
+2020-01-08;15/20191211;2239;422/423;1816/1816;0.9455041916498401;0.10381390129891797;2019-11-25 06:30:00.0;2020-01-04 11:45:00.0;3
+2020-01-08;15/20191211;4207;667/668;1816/1816;0.9455041916498401;0.10381390129891797;2019-11-25 06:30:00.0;2020-01-08 15:45:00.0;4
