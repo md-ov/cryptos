@@ -13,11 +13,6 @@ object ml {
       .setOutputCol("begin-evo")
       .setHandleInvalid("keep")
     
-    val indexerEnd = new StringIndexer()
-      .setInputCol("endEvolution")
-      .setOutputCol("label")
-      .setHandleInvalid("keep")
-    
     val vectorAssembler = new VectorAssembler()
       .setInputCols(Array(
           "beginvalue", "begin-evo", "beginVariation", "beginVolume", "beginCount", 

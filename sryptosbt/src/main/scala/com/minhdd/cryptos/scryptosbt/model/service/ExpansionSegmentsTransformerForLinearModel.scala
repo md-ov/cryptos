@@ -6,6 +6,7 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.model.service.ml.label
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.functions.{col, when}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
@@ -13,7 +14,8 @@ class ExpansionSegmentsTransformerForLinearModel(spark: SparkSession, transforme
     
     override def transform(ds: Dataset[_]): DataFrame = {
         import spark.implicits._
-        Expansion.expansion(spark, ds.as[Seq[BeforeSplit]]).withColumnRenamed("linear", label)
+        Expansion.expansion(spark, ds.as[Seq[BeforeSplit]]).withColumn(label,
+            when(col("linear") === true, 1).otherwise(0))
     }
     
     override def copy(extra: ParamMap): ExpansionSegmentsTransformerForLinearModel = this

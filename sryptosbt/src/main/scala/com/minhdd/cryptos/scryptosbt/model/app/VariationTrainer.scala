@@ -2,14 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{indexerBegin, vectorAssembler, _}
-import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformer}
-import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.regression.GBTRegressor
-import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 
 object VariationTrainer {
     
@@ -27,6 +20,6 @@ object VariationTrainer {
         val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
         val modelPath = s"$dataDirectory\\ml\\variation-models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
         val resultPath = s"$dataDirectory\\ml\\variation-results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-//        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
+        //        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
     }
 }
