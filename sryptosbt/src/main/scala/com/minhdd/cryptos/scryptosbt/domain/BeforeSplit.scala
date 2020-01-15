@@ -19,7 +19,14 @@ case class BeforeSplit(
                         count: Option[Int],
                         importantChange: Option[Boolean],
                         isEndOfSegment: Boolean
-                      )
+                      ){
+    def toLine = {
+        ("" /: this.getClass.getDeclaredFields) { (a, f) =>
+            f.setAccessible(true)
+            a + ";" + f.get(this)
+        }.substring(1)
+    }
+}
 
 object BeforeSplit {
     

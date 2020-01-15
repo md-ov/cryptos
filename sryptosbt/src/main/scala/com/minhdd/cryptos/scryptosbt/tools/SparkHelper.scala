@@ -1,6 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
-import com.minhdd.cryptos.scryptosbt.domain.Crypto
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -27,6 +27,13 @@ object SparkHelper {
     def csvFromDSCrypto(ss: SparkSession, csvPath: String, ds: Dataset[Crypto]): Unit = {
         import ss.implicits._
         val dsString: Dataset[String] = ds.map(_.flatten.toLine())
+        csvFromDS(dsString, csvPath)
+    }
+    
+    def csvFromSeqBeforeSplit(ss: SparkSession, csvPath: String, seq: Seq[BeforeSplit]): Unit = {
+        import ss.implicits._
+        val ds: Dataset[BeforeSplit] = ss.createDataset(seq)
+        val dsString: Dataset[String] = ds.map(_.toLine)
         csvFromDS(dsString, csvPath)
     }
     

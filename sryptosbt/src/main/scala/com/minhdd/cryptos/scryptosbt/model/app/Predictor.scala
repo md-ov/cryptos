@@ -6,9 +6,9 @@ import java.util.Date
 import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, prediction, predict}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper, SparkHelper}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.functions.col
@@ -36,6 +36,8 @@ object Predictor {
     def main() = {
         import spark.implicits._
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+//        SparkHelper.csvFromSeqBeforeSplit(spark, "D:\\tmp\\actualsegments-20200115.csv", actualSegments.flatten)
+        
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
         val lastSegment = ds.collect.last
         val df = ds.toDF()
@@ -92,7 +94,8 @@ object Predictor {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
-          .filter(row => !row.getAs[Boolean]("isSegmentEnd") && {
+//          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
+            .filter(row => {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           })
