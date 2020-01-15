@@ -1,5 +1,6 @@
 package com.minhdd.cryptos.scryptosbt.domain
 
+import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import com.minhdd.cryptos.scryptosbt.constants.{evolutionDown, evolutionNone, evolutionUp}
 import org.apache.spark.sql.{Encoder, SparkSession}
@@ -7,6 +8,8 @@ import org.apache.spark.sql.{Encoder, SparkSession}
 case class Segment(
     begin: BeforeSplit,
     end: Option[BeforeSplit],
+    variation: Double,
+    linear: Boolean,
     evolutionDirection: String,
     standardDeviationVolume: Double,
     numberOfElement: Int,
@@ -40,6 +43,8 @@ object Segment {
         new Segment(
             begin = begin,
             end = last,
+            variation = math.abs(seq.last.value - begin.value),
+            linear = seq.map(_.value).linear(constants.relativeMinDelta),
             evolutionDirection = evolutionDirection,
             numberOfElement = seq.size,
             standardDeviationVolume = seq.map(_.volume).standardDeviation,
