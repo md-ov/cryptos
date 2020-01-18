@@ -136,9 +136,9 @@ object Predictor {
         print(";")
         print(thresholdForNegative)
         print(";")
-        print(actualSegments.head.head.datetime)
+        print(actualSegments.head.head.datetime.substring(0, 19))
         print(";")
-        print(lastSegment.last.datetime)
+        print(lastSegment.last.datetime.substring(0, 19))
         print(";")
         print(actualSegments.size)
     }
@@ -150,9 +150,9 @@ object Predictor {
         print(";")
         print(lastSegment.last.value)
         print(";")
-        print(lastSegment.last.datetime)
+        print(lastSegment.last.datetime.substring(0, 19))
         print(";")
-        print(lastSegment.head.datetime)
+        print(lastSegment.head.datetime.substring(0, 19))
         print(";")
         print(lastSegment.head.value)
         print(";")
@@ -175,6 +175,6 @@ object Predictor {
         } else {
             print(-1)
         }
-        println(";;;")
+        println(";;;;;;;;")
     }
 }
