@@ -16,11 +16,12 @@ object Analyser {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory\\ml\\linear-results\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
     
     def main(args: Array[String]): Unit = {
         println(df.count())
-        df.select("numberOfElement", "label", "prediction").show(5, false)
+        df.groupBy("label").count().show()
+        df.select("numberOfElement", "label", "prediction").show(10, false)
         val ((t1, ratesForPositive), (t2, ratesForNegative)) = ThresholdCalculator.exploreDfAndFindThreshold(spark, df)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 0.726536009649354)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 1.0095808099039112)

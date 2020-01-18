@@ -8,17 +8,18 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper, SparkHelper}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Predictor {
-    
+    val thresholdForPositiveLinear = 0.9376398878304003
     val thresholdForPositive = 0.9455041916498401
     val thresholdForNegative = 0.10381390129891797
     val modelPath: String = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+    val linearModelPath: String = s"$dataDirectory\\ml\\models\\linear-models-200118"
     
     def main(args: Array[String]): Unit = {
         main()
@@ -36,7 +37,7 @@ object Predictor {
     def main() = {
         import spark.implicits._
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-//        SparkHelper.csvFromSeqBeforeSplit(spark, "D:\\tmp\\actualsegments-20200115.csv", actualSegments.flatten)
+        //        SparkHelper.csvFromSeqBeforeSplit(spark, "D:\\tmp\\actualsegments-20200115.csv", actualSegments.flatten)
         
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
         val lastSegment = ds.collect.last
@@ -47,10 +48,16 @@ object Predictor {
         //        segments.filter(col("numberOfElement") === 2).show(10, false)
         
         
-        val (segmentsWithRawPrediction: DataFrame, predictionOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
-        val p = predictionOfLastSegment.map(_.getAs[Double]("prediction")).head()
+        val
+        (segmentsWithRawPrediction: DataFrame,
+        predictionOfLastSegment: DataFrame,
+        predictionLinearOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
         
-        predictionOfLastSegment.show(false)
+        predictionOfLastSegment.show()
+        predictionLinearOfLastSegment.show()
+        
+        val p = predictionOfLastSegment.map(_.getAs[Double]("prediction")).head()
+        val linearP = predictionLinearOfLastSegment.map(_.getAs[Double]("prediction")).head()
         
         println("number of predicted elements: " + segmentsWithRawPrediction.count())
         val targeted: DataFrame = segmentsWithRawPrediction.filter(_.getAs[Boolean]("isSegmentEnd")).cache()
@@ -61,7 +68,7 @@ object Predictor {
         negativeCount: Long,
         okNegative: DataFrame) = stats(targeted)
         
-        printPredictionHistory(p, lastSegment)
+        printPredictionHistory(p, linearP, lastSegment)
         printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
     
@@ -90,18 +97,28 @@ object Predictor {
         (targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
     
-    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)] ) = {
+    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]) = {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
+        val linearModel: CrossValidatorModel = ModelHelper.getModel(spark, linearModelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
+        val segmentsWithRawPredictionForLinear: DataFrame = linearModel.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
-//          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
-            .filter(row => {
+          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
+          .filter(row => {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           })
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-        (segmentsWithRawPrediction, predictionOfLastSegment)
+        val predictionLinearOfLastSegment: DataFrame = segmentsWithRawPredictionForLinear
+          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
+          .filter(row => {
+              val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
+              foundElement.get._2 == row.getAs[Int]("numberOfElement")
+          })
+          .select("begindt", "enddt", "isSegmentEnd", "linear", "beginEvolution", "endEvolution", "evolutionDirection",
+              "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
+        (segmentsWithRawPrediction, predictionOfLastSegment, predictionLinearOfLastSegment)
     }
     
     private def printHistory(actualSegments: Seq[Seq[BeforeSplit]], lastSegment: Seq[BeforeSplit], targetedCount: Long, positiveCount: Long, okPositive: DataFrame, negativeCount: Long, okNegative: DataFrame) = {
@@ -126,7 +143,7 @@ object Predictor {
         print(actualSegments.size)
     }
     
-    private def printPredictionHistory(p: Double, lastSegment: Seq[BeforeSplit]) = {
+    private def printPredictionHistory(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(";")
         print(s"$numberOfMinutesBetweenTwoElement/$directoryNow")
@@ -147,6 +164,14 @@ object Predictor {
             print(1)
         } else if (p <= thresholdForNegative) {
             print(0)
+        } else {
+            print(-1)
+        }
+        print(";")
+        print(linearP)
+        print(";")
+        if (linearP >= thresholdForPositiveLinear) {
+            print(1)
         } else {
             print(-1)
         }
