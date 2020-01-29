@@ -58,16 +58,16 @@ object Predictor {
         
         val p = predictionOfLastSegment.map(_.getAs[Double]("prediction")).head()
         val linearP = predictionLinearOfLastSegment.map(_.getAs[Double]("prediction")).head()
-        
+
         println("number of predicted elements: " + segmentsWithRawPrediction.count())
         val targeted: DataFrame = segmentsWithRawPrediction.filter(_.getAs[Boolean]("isSegmentEnd")).cache()
-        
+
         val (targetedCount: Long,
         positiveCount: Long,
         okPositive: DataFrame,
         negativeCount: Long,
         okNegative: DataFrame) = stats(targeted)
-        
+
         printPredictionHistory(p, linearP, lastSegment)
         printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
@@ -103,7 +103,7 @@ object Predictor {
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
         val segmentsWithRawPredictionForLinear: DataFrame = linearModel.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
-          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
+          .filter(row => !row.getAs[Boolean]("isSegmentEnd")) //afficher la prédiction du dernier segment avec isSegmentEnd == false
           .filter(row => {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
@@ -136,9 +136,9 @@ object Predictor {
         print(";")
         print(thresholdForNegative)
         print(";")
-        print(actualSegments.head.head.datetime.substring(0, 19))
+        print(actualSegments.head.head.datetime.toString.substring(0, 19))
         print(";")
-        print(lastSegment.last.datetime.substring(0, 19))
+        print(lastSegment.last.datetime.toString.substring(0, 19))
         print(";")
         print(actualSegments.size)
     }
@@ -150,9 +150,9 @@ object Predictor {
         print(";")
         print(lastSegment.last.value)
         print(";")
-        print(lastSegment.last.datetime.substring(0, 19))
+        print(lastSegment.last.datetime.toString.substring(0, 19))
         print(";")
-        print(lastSegment.head.datetime.substring(0, 19))
+        print(lastSegment.head.datetime.toString.substring(0, 19))
         print(";")
         print(lastSegment.head.value)
         print(";")

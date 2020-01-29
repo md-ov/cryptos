@@ -33,13 +33,7 @@ object ActualSegment {
     spark.sparkContext.setLogLevel("ERROR")
     import spark.implicits._
     
-    def getActualSegments: Seq[Seq[BeforeSplit]] = {
-        val smallSegments: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").as[Seq[BeforeSplit]]
-    
-        val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
-        val lastTimestamp: Timestamp = lastSegment.last.datetime
-    
+    def getActualSegments(lastTimestamp: Timestamp): Seq[Seq[BeforeSplit]] = {
         val lastTsHelper: TimestampHelper = TimestampHelper(lastTimestamp.getTime)
         val lastCryptoPartitionKey = CryptoPartitionKey(
             asset = "XBT",
@@ -54,6 +48,15 @@ object ActualSegment {
     
         val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
         ToSmallSegments.cut(Seq(actualSegment))
+    }
+    
+    def getActualSegments: Seq[Seq[BeforeSplit]] = {
+        val smallSegments: Dataset[Seq[BeforeSplit]] =
+            spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").as[Seq[BeforeSplit]]
+    
+        val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
+        val lastTimestamp: Timestamp = lastSegment.last.datetime
+        getActualSegments(lastTimestamp)
     }
     
     def main(args: Array[String]): Unit = {
