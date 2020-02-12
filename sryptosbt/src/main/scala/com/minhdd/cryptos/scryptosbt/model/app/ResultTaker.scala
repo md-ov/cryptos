@@ -38,7 +38,8 @@ object ResultTaker {
         (segmentsWithRawPrediction: DataFrame,
         predictionOfLastSegment: DataFrame,
         predictionLinearOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
-        
+
+        segmentsWithRawPrediction.show()
         predictionOfLastSegment.show()
         predictionLinearOfLastSegment.show()
     }
