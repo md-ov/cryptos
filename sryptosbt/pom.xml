@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.minhdd</groupId>
-    <artifactId>dmp-flows</artifactId>
+    <artifactId>syptosbt</artifactId>
     <version>0.1</version>
 
     <build>
