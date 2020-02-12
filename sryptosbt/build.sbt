@@ -11,7 +11,6 @@ libraryDependencies += "org.scalatest" % "scalatest_2.11" % "3.0.3" % "test"
 libraryDependencies += "com.github.alexarchambault" %% "case-app" % "2.0.0-M3"
 libraryDependencies ++= Seq('mllib,
     'core,
-    'sql,
-    'hive).map(c => "org.apache.spark" %% s"spark-${c.name}" % "2.4.0")
+    'sql).map(c => "org.apache.spark" %% s"spark-${c.name}" % "2.4.0")
 
 enablePlugins(PackPlugin)
