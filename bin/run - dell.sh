@@ -2,6 +2,7 @@
 now="$(date +'%Y-%m-%d')"
 krakencPath="/c/ws/ov/cryptos/cryptos/krakenc/"
 dataPath="C:\\ws\\ov\\cryptos\\data\\"
+dataPath1="/c/ws/ov/cryptos/data/"
 cd $krakencPath
 
 if ! [ -f ${dataPath}trades\\xbt-before-$now ]; then
@@ -12,16 +13,16 @@ if ! [ -f ${dataPath}trades\\xbt-before-$now ]; then
 	node main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
 	echo "main-get-t-a.js for XBT EUR done"
 
-	mkdir C:\\ws\\ov\\cryptos\\data\\trades\\xbt-before-$now\\
+	mkdir ${dataPath}trades\\xbt-before-$now\\
 	echo "trades\\xbt-before-$now\\ maked"
 
-	mv -n /c/ws/ov/cryptos/cryptos/krakenc/out/trades/*.csv C:\\ws\\ov\\cryptos\\data\\trades\\xbt-before-$now\\
-	echo "krakenc/out/trades/*.csv moved to C:\\ws\\ov\\cryptos\\data\\trades\\xbt-before-$now\\"
+	mv -n ${krakencPath}out/trades/*.csv ${dataPath}trades\\xbt-before-$now\\
+	echo "krakenc/out/trades/*.csv moved to ${dataPath}trades\\xbt-before-$now\\"
 	
 	echo "Retrieve trades date from last timestamp done"
 
 	echo "Starting To parquets with spark for xbt-before-$now..."
-	cryptos-apps to-parquets-from-csv --master local --api trades --input-dir C:\\ws\\ov\\cryptos\\data\\trades\\xbt-before-$now --parquets-dir file:///C:\\ws\\ov\\cryptos\\data\\parquets --minimum 1
+	cryptos-apps to-parquets-from-csv --master local --api trades --input-dir ${dataPath}trades\\xbt-before-$now --parquets-dir file:///${dataPath}parquets --minimum 1
 	echo "To parquets with spark for xbt-before-$now done"
 fi
 
@@ -36,31 +37,31 @@ echo "main-get-t-today-a.js for XBT EUR done"
 node main-get-o-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\"} 
 echo "main-get-o-a.js for XBT EUR done"
 
-rm -r C:\\ws\\ov\\cryptos\\data\\trades\\xbt-today-$now\\
+rm -r ${dataPath}trades\\xbt-today-$now\\
 echo "trades\\xbt-today-$now\\ removed"
-mkdir C:\\ws\\ov\\cryptos\\data\\trades\\xbt-today-$now\\
+mkdir ${dataPath}trades\\xbt-today-$now\\
 echo "trades\\xbt-today-$now\\ maked"
 
-mv -n /c/ws/ov/cryptos/cryptos/krakenc/out/trades/today/*.csv C:\\ws\\ov\\cryptos\\data\\trades\\xbt-today-$now\\
-echo "krakenc/out/trades/today/*.csv moved to C:\\ws\\ov\\cryptos\\data\\trades\\xbt-today-$now\\"
-mv /c/ws/ov/cryptos/cryptos/krakenc/out/ohlc/*.csv C:\\ws\\ov\\cryptos\\data\\ohlc\\xbt
-echo "krakenc/out/ohlc/*.csv moved to C:\\ws\\ov\\cryptos\\data\\ohlc\\xbt"
+mv -n ${krakencPath}out/trades/today/*.csv ${dataPath}trades\\xbt-today-$now\\
+echo "krakenc/out/trades/today/*.csv moved to ${dataPath}trades\\xbt-today-$now\\"
+mv ${krakencPath}out/ohlc/*.csv ${dataPath}ohlc\\xbt
+echo "krakenc/out/ohlc/*.csv moved to ${dataPath}ohlc\\xbt"
 
-rm -r /c/ws/ov/cryptos/data/parquets/XBT/EUR/OHLC/parquet
+rm -r ${dataPath1}parquets/XBT/EUR/OHLC/parquet
 echo "parquets/XBT/EUR/OHLC/parquet removed"
-rm -r /c/ws/ov/cryptos/data/parquets/XBT/EUR/TRADES/today/*
+rm -r ${dataPath1}parquets/XBT/EUR/TRADES/today/*
 echo "parquets/XBT/EUR/TRADES/today/* removed"
-mkdir C:\\ws\\ov\\cryptos\\data\\parquets\\XBT\\EUR\\TRADES\\today\\parquet\\
+mkdir ${dataPath}parquets\\XBT\\EUR\\TRADES\\today\\parquet\\
 echo "parquets\\XBT\\EUR\\TRADES\\today\\parquet\\ maked"
 
 echo "Get kraken at $now successfully completed"
 
 echo "Starting To parquets with spark for ohlc xbt..."
-cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir C:\\ws\\ov\\cryptos\\data\\ohlc\\xbt --parquets-dir file:///C:\\ws\\ov\\cryptos\\data\\parquets --minimum 500
+cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir ${dataPath}ohlc\\xbt --parquets-dir file:///${dataPath}parquets --minimum 500
 echo "To parquets with spark for ohlc xbt done"
 
 echo "Starting To parquets with spark for trades xbt-today-$now..."
-cryptos-apps to-parquets-from-today-csv --master local --api trades --input-dir C:\\ws\\ov\\cryptos\\data\\trades\\xbt-today-$now --parquets-dir file:///C:\\ws\\ov\\cryptos\\data\\parquets --minimum 1
+cryptos-apps to-parquets-from-today-csv --master local --api trades --input-dir ${dataPath}trades\\xbt-today-$now --parquets-dir file:///${dataPath}parquets --minimum 1
 echo "To parquets with spark for trades xbt-today-$now done"
 
 cmd
