@@ -1,12 +1,20 @@
 #!/bin/bash
 now="$(date +'%Y-%m-%d')"
-krakencPath="/c/ws/ov/cryptos/cryptos/krakenc/"
-dataPath="C:\\ws\\ov\\cryptos\\data\\"
-dataPath1="/c/ws/ov/cryptos/data/"
+
+#asus
+krakencPath="/d/ws/cryptos/cryptos/krakenc/"
+dataPath="D:\\ws\\cryptos\\data\\"
+dataPath1="/d/ws/cryptos/data/"
+
+#dell
+#krakencPath="/c/ws/ov/cryptos/cryptos/krakenc/"
+#dataPath="C:\\ws\\ov\\cryptos\\data\\"
+#dataPath1="/c/ws/ov/cryptos/data/"
+
 cd $krakencPath
 
 if ! [ -f ${dataPath}trades\\xbt-before-$now ]; then
-	echo "Folder xbt-before-$now does not exist => retrieve trades date from last timestamp"
+	echo "Folder ${dataPath}trades\\xbt-before-$now does not exist => retrieve trades date from last timestamp"
 	rm ./out/trades/*.csv
 	echo "./out/trades/*.csv removed"
 
