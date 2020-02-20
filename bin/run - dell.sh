@@ -29,8 +29,16 @@ fi
 echo "Starting get ohlc and today trades at $now, please wait..."
 rm ./out/ohlc/*.csv
 echo "./out/ohlc/*.csv removed"
+rm ./out/ohlc
+echo "./out/ohlc removed"
+mkdir ./out/ohlc
+echo "./out/ohlc mkdir"
 rm ./out/trades/today/*.csv
 echo "./out/trades/today/*.csv removed"
+rm ./out/trades/today
+echo "./out/trades/today removed"
+mkdir ./out/trades/today
+echo "./out/trades/today mkdir"
 
 node main-get-t-today-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
 echo "main-get-t-today-a.js for XBT EUR done"
@@ -44,6 +52,7 @@ echo "trades\\xbt-today-$now\\ maked"
 
 mv -n ${krakencPath}out/trades/today/*.csv ${dataPath}trades\\xbt-today-$now\\
 echo "krakenc/out/trades/today/*.csv moved to ${dataPath}trades\\xbt-today-$now\\"
+mkdir ${dataPath}ohlc\\xbt
 mv ${krakencPath}out/ohlc/*.csv ${dataPath}ohlc\\xbt
 echo "krakenc/out/ohlc/*.csv moved to ${dataPath}ohlc\\xbt"
 
