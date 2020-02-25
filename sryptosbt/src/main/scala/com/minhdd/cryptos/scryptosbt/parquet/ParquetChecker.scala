@@ -1,7 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.domain.Crypto
-import com.minhdd.cryptos.scryptosbt.segment.app.ToBigSegments
+import com.minhdd.cryptos.scryptosbt.env.todayPath
+import com.minhdd.cryptos.scryptosbt.segment.app.{ActualSegment, ToBigSegments}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object ParquetChecker {
@@ -15,14 +16,19 @@ object ParquetChecker {
     spark.sparkContext.setLogLevel("ERROR")
     
     def main(args: Array[String]): Unit = {
-        val cryptos: Dataset[Crypto] = ToBigSegments.ohlcCryptoDs(spark)
         
         import spark.implicits._
         
         import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.getString
-        
-        cryptos
+    
+        ToBigSegments.ohlcCryptoDs(spark)
             .map(x => getString(x.cryptoValue.datetime))
+            .distinct()
+            .sort("value")
+            .show(9999999, false)
+    
+        spark.read.parquet(todayPath).as[Crypto]
+            .map(x => x.cryptoValue.datetime)
             .distinct()
             .sort("value")
             .show(9999999, false)
