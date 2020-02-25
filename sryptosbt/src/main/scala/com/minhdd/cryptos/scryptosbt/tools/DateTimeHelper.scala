@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.minhdd.cryptos.scryptosbt.constants
-import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.{DateTimeImplicit, dtfOut}
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
@@ -23,6 +23,7 @@ object DateTimeHelper {
     
     def getDay(date: String) = date.substring(8, 10)
     
+
     def getTime(date: String): Long = {
         getTime(date, DateTimeHelper.defaultFormat)
     }
@@ -105,6 +106,9 @@ object TimestampHelper {
     def now: Timestamp = {
         new Timestamp(DateTime.now().getMillis)
     }
+    
+    def getString(ts: Timestamp) : String = dtfOut.print(new DateTime(ts))
+    
     
     def getTimestamp(dateString: String): Timestamp = getTimestamp(dateString, defaultFormat)
     
