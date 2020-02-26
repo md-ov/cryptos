@@ -18,7 +18,7 @@ object ActualSegment {
 
         
         Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            spark = ss, prefix = "file:///",
+            spark = ss, prefix = prefixPath,
             path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
             ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }
@@ -52,8 +52,10 @@ object ActualSegment {
     
     def getActualSegments: Seq[Seq[BeforeSplit]] = {
         val smallSegments: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").as[Seq[BeforeSplit]]
-    
+            spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow").as[Seq[BeforeSplit]]
+
+
+        smallSegments.show(2)
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
         getActualSegments(lastTimestamp)

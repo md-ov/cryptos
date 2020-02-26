@@ -1,7 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
-import com.minhdd.cryptos.scryptosbt.env.dataDirectory
+import com.minhdd.cryptos.scryptosbt.env._
+import com.minhdd.cryptos.scryptosbt.tools.FileHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object ParquetHelper {
@@ -20,7 +21,7 @@ object ParquetHelper {
     
     def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
-            parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
+            parquetsDir = FileHelper.getPathForSpark(s"$dataDirectory${pathDelimiter}parquets"), asset = "XBT", currency = "EUR")
         val optionDS = Crypto.getPartitionFromPath(ss, parquetPath)
         if (optionDS.isEmpty) {
             throw new RuntimeException("There is no OHLC data")

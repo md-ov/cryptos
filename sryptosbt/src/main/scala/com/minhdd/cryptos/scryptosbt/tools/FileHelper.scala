@@ -4,6 +4,7 @@ import java.io.File
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.CryptoPartitionKey
+import com.minhdd.cryptos.scryptosbt.env
 
 import scala.io.{BufferedSource, Source}
 
@@ -88,8 +89,11 @@ object FileHelper {
     }
     
     def getPathForSpark(path: String): String = {
-        if (path.contains("://")) "file:///" + path else 
-        "file:///" + getClass.getResource("/" + path).getPath
+        if (env.env == "win") {
+            if (path.contains("://")) "file:///" + path else "file:///" + getClass.getResource("/" + path).getPath
+        } else {
+            path
+        }
     }
     
     def firstLine(filePath: String): Option[String] = {
