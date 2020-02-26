@@ -22,7 +22,7 @@ object LinearTrainer {
         val modelPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-models${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
         val resultPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-results${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
     
-        val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
+        val expansionStrucTypePath: String = getClass.getResource("/expansion").getPath
         val transformer: Transformer = Expansion.getTransformerForLinearModel(spark, expansionStrucTypePath)
         Trainer.trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, modelPath, resultPath, transformer)
     }
