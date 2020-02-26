@@ -18,9 +18,9 @@ object LinearTrainer {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-        val modelPath = s"$dataDirectory\\ml\\linear-models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-        val resultPath = s"$dataDirectory\\ml\\linear-results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val path: String = s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
+        val modelPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-models${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
+        val resultPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-results${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
     
         val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
         val transformer: Transformer = Expansion.getTransformerForLinearModel(spark, expansionStrucTypePath)
