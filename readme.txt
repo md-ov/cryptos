@@ -1,5 +1,8 @@
-﻿add to path
+﻿sbt pack
+
+add to path
 D:\ws\cryptos\cryptos\sryptosbt\target\pack\bin\
+ou copier le dossier pack quelque part et utiliser le chemin vers pack/bin pour la commande cypptos-apps
 
 mettre winutils.ext dans D:\ws\haoop\bin et mettre la variable d'environnement
 HADOOP_HOME D:\ws\haoop\
@@ -7,7 +10,17 @@ HADOOP_HOME D:\ws\haoop\
 va dans krakenc et 
 npm install
 
-sbt pack
+
+
+
+
+
+
+
+-----------------------
+
+
+
 
 
 use of cryptos apps : 
