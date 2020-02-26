@@ -90,7 +90,13 @@ object FileHelper {
     
     def getPathForSpark(path: String): String = {
         if (env.env == "win") {
-            if (path.contains("://")) "file:///" + path else "file:///" + getClass.getResource("/" + path).getPath
+            if (path.contains("://")) {
+                "file:///" + path
+            } else if (path.contains(":")) {
+                path
+            } else {
+                "file:///" + getClass.getResource("/" + path).getPath
+            }
         } else {
             path
         }
