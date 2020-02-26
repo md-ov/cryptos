@@ -16,6 +16,6 @@ object env {
     val prefixPath = ""
     val pathDelimiter = "/"
     val dataDirectory = "/Users/minhdungdao/ws/data/cryptos"
-    val parquetPath = s"${dataDirectory}/parquets"
+    val parquetsPath = s"${dataDirectory}/parquets"
     val todayPath = s"${dataDirectory}/parquets/XBT/EUR/TRADES/today/parquet"
 }
