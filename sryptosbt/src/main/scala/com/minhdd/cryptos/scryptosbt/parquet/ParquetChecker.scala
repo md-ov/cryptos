@@ -4,6 +4,7 @@ import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.env.todayPath
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.SparkSession
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.getString
 
 object ParquetChecker {
     val spark: SparkSession = SparkSession.builder()
@@ -15,12 +16,10 @@ object ParquetChecker {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    def main(args: Array[String]): Unit = {
-        
-        import spark.implicits._
-        
-        import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.getString
+    import spark.implicits._
     
+    def main(args: Array[String]): Unit = {
+
         println("ohlc")
         ParquetHelper.ohlcCryptoDs(spark)
             .map(x => getString(x.cryptoValue.datetime))
@@ -46,5 +45,10 @@ object ParquetChecker {
             .distinct()
             .sort("value")
             .show(1, false)
+    
+        println("expansion")
+        val expansionPath = this.getClass.getResource("/expansion").getPath
+        println(expansionPath)
+        spark.read.parquet(expansionPath).show(2)
     }
 }

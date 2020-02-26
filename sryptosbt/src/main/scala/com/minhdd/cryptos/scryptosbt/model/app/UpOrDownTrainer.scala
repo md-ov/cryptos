@@ -23,7 +23,7 @@ object UpOrDownTrainer {
         val modelPath = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
         val resultPath = s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
         
-        val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
+        val expansionStrucTypePath: String = this.getClass.getResource("/expansion").getPath
         val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark, expansionStrucTypePath)
         Trainer.trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, modelPath, resultPath, transformer)
     }

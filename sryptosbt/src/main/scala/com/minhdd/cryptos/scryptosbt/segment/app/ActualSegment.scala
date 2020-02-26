@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.segment.app
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.env
 import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
@@ -18,8 +19,8 @@ object ActualSegment {
 
         
         Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            spark = ss, prefix = prefixPath,
-            path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
+            spark = ss, prefix = env.prefixPath,
+            path1 = env.parquetsPath, path2 = env.parquetsPath, todayPath = env.todayPath,
             ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }
     

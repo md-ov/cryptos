@@ -203,8 +203,8 @@ class SegmentsCalculatorTest extends FunSuite with Matchers {
         assert(seqBeforeSplit.map(_.evolution) == Seq(evolutionNone, evolutionNone, evolutionDown, evolutionUp, evolutionNone))
     }
     
-    test("getds") {
-        val expansionStrucTypePath = "file://" + getClass.getResource("/expansion").getPath
+    test("expansion") {
+        val expansionStrucTypePath = this.getClass.getResource("/expansion").getPath
         val df: DataFrame = spark.read.parquet(expansionStrucTypePath)
         df.show(4, false)
     }
