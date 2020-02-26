@@ -1,9 +1,9 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import com.minhdd.cryptos.scryptosbt.domain.Crypto
+import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.env.todayPath
-import com.minhdd.cryptos.scryptosbt.segment.app.{ActualSegment, ToBigSegments}
-import org.apache.spark.sql.{Dataset, SparkSession}
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
+import org.apache.spark.sql.SparkSession
 
 object ParquetChecker {
     val spark: SparkSession = SparkSession.builder()
@@ -21,16 +21,30 @@ object ParquetChecker {
         
         import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.getString
     
+        println("ohlc")
         ParquetHelper.ohlcCryptoDs(spark)
             .map(x => getString(x.cryptoValue.datetime))
             .distinct()
             .sort("value")
             .show(1, false)
     
+        println("all trades")
+        ParquetHelper.allTradesCryptoDs(spark).show(1, false)
+    
+        println("2020 trades")
+        ParquetHelper.tradesCryptoDs("2020", spark).show(1, false)
+    
+        println("trades from last segment")
+        ParquetHelper.tradesFromLastSegment(
+            spark,
+            TimestampHelper.getTimestamp("2020-02-03 10:25:23"),
+            CryptoPartitionKey("XBT", "EUR", "KRAKEN", "TRADES", "2020", "02", "03")).show(1, false)
+    
+        println("trades today")
         spark.read.parquet(todayPath).as[Crypto]
             .map(x => x.cryptoValue.datetime)
             .distinct()
             .sort("value")
-            .show(9999999, false)
+            .show(1, false)
     }
 }

@@ -13,15 +13,6 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 //after ToSmallSegments
 object CompleteSmallSegments {
     
-    def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
-                              lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
-        
-        Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            spark = ss, prefix = "file:///",
-            path1 = parquetPath, path2 = parquetPath, todayPath = todayPath,
-            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
-    }
-    
     val spark: SparkSession = SparkSession.builder()
       .config("spark.driver.maxResultSize", "3g")
       .config("spark.network.timeout", "600s")
@@ -52,7 +43,7 @@ object CompleteSmallSegments {
             year = lastTsHelper.getYear,
             month = lastTsHelper.getMonth,
             day = lastTsHelper.getDay)
-        val newTrades: Dataset[Crypto] = tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
+        val newTrades: Dataset[Crypto] = ParquetHelper.tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
         val newOHLCs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
         
         val newBigs: Dataset[Seq[BeforeSplit]] = SegmentHelper.toBigSegments(spark, newTrades, newOHLCs)._2
