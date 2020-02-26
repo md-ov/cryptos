@@ -5,6 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.env.{dataDirectory, todayPath}
 import com.minhdd.cryptos.scryptosbt.constants.{numberOfMinutesBetweenTwoElement, thisYear}
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
+import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -21,7 +22,6 @@ object ToBigSegments {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        
         val (lastTimestamp2016, ds2013to2016): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsBetween2013and2016(spark)
         
         val (lastTimestamp2017, ds2017): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
@@ -35,38 +35,15 @@ object ToBigSegments {
         
     }
     
-    def tradesCryptoDs(year: String, ss: SparkSession): Dataset[Crypto] = {
-        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
-            parquetsDir = s"$dataDirectory\\parquets", asset = "XBT", currency = "EUR", year = year)
-        Crypto.getPartitionsUniFromPath(ss, "file:///", parquetPath).get
-    }
-    
-    def allTradesCryptoDs(ss: SparkSession): Dataset[Crypto] = {
-        val parquetPath = CryptoPartitionKey.getTRADESParquetPath(
-            parquetsDir = s"$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
-        Crypto.getPartitionsUniFromPath(ss, "file:///", parquetPath).get
-    }
-    
-    def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
-        val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
-            parquetsDir = s"file:///$dataDirectory\\parquets", asset = "XBT", currency = "EUR")
-        val optionDS = Crypto.getPartitionFromPath(ss, parquetPath)
-        if (optionDS.isEmpty) {
-            throw new RuntimeException("There is no OHLC data")
-        } else {
-            optionDS.get
-        }
-    }
-    
     def toBigSegmentsAfter2016(spark: SparkSession, lastTimestamp: Timestamp, year: String, lastYear: String): (Timestamp,
       Dataset[Seq[BeforeSplit]]) = {
         import spark.implicits._
-        val trades: Dataset[Crypto] = tradesCryptoDs(year, spark)
+        val trades: Dataset[Crypto] = ParquetHelper.tradesCryptoDs(year, spark)
         val todayPartitionKey: CryptoPartitionKey = spark.read.parquet(todayPath).as[Crypto].head().partitionKey
         val todayMonth = todayPartitionKey.month
         val todayDay = todayPartitionKey.day
         
-        val ohlcs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => {
+        val ohlcs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => {
             (year != thisYear || x.partitionKey.month != todayMonth || x.partitionKey.day != todayDay) &&
                 (x.partitionKey.year == year || (x.partitionKey.year == lastYear && x.cryptoValue.datetime.after(lastTimestamp)))
         })
@@ -86,7 +63,7 @@ object ToBigSegments {
         import spark.implicits._
         val trades: Dataset[Crypto] = spark.createDataset(Seq[Crypto]())(Crypto.encoder(spark))
         
-        val ohlcs: Dataset[Crypto] = ohlcCryptoDs(spark).filter(x => {
+        val ohlcs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => {
             x.partitionKey.year == "2013" ||
               x.partitionKey.year == "2014" ||
               x.partitionKey.year == "2015" ||
