@@ -21,11 +21,11 @@ object ParquetChecker {
         
         import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.getString
     
-        ToBigSegments.ohlcCryptoDs(spark)
+        ParquetHelper.ohlcCryptoDs(spark)
             .map(x => getString(x.cryptoValue.datetime))
             .distinct()
             .sort("value")
-            .show(9999999, false)
+            .show(1, false)
     
         spark.read.parquet(todayPath).as[Crypto]
             .map(x => x.cryptoValue.datetime)
