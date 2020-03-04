@@ -26,7 +26,7 @@ object CompleteSmallSegments {
     
     def main(args: Array[String]): Unit = {
         val smallSegments: Dataset[Seq[BeforeSplit]] = 
-            spark.read.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow").as[Seq[BeforeSplit]]
+            spark.read.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow").as[Seq[BeforeSplit]]
         
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
@@ -52,6 +52,6 @@ object CompleteSmallSegments {
         newSmalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
         
         val allSmalls: Dataset[Seq[BeforeSplit]] = newSmalls.union(smallSegments)
-        allSmalls.write.parquet(s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow-all")
+        allSmalls.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow-all")
     }
 }
