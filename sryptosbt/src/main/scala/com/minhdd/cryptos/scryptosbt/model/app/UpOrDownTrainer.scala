@@ -18,10 +18,10 @@ object UpOrDownTrainer {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val path: String = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
         
-        val modelPath = s"$dataDirectory\\ml\\models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-        val resultPath = s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val modelPath = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val resultPath = s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/$directoryNow"
         
         val expansionStrucTypePath: String = this.getClass.getResource("/expansion").getPath
         val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark, expansionStrucTypePath)
