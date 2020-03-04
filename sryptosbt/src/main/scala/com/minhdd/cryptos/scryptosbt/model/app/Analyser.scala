@@ -16,7 +16,7 @@ object Analyser {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory\\ml\\linear-results\\$numberOfMinutesBetweenTwoElement\\$directoryNow")
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/$numberOfMinutesBetweenTwoElement/$directoryNow")
     
     def main(args: Array[String]): Unit = {
         println(df.count())
