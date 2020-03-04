@@ -16,10 +16,10 @@ object VariationTrainer {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory\\segments\\small\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val path: String = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
         val expansionStrucTypePath = this.getClass.getResource("/expansion").getPath
-        val modelPath = s"$dataDirectory\\ml\\variation-models\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
-        val resultPath = s"$dataDirectory\\ml\\variation-results\\$numberOfMinutesBetweenTwoElement\\$directoryNow"
+        val modelPath = s"$dataDirectory/ml/variation-models/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val resultPath = s"$dataDirectory/ml/variation-results/$numberOfMinutesBetweenTwoElement/$directoryNow"
         //        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
     }
 }
