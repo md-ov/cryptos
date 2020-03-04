@@ -51,7 +51,7 @@ object ToBigSegments {
         val (nextLastTimestamp: Timestamp, ds: Dataset[Seq[BeforeSplit]]) =
             SegmentHelper.toBigSegments(spark, trades, ohlcs)
         
-        ds.write.parquet(s"$dataDirectory\\segments\\big\\big$numberOfMinutesBetweenTwoElement\\$year")
+        ds.write.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year")
         
         ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(1000, true)
         
@@ -73,7 +73,7 @@ object ToBigSegments {
         val (lastTimestamp: Timestamp, ds: Dataset[Seq[BeforeSplit]]) =
             SegmentHelper.toBigSegments(spark, trades, ohlcs)
         
-        ds.write.parquet(s"$dataDirectory\\segments\\big\\big$numberOfMinutesBetweenTwoElement\\201316")
+        ds.write.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/201316")
         
         ds.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(1000, true)
         
