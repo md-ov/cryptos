@@ -16,7 +16,7 @@ if ! [ -d ${dataPath}/trades/xbt-before-$now ]; then
 	mkdir ${krakencPath}/out/trades
 	echo "${krakencPath}out/trades/*.csv and ${krakencPath}/out/trades/ removed, ${krakencPath}/out/trades/ created"
 
-	node ${krakencPath}/main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
+	node ${krakencPath}/main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":100000\}
 	echo "main-get-t-a.js for XBT EUR done"
 
 	mkdir ${dataPath}/trades/xbt-before-$now

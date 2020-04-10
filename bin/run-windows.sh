@@ -18,7 +18,7 @@ if ! [ -f ${dataPath}trades\\xbt-before-$now ]; then
 	rm ./out/trades/*.csv
 	echo "./out/trades/*.csv removed"
 
-	node main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
+	node main-get-t-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":100000\}
 	echo "main-get-t-a.js for XBT EUR done"
 
 	mkdir ${dataPath}trades\\xbt-before-$now\\
