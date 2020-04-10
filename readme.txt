@@ -1,4 +1,8 @@
-﻿sbt pack
+﻿use of run-mac.sh : 
+open terminal in krankenc folder and use command : sh ../bin/run-mac.sh
+
+
+sbt pack
 
 add to path
 D:\ws\cryptos\cryptos\sryptosbt\target\pack\bin\
