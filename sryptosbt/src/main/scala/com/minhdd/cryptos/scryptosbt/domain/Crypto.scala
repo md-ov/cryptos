@@ -5,20 +5,20 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+import com.minhdd.cryptos.scryptosbt.tools.FileHelper.getSeparator
 
 import scala.util.{Failure, Try}
 
-case class CryptoPartitionKey(
-                                 asset: String,
-                                 currency: String,
-                                 provider: String,
-                                 api: String,
-                                 year: String,
-                                 month: String,
-                                 day: String
+case class CryptoPartitionKey(asset: String,
+                              currency: String,
+                              provider: String,
+                              api: String,
+                              year: String,
+                              month: String,
+                              day: String
                              ) {
     def getTodayPartitionPath(parquetsDir: String): String = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val separator: String = getSeparator(parquetsDir)
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir +
             asset.toUpperCase + separator +
@@ -27,11 +27,12 @@ case class CryptoPartitionKey(
             "today" + separator + "parquet"
         path
     }
-    
+
+
     def date(): String = DateTimeHelper.getDate(year, month, day)
     
-    def getPartitionPath(parquetsDir: String) = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+    def getPartitionPath(parquetsDir: String): String = {
+        val separator = getSeparator(parquetsDir)
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir +
             asset.toUpperCase + separator +
@@ -47,12 +48,13 @@ case class CryptoPartitionKey(
     def getOHLCPath(parquetsDir: String): String = {
         CryptoPartitionKey.getOHLCParquetPath(parquetsDir, asset, currency)
     }
-    
+
+
 }
 
 object CryptoPartitionKey {
     def fusion(keys: Seq[CryptoPartitionKey]): CryptoPartitionKey = {
-        def getFusionValue(values: Seq[String]) = {
+        def getFusionValue(values: Seq[String]): String = {
             if (values.size == 1) values.head else values.mkString(":")
         }
         
@@ -68,7 +70,7 @@ object CryptoPartitionKey {
     }
     
     def getOHLCParquetPath(parquetsDir: String, asset: String, currency: String): String = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val separator: String = getSeparator(parquetsDir)
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir +
             asset.toUpperCase + separator +
@@ -78,7 +80,7 @@ object CryptoPartitionKey {
     }
     
     def getTRADESParquetPath(parquetsDir: String, asset: String, currency: String): String = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val separator: String = getSeparator(parquetsDir)
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path = fullParquetDir +
             asset.toUpperCase + separator +
@@ -88,7 +90,7 @@ object CryptoPartitionKey {
     }
     
     def getTRADESParquetPath(parquetsDir: String, asset: String, currency: String, year: String): String = {
-        val separator = if (!parquetsDir.contains("\\")) "/" else "\\"
+        val separator: String = getSeparator(parquetsDir)
         val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
         val path: String = fullParquetDir +
             asset.toUpperCase + separator +
@@ -97,25 +99,22 @@ object CryptoPartitionKey {
             year
         path
     }
+
+
+
 }
 
-case class CryptoValue(
-                          datetime: Timestamp,
-                          value: Double,
-                          margin: Option[Margin],
-                          volume: Double
-                      )
+case class CryptoValue(datetime: Timestamp,
+                        value: Double,
+                        margin: Option[Margin],
+                        volume: Double)
 
-case class Margin(
-                     superior: Double,
-                     inferior: Double
-                 )
+case class Margin(superior: Double,
+                  inferior: Double)
 
-case class CryptoPrediction(
-                               prediction: Double,
-                               accuracy: Option[Double],
-                               predictionDt: Timestamp
-                           )
+case class CryptoPrediction(prediction: Double,
+                            accuracy: Option[Double],
+                            predictionDt: Timestamp)
 
 object Crypto {
     def parseOHLC(line: String): Seq[Crypto] = {
@@ -210,7 +209,6 @@ object Crypto {
         Try {
             val allPartitionsPath: Seq[String] = FileHelper.getAllDir(path)
             val allPaths = allPartitionsPath.map(prefix + _)
-            //            allPaths.foreach(println)
             allPaths.map(ss.read.parquet(_).as[Crypto](encoder(ss))).reduce(_.union(_))
         }.mapException(e => {
             println(e.getMessage)
@@ -243,8 +241,7 @@ object Crypto {
     }
     
     
-    def getPartitionFromPathFromLastTimestamp(ss: SparkSession, path: String, ts: Timestamp)
-    : Option[Dataset[Crypto]] = {
+    def getPartitionFromPathFromLastTimestamp(ss: SparkSession, path: String, ts: Timestamp): Option[Dataset[Crypto]] = {
         Try {
             ss.read.parquet(path).as[Crypto](encoder(ss)).filter(_.cryptoValue.datetime.afterOrSame(ts))
         }.mapException(e => {
