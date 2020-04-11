@@ -219,6 +219,7 @@ object Crypto {
     def getPartitionsUniFromPathFromLastTimestamp(spark: SparkSession, prefix: String, path1: String,
                                                   path2: String, todayPath: String, ts: Timestamp,
                                                   lastCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
+        import spark.implicits._
         import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
             val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
@@ -229,10 +230,12 @@ object Crypto {
             val todayDs: Dataset[Crypto] = spark.read.parquet(todayPath).as[Crypto](encoder(spark))
             if (todayDs.count == 0) {
                 throw new RuntimeException("There is no today data")
-            } else {
-                allPaths.map(spark.read.parquet(_).as[Crypto](encoder(spark))).reduce(_.union(_))
+            } else if (allPaths.nonEmpty) {
+                allPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
                     .union(todayDs)
                     .union(filteredDsFromLastTimestampDay)
+            } else {
+                todayDs.union(filteredDsFromLastTimestampDay)
             }
         }.mapException(e => {
             println(e.getMessage)
