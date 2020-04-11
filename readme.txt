@@ -1,5 +1,5 @@
 ﻿use of run-mac.sh : 
-open terminal in krankenc folder and use command : sh ../bin/run-mac.sh
+open terminal in krankenc folder and use command : sudo sh ../bin/run-mac.sh
 
 
 sbt pack
