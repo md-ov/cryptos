@@ -18,7 +18,7 @@ object Predictor {
     val thresholdForPositiveLinear = 0.9376398878304003
     val thresholdForPositive = 0.9455041916498401
     val thresholdForNegative = 0.10381390129891797
-    val modelPath: String = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/$directoryNow"
+    val modelPath: String = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/20191211"
     val linearModelPath: String = s"$dataDirectory/ml/models/linear-models-200118"
     
     def main(args: Array[String]): Unit = {
