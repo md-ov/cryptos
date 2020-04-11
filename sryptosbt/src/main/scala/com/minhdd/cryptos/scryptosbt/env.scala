@@ -13,6 +13,7 @@ object env {
 
   object mac {
     val env = "mac"
+    val tmpDirectory = "/Users/minhdungdao/ws/tmp"
     val dataDirectory = "/Users/minhdungdao/ws/data/cryptos"
     val parquetsPath = s"${dataDirectory}/parquets"
     val todayPath = s"${dataDirectory}/parquets/XBT/EUR/TRADES/today/parquet"

@@ -22,7 +22,8 @@ object DateTimeHelper {
     def getMonth(date: String) = date.substring(5, 7)
     
     def getDay(date: String) = date.substring(8, 10)
-    
+
+    def now: String = DateTimeFormat.forPattern("yyyyMMddHHmmss").print(DateTime.now())
 
     def getTime(date: String): Long = {
         getTime(date, DateTimeHelper.defaultFormat)
@@ -102,14 +103,11 @@ object TimestampHelper {
     def apply(timestamp: Long): TimestampHelper = {
         new TimestampHelper(new Timestamp(timestamp), new DateTime(timestamp))
     }
-    
-    def now: Timestamp = {
-        new Timestamp(DateTime.now().getMillis)
-    }
+
+    def now: Timestamp = new Timestamp(DateTime.now().getMillis)
     
     def getString(ts: Timestamp) : String = dtfOut.print(new DateTime(ts))
-    
-    
+
     def getTimestamp(dateString: String): Timestamp = getTimestamp(dateString, defaultFormat)
     
     def getTimestamp(dateString: String, format: String): Timestamp = {

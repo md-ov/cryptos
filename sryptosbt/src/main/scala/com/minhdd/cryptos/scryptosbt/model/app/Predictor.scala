@@ -37,8 +37,6 @@ object Predictor {
     def main() = {
         import spark.implicits._
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-        //        SparkHelper.csvFromSeqBeforeSplit(spark, "D:\\tmp\\actualsegments-20200115.csv", actualSegments.flatten)
-        
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
         val lastSegment = ds.collect.last
         val df = ds.toDF()
