@@ -5,6 +5,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -12,8 +13,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Distributions {
     def main(args: Array[String]): Unit = {
-        //        distribution()
-        percentiles()
+                distribution()
+//        percentiles()
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -26,7 +27,7 @@ object Distributions {
     spark.sparkContext.setLogLevel("ERROR")
     
     val df: DataFrame = spark.read.parquet(
-        s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\${directoryNow}percentiles")
+        s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/20191211")
     val threshold = 0.9455041916498401
     
     val binarizerForSegmentDetection = new Binarizer()
@@ -77,7 +78,7 @@ object Distributions {
         val persPositive: Array[Double] = positive.stat.approxQuantile("numberOfElement", percentiles, 0.00001)
         val persNegative: Array[Double] = negative.stat.approxQuantile("numberOfElement", percentiles, 0.00001)
         
-        val file = new File(s"$dataDirectory\\ml\\results\\$numberOfMinutesBetweenTwoElement\\$directoryNow\\pers.csv")
+        val file = new File(s"$dataDirectory/ml/results/percentiles/${DateTimeHelper.now}.csv")
         val bw = new BufferedWriter(new FileWriter(file))
         val data = Seq(percentiles, pers, persNotOk, persNotokPositive, persNotokNegative, persOk, persOkPositive, persOkNegative, persPositive, persNegative)
         percentiles.indices.map(i => data.map(_.apply(i))).foreach(line => {
