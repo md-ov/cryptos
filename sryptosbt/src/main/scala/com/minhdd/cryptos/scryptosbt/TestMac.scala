@@ -22,6 +22,7 @@ object TestMac {
 //    spark.read.parquet(s"$dataDirectory/parquets/XBT/EUR/OHLC/parquet").show(5)
 
     val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
+    println(actualSegments.size)
+//    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
   }
 }
