@@ -3,6 +3,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.model.service.Expansion
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.ml.Transformer
 import org.apache.spark.sql.SparkSession
 
@@ -19,8 +20,8 @@ object LinearTrainer {
         spark.sparkContext.setLogLevel("ERROR")
         
         val path: String = s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
-        val modelPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-models${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
-        val resultPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-results${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
+        val modelPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-models${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}${DateTimeHelper.now}"
+        val resultPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-results${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}${DateTimeHelper.now}"
     
         val expansionStrucTypePath: String = getClass.getResource("/expansion").getPath
         val transformer: Transformer = Expansion.getTransformerForLinearModel(spark, expansionStrucTypePath)
