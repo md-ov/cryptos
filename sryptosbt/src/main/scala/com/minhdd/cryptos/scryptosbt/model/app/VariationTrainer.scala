@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
 object VariationTrainer {
@@ -18,8 +19,8 @@ object VariationTrainer {
         
         val path: String = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
         val expansionStrucTypePath = this.getClass.getResource("/expansion").getPath
-        val modelPath = s"$dataDirectory/ml/variation-models/$numberOfMinutesBetweenTwoElement/$directoryNow"
-        val resultPath = s"$dataDirectory/ml/variation-results/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val modelPath = s"$dataDirectory/ml/variation-models/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
+        val resultPath = s"$dataDirectory/ml/variation-results/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
         //        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
     }
 }

@@ -3,6 +3,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformer}
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
 // it takes 20h to run this trainer of model
@@ -20,8 +21,8 @@ object UpOrDownTrainer {
         
         val path: String = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
         
-        val modelPath = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/$directoryNow"
-        val resultPath = s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val modelPath = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
+        val resultPath = s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
         
         val expansionStrucTypePath: String = this.getClass.getResource("/expansion").getPath
         val transformer: ExpansionSegmentsTransformer = Expansion.getTransformer(spark, expansionStrucTypePath)
