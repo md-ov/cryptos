@@ -6,6 +6,7 @@ import java.util.Date
 import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
+import com.minhdd.cryptos.scryptosbt.model.service.ml
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper}
@@ -18,9 +19,9 @@ object Predictor {
     val thresholdForPositiveLinear = 0.9376398878304003
     val thresholdForPositive = 0.9455041916498401
     val thresholdForNegative = 0.10381390129891797
-    val modelPath: String = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/20191211"
-    val linearModelPath: String = s"$dataDirectory/ml/models/linear-models-200118"
-    
+    val modelPath: String = s"$dataDirectory/${ml.upDownModelPath}"
+    val linearModelPath = s"$dataDirectory/${ml.linearModelPath}"
+
     def main(args: Array[String]): Unit = {
         main()
     }
