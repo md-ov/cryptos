@@ -63,4 +63,7 @@ object ml {
     
     val minimumTrueNegativeRate = 0.9
     val minimumNegativeRate = 0.34
+
+    val upDownModelPath = "ml/models/$numberOfMinutesBetweenTwoElement/20191211"
+    val linearModelPath = "ml/models/linear-models-200118"
 }
