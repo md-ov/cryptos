@@ -2,9 +2,11 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
-import com.minhdd.cryptos.scryptosbt.model.service.ThresholdCalculator
+import com.minhdd.cryptos.scryptosbt.model.service.{ThresholdCalculator, ml}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+
+//après les trainers
 object Analyser {
     
     val spark: SparkSession = SparkSession.builder()
@@ -16,8 +18,9 @@ object Analyser {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/$numberOfMinutesBetweenTwoElement/$directoryNow")
-    
+//    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/${ml.linearPath}")
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/${ml.upDownPath}")
+
     def main(args: Array[String]): Unit = {
         println(df.count())
         df.groupBy("label").count().show()
