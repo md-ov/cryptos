@@ -31,7 +31,12 @@ object ToParquetsFromCSV {
     
     def run(args: ToParquetsFromCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
-        val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
+        val ss: SparkSession = SparkSession.builder()
+          .config("spark.driver.maxResultSize", "3g")
+          .config("spark.network.timeout", "600s")
+          .config("spark.executor.heartbeatInterval", "60s")
+          .appName("toParquet").master(master).getOrCreate()
+
         ss.sparkContext.setLogLevel("ERROR")
         if (apiLowercased == "ohlc") {
             val fileList: Seq[String] = getListOfFiles(args.inputDir).map(_.getAbsolutePath)
