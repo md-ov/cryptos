@@ -4,6 +4,7 @@ import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
+import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 //after ToBigSegments
@@ -50,6 +51,6 @@ object ToSmallSegments {
         
         bb.filter(_.last.isEndOfSegment == false).show(5, false)
         
-        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow")
+        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}")
     }
 }
