@@ -30,7 +30,7 @@ object Predictor {
       .config("spark.driver.maxResultSize", "3g")
       .config("spark.network.timeout", "600s")
       .config("spark.executor.heartbeatInterval", "60s")
-      .appName("big segments")
+      .appName("predict")
       .master("local[*]").getOrCreate()
     
     spark.sparkContext.setLogLevel("ERROR")
@@ -39,9 +39,10 @@ object Predictor {
         import spark.implicits._
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
-        val lastSegment = ds.collect.last
+        val lastSegment: Seq[BeforeSplit] = ds.collect.last
         val df = ds.toDF()
-        println("number of segments: " + actualSegments.size)
+        println("number of actualSegments: " + actualSegments.size)
+        println("last segment: " + lastSegment.head.datetime + " -> " + lastSegment.last.datetime)
         val mapBegindtAndSegmentLength: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
         //        val segments: DataFrame = Expansion.expansion(spark, ds)
         //        segments.filter(col("numberOfElement") === 2).show(10, false)
@@ -51,8 +52,10 @@ object Predictor {
         (segmentsWithRawPrediction: DataFrame,
         predictionOfLastSegment: DataFrame,
         predictionLinearOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
-        
+
+        println("prediction for last segment : ")
         predictionOfLastSegment.show()
+        println("prediction lineaire for last segment : ")
         predictionLinearOfLastSegment.show()
         
         val p = predictionOfLastSegment.map(_.getAs[Double]("prediction")).head()
