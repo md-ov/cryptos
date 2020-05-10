@@ -22,14 +22,15 @@ case class RawStat(year: Int, month: Option[Int], indicator: String, data: Seq[M
 
 object Stats {
     
-    val dataDir: String = "C:\\m\\ndb\\"
+    val dataDir: String = "/Users/minhdungdao/ws/data/naturedebouddha/"
+
+    val datas = Seq("201807", "201808", "201809", "201810", "201811", "201812",
+        "201901", "201902", "201903", "201904", "201905", "201906", "201907", "201908", "201909", "201910", "201911", "201912",
+        "202001", "202002", "202003", "202004")
     
     def main(args: Array[String]): Unit = {
-        val inputs: Seq[(Seq[RawStat], Int, Int)] = Seq(
-            "201807", "201808", "201809", "201810", "201811", "201812",
-            "201901", "201902", "201903", "201904", "201905", "201906", "201907", "201908", "201909", "201910", "201911", "201912",
-            "202001", "202002", "202003")
-            .map(x => {
+
+        val inputs: Seq[(Seq[RawStat], Int, Int)] = datas.map(x => {
                 val csvPath: String = s"$dataDir$x.csv"
                 val year = x.substring(0, 4).toInt
                 val month = x.substring(4, 6).toInt
