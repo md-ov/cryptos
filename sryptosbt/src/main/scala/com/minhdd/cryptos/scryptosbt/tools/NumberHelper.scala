@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.tools
 
 import com.minhdd.cryptos.scryptosbt.tools.Implicits.TryImplicit
 
+import scala.collection.mutable
 import scala.util.Try
 
 object NumberHelper {
@@ -185,17 +186,59 @@ object NumberHelper {
                 position2
             }
         }
-        
+
+        def getMax: Seq[Double] = {
+            val mutableQueue: mutable.Queue[Double] = mutable.Queue[Double]()
+            mutableQueue += input.head
+
+            def go(indice: Int): Unit = {
+                val previous = mutableQueue.apply(indice - 1)
+                mutableQueue += math.max(input.apply(indice), previous)
+                if (indice + 1 < input.length) go (indice + 1)
+            }
+
+            go(1)
+            mutableQueue
+        }
+        def getMin: Seq[Double] = {
+            val mutableQueue: mutable.Queue[Double] = mutable.Queue[Double]()
+            mutableQueue += input.head
+
+            def go(indice: Int): Unit = {
+                val previous = mutableQueue.apply(indice - 1)
+                mutableQueue += math.min(input.apply(indice), previous)
+                if (indice + 1 < input.length) go (indice + 1)
+            }
+
+            go(1)
+            mutableQueue
+        }
+
         def linear(margin: Double): Boolean = {
             val head: Double = input.head
             val last: Double = input.last
-            
-            input.indices.forall(i => {
-                i == 0 ||
-                  (last > head && input.apply(i) > input.apply(i - 1)) ||
-                  (last < head && input.apply(i) < input.apply(i - 1)) ||
-                  (input.apply(i).relativeVariation(input.apply(i - 1)).abs <= margin)
-            })
+
+            if (last > head) {
+                val maxes = input.getMax
+
+                input.indices.forall(i => {
+                    val valueI = input.apply(i)
+
+                    i == 0 ||
+                      (valueI > input.apply(i - 1)) ||
+                      (valueI.relativeVariation(maxes(i-1)).abs <= margin)
+                })
+            } else {
+                val mins = input.getMin
+
+                input.indices.forall(i => {
+                    val valueI = input.apply(i)
+
+                    i == 0 ||
+                      (valueI < input.apply(i - 1)) ||
+                      (valueI.relativeVariation(mins(i-1)).abs <= margin)
+                })
+            }
         }
     }
     
