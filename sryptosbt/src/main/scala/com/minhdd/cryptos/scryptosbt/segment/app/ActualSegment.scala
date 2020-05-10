@@ -55,10 +55,10 @@ object ActualSegment {
         val smallSegments: Dataset[Seq[BeforeSplit]] =
             spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow").as[Seq[BeforeSplit]]
 
-
-        smallSegments.show(2)
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
+        println("last ts of small segments : " + lastTimestamp)
+
         getActualSegments(lastTimestamp)
     }
     
