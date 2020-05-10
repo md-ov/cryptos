@@ -28,10 +28,13 @@ object ToBigSegments {
             lastTimestamp2016, "2017", "2016")
         
         val (lastTimestamp2018, ds2018): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
-            lastTimestamp2016, "2018", "2017")
+            lastTimestamp2017, "2018", "2017")
         
         val (lastTimestamp2019, ds2019): (Timestamp, Dataset[Seq[BeforeSplit]]) = toBigSegmentsAfter2016(spark,
-            lastTimestamp2016, "2019", "2018")
+            lastTimestamp2018, "2019", "2018")
+
+        toBigSegmentsAfter2016(spark,
+            lastTimestamp2019, "2020", "2019")
         
     }
     
