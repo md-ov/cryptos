@@ -11,9 +11,11 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 object SegmentHelper {
     
     def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
+        import spark.implicits._
+
         val beforeSplits: Seq[BeforeSplit] = toBeforeSplits(spark, trades, ohlcs)
         val (bigSegments, lastTimestamp): (Seq[Seq[BeforeSplit]], Timestamp) = Splitter.toBigSegmentsAndLastTimestamp(beforeSplits)
-        val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(bigSegments)(BeforeSplit.encoderSeq(spark))
+        val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(bigSegments).filter(_.size > 1)
         
         (lastTimestamp, ds)
     }
