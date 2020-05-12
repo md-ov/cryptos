@@ -19,7 +19,7 @@ object UpOrDownTrainer {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val path: String = s"$dataDirectory/segments/small/$smallSegmentsFolder"
         
         val modelPath = s"$dataDirectory/ml/models/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
         val resultPath = s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
