@@ -11,6 +11,27 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 
 //run first
 //in 2021 change thisYear and run
+
+//some statistics
+//trades count 2016 : 0
+//ohlc count 2016 :   342
+//last ts : 2016-12-31 01:00:00.0
+//----
+//trades count 2017 : 9696710
+//ohlc count 2017 :   442
+//last ts  2017-12-30 17:45:00.0
+//----
+//trades count 2018 : 10828556
+//ohlc count 2018 :   33701
+//lat ts 2018-12-31 23:00:00.0
+//----
+//trades count 2019 : 8294262
+//ohlc count 2019 :   142115
+//last ts : 2019-12-31 19:00:00.0
+//----
+//trades count 2020 : 4172864
+//ohlc count 2020 :   32493
+
 object ToBigSegments {
 
   val thisYear = "2020"
