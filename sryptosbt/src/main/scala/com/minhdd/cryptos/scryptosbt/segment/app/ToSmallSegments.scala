@@ -42,15 +42,17 @@ object ToSmallSegments {
         spark.sparkContext.setLogLevel("ERROR")
         import spark.implicits._
         
-        val bb: Dataset[Seq[BeforeSplit]] = Seq("1316", "2017", "2018", "2019").map(year => {
+        val bb: Dataset[Seq[BeforeSplit]] = Seq("1316", "2017", "2018", "2019", "2020").map(year => {
             val bigs: Dataset[Seq[BeforeSplit]] =
                 spark.read.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year").as[Seq[BeforeSplit]]
 //            bigs.filter(_.head.isEndOfSegment == true).show(5, false)
             cut(bigs)
         }).reduce(_.union(_))
         
-        bb.filter(_.last.isEndOfSegment == false).show(5, false)
-        
-        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}")
+//        bb.filter(_.last.isEndOfSegment == false).show(5, false)
+
+        val ts = DateTimeHelper.now
+        println(ts)
+        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
     }
 }
