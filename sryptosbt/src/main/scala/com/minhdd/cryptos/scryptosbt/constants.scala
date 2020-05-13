@@ -12,6 +12,5 @@ object constants {
     val minDeltaValue = 150
     val relativeMinDelta = 0.02
     
-    val directoryNow = "20200411"
     val smallSegmentsFolder = "15/20200512232142"
 }

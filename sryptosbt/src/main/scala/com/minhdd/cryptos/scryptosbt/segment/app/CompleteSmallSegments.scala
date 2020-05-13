@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
-import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 //after ToSmallSegments
@@ -25,8 +25,8 @@ object CompleteSmallSegments {
     import spark.implicits._
     
     def main(args: Array[String]): Unit = {
-        val smallSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/20200304"
-        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow"
+        val smallSegmentsPath = s"$dataDirectory/segments/small/$smallSegmentsFolder"
+        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
 
         completeSmallSegments(smallSegmentsPath, outputSegmentsPath)
     }

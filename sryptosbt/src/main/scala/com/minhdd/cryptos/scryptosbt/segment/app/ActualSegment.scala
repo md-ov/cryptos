@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.env
 import com.minhdd.cryptos.scryptosbt.env._
-import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
+import com.minhdd.cryptos.scryptosbt.constants.smallSegmentsFolder
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
@@ -53,7 +53,7 @@ object ActualSegment {
     
     def getActualSegments: Seq[Seq[BeforeSplit]] = {
         val smallSegments: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow").as[Seq[BeforeSplit]]
+            spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
 
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime

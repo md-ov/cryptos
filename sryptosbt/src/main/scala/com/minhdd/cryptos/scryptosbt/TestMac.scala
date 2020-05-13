@@ -1,6 +1,5 @@
 package com.minhdd.cryptos.scryptosbt
 
-import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
@@ -17,12 +16,8 @@ object TestMac {
       .master("local[*]").getOrCreate()
 
     spark.sparkContext.setLogLevel("ERROR")
-
-//    spark.read.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$directoryNow").show(5)
-//    spark.read.parquet(s"$dataDirectory/parquets/XBT/EUR/OHLC/parquet").show(5)
-
     val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
     println(actualSegments.size)
-//    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
+    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
   }
 }

@@ -17,14 +17,9 @@ object Viewer {
         spark.sparkContext.setLogLevel("ERROR")
         import spark.implicits._
         
-        val smalls_20191113: Dataset[Seq[BeforeSplit]] = 
-            spark.read.parquet(s"$dataDirectory/segments/small/15/$directoryNow").as[Seq[BeforeSplit]]
-        smalls_20191113.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
-        println(smalls_20191113.count())
-    
-        val smalls_20191115: Dataset[Seq[BeforeSplit]] = 
-            spark.read.parquet(s"$dataDirectory/segments/small/15/$directoryNow").as[Seq[BeforeSplit]]
-        smalls_20191115.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
-        println(smalls_20191115.count())
+        val smalls: Dataset[Seq[BeforeSplit]] =
+            spark.read.parquet(s"$dataDirectory/segments/small/$smallSegmentsFolder").as[Seq[BeforeSplit]]
+        smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
+        println(smalls.count())
     }
 }

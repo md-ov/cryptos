@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import com.minhdd.cryptos.scryptosbt.constants.{directoryNow, numberOfMinutesBetweenTwoElement}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.upDownPath
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
@@ -26,8 +26,7 @@ object Distributions {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-    val df: DataFrame = spark.read.parquet(
-        s"$dataDirectory/ml/results/$numberOfMinutesBetweenTwoElement/20191211")
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
     val threshold = 0.9455041916498401
     
     val binarizerForSegmentDetection = new Binarizer()
