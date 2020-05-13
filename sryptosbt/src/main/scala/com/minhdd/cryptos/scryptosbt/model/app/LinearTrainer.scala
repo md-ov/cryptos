@@ -19,7 +19,7 @@ object LinearTrainer {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}$directoryNow"
+        val path: String = s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder"
         val modelPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-models${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}${DateTimeHelper.now}"
         val resultPath = s"$dataDirectory${pathDelimiter}ml${pathDelimiter}linear-results${pathDelimiter}$numberOfMinutesBetweenTwoElement${pathDelimiter}${DateTimeHelper.now}"
     
