@@ -8,6 +8,7 @@ import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 //after ToBigSegments
+//update seq of year and run
 object ToSmallSegments {
     
     def cut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
