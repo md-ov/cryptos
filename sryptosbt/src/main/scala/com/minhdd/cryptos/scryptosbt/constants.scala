@@ -12,5 +12,5 @@ object constants {
     val minDeltaValue = 150
     val relativeMinDelta = 0.02
     
-    val smallSegmentsFolder = "15/20200512232142"
+    val smallSegmentsFolder = "15/20200514001207"
 }
