@@ -5,7 +5,6 @@ import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.model.service.{ThresholdCalculator, ml}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-
 //après les trainers
 object Analyser {
     
@@ -23,15 +22,20 @@ object Analyser {
 
     def main(args: Array[String]): Unit = {
         println(df.count())
-        df.groupBy("label").count().show()
-        df.select("numberOfElement", "label", "prediction").show(10, false)
+
+        df.filter("prediction == 1.0")
+          .filter("label == 0")
+          .groupBy("label", "prediction", "numberOfElement").count()
+          .orderBy("numberOfElement")
+          .show(1000)
+
         val ((t1, ratesForPositive), (t2, ratesForNegative)) = ThresholdCalculator.exploreDfAndFindThreshold(spark, df)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 0.726536009649354)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 1.0095808099039112)
 //        val (t, rates) = ThresholdCalculator.getRates(df, 0.44899120939479653)
-        println(t1)
-        println(ratesForPositive)
-        println(t2)
-        println(ratesForNegative)
+//        println(t1)
+//        println(ratesForPositive)
+//        println(t2)
+//        println(ratesForNegative)
     }
 }
