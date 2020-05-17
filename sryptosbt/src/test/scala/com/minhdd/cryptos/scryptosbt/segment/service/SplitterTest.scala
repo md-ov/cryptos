@@ -1,7 +1,9 @@
 package com.minhdd.cryptos.scryptosbt.segment.service
 
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
+import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSuite
 
 class SplitterTest extends FunSuite {
@@ -100,5 +102,38 @@ class SplitterTest extends FunSuite {
         val splits3: Seq[Seq[BeforeSplit]] = splits2.flatMap(Splitter.toSmallSegments)
         splits3.map(bss => bss.map(_.value)).foreach(println)
         assert(splits3.size == 3)
+    }
+
+    val spark: SparkSession = SparkSession.builder()
+      .config("spark.driver.maxResultSize", "3g")
+      .config("spark.network.timeout", "600s")
+      .config("spark.executor.heartbeatInterval", "60s")
+      .appName("predict")
+      .master("local[*]").getOrCreate()
+
+    spark.sparkContext.setLogLevel("ERROR")
+
+    import spark.implicits._
+
+    val beforeSplitsPath = "src/test/resources/parquets/20200510181659"
+
+    test("to small segments") {
+        val ds: Dataset[BeforeSplit] = spark.read.parquet(beforeSplitsPath).as[BeforeSplit]
+
+        val seq: Seq[BeforeSplit] = ds.collect().toSeq.sortWith{case (x, y) =>
+            x.datetime.before(y.datetime)
+        }
+
+        val cutted: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(seq)
+
+        cutted.foreach(x => {
+            println("-------")
+            print(x.head.datetime)
+            print("\t->\t")
+            print(x.last.datetime)
+            println
+        })
+
+        assert (cutted.size == 3)
     }
 }

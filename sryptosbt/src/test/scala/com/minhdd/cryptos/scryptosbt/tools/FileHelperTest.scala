@@ -6,13 +6,13 @@ import org.scalatest.FunSuite
 class FileHelperTest extends FunSuite {
     
     test("alldirs") {
-        val allDirs: Seq[String] = FileHelper.getAllDir("src//test//resources//parquets")
+        val allDirs: Seq[String] = FileHelper.getAllDir("src/test/resources/parquets")
         assert(allDirs.size == 5)
     }
     
     test("testGetAllDirFromLastTimestamp") {
         val allDirs: Seq[String] = FileHelper.getAllDirFromLastTimestamp(
-            path = "src//test//resources//parquets",
+            path = "src/test/resources/parquets",
             ts = TimestampHelper.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             cryptoPartitionKey = CryptoPartitionKey(
                 asset = "XBT",
