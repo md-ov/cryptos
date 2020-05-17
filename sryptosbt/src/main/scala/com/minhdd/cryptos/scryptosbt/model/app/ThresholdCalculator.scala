@@ -1,15 +1,52 @@
-package com.minhdd.cryptos.scryptosbt.model.service
+package com.minhdd.cryptos.scryptosbt.model.app
 
-import ml._
-import org.apache.spark.sql.functions._
+import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.domain.Rates
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction, linearPath, upDownPath}
 import org.apache.spark.ml.feature.Binarizer
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+//après les trainers
 object ThresholdCalculator {
+
+  val spark: SparkSession = SparkSession.builder()
+    .config("spark.driver.maxResultSize", "3g")
+    .config("spark.network.timeout", "600s")
+    .config("spark.executor.heartbeatInterval", "60s")
+    .appName("big segments")
+    .master("local[*]").getOrCreate()
+
+  spark.sparkContext.setLogLevel("ERROR")
+
+  val minimumTruePositiveRate = 0.9
+  val minimumPositiveRate = 0.8
+  val minimumTrueNegativeRate = 0.9
+  val minimumNegativeRate = 0.3
+
+  def main(args: Array[String]): Unit = {
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/$linearPath")
+    //    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
+
+    println(df.count())
+
+    //        df.filter("prediction == 1.0")
+    //          .filter("label == 0")
+    //          .groupBy("label", "prediction", "numberOfElement").count()
+    //          .orderBy("numberOfElement")
+    //          .show(1000)
+
+    val ((t1, ratesForPositive), (t2, ratesForNegative)) = exploreDfAndFindThreshold(spark, df)
+    //        val (t, rates) = ThresholdCalculator.getRates(df, 0.726536009649354)
+    //        val (t, rates) = ThresholdCalculator.getRates(df, 1.0095808099039112)
+    //        val (t, rates) = ThresholdCalculator.getRates(df, 0.44899120939479653)
+    //        println(t1)
+    //        println(ratesForPositive)
+    //        println(t2)
+    //        println(ratesForNegative)
+  }
     
-    def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): ((Double, Rates), (Double, Rates)) = {
+    private def exploreDfAndFindThreshold(ss: SparkSession, df: DataFrame): ((Double, Rates), (Double, Rates)) = {
 //        for (i <- 0 to 10) {
 //            val binarizerForSegmentDetection = new Binarizer()
 //              .setInputCol(prediction)
@@ -90,13 +127,13 @@ object ThresholdCalculator {
     private def bestRateForPositive(rates: Seq[(Double, Rates)]): (Double, Rates) = {
         rates
           .filter(_._2.truePositiveOnPositive > minimumTruePositiveRate)
-          .filter(_._2.positiveRate > minimumPositiveRate)
-          .maxBy(_._2.truePositiveOnPositive)
+//          .filter(_._2.positiveRate > minimumPositiveRate)
+          .maxBy(_._2.positiveRate)
     }
     
     private def bestRateForNegative(rates: Seq[(Double, Rates)]): (Double, Rates) = {
         rates
-          .filter(_._2.trueNegativeOnNegative > minimumTrueNegativeRate)
+//          .filter(_._2.trueNegativeOnNegative > minimumTrueNegativeRate)
           .filter(_._2.negativeRate > minimumNegativeRate)
           .maxBy(_._2.trueNegativeOnNegative)
     }

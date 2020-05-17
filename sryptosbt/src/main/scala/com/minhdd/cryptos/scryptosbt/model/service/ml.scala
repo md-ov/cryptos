@@ -58,12 +58,6 @@ object ml {
     val label = "label"
     val predict = "predict"
     
-    val minimumTruePositiveRate = 0.8
-    val minimumPositiveRate = 0.4
-    
-    val minimumTrueNegativeRate = 0.9
-    val minimumNegativeRate = 0.34
-
-    val upDownModelPath = "ml/models/15/20191211"
-    val linearModelPath = "ml/models/linear-models-200118"
+    val upDownPath = "15/20200512233121"
+    val linearPath = "15/20200513084851"
 }
