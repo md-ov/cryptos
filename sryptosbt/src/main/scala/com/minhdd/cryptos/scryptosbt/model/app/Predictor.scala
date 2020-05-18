@@ -147,7 +147,7 @@ object Predictor {
     private def printPredictionHistory(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(";")
-        print(s"${ml.upDownPath},${ml.linearPath}")
+        print(s"${ml.upDownPath} ${ml.linearPath}")
         print(";")
         print(lastSegment.last.value)
         print(";")
