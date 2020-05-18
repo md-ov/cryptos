@@ -125,7 +125,7 @@ object Predictor {
     private def printHistory(actualSegments: Seq[Seq[BeforeSplit]], lastSegment: Seq[BeforeSplit], targetedCount: Long, positiveCount: Long, okPositive: DataFrame, negativeCount: Long, okNegative: DataFrame) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(";")
-        print(s"${ml.upDownPath} ${ml.linearPath}")
+        print(s"${ml.upDownPath}-${ml.linearPath}")
         print(";")
         print(targetedCount)
         print(";")
@@ -147,7 +147,7 @@ object Predictor {
     private def printPredictionHistory(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(";")
-        print(s"${ml.upDownPath} ${ml.linearPath}")
+        print(s"${ml.upDownPath}-${ml.linearPath}")
         print(";")
         print(lastSegment.last.value)
         print(";")
