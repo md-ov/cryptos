@@ -31,7 +31,7 @@ object ParquetHelper {
     def ohlcCryptoDs(ss: SparkSession): Dataset[Crypto] = {
         val parquetPath = CryptoPartitionKey.getOHLCParquetPath(
             parquetsDir = FileHelper.getPathForSpark(env.parquetsPath), asset = "XBT", currency = "EUR")
-        val optionDS = Crypto.getPartitionFromPath(ss, parquetPath)
+        val optionDS: Option[Dataset[Crypto]] = Crypto.getLastParquet(ss, parquetPath)
         if (optionDS.isEmpty) {
             throw new RuntimeException("There is no OHLC data")
         } else {

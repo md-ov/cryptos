@@ -3,10 +3,10 @@ package com.minhdd.cryptos.scryptosbt.parquet
 import java.io.File
 import java.util.Date
 
-import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
+import com.minhdd.cryptos.scryptosbt.{ToParquetsFromCsv, env}
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.domain.Crypto.getPartitionFromPath
-import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, FileSystemService}
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import com.minhdd.cryptos.scryptosbt.tools.FileHelper.firstLine
 
@@ -135,8 +135,8 @@ object ToParquetsFromCSV {
         }
     }
     
-    private def runOHLC(ss: SparkSession, datasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
-                          minimumNumberOfElementForOnePartition: Long): Unit = {
+    private def runOHLC(spark: SparkSession, datasets: Seq[(CryptoPartitionKey, Dataset[Crypto])], parquetsDir: String,
+                          minimumNumberOfElementForOnePartition: Long, fs: FileSystemService = FileSystemService("local")): Unit = {
         type AssetCurrency = (String, String)
         if (datasets.nonEmpty) {
             
@@ -153,11 +153,13 @@ object ToParquetsFromCSV {
             groupedDatasets.foreach(map => {
                 val dss: Option[Dataset[Crypto]] = map._2.reduceOption(_.union(_))
                 if (dss.isDefined) {
-                    val dssGet = dss.get
-                    val key = dssGet.head().partitionKey
-                    val parquetPath = key.getOHLCPath(parquetsDir)
+                    val dssGet: Dataset[Crypto] = dss.get
+                    val key: CryptoPartitionKey = dssGet.head().partitionKey
+                    val lastDs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark)
+                    val newDs: Dataset[Crypto] = lastDs.union(dssGet)
+                    val parquetPath: String = key.getOHLCPath(parquetsDir, DateTimeHelper.now)
                     println("writing partition : " + parquetPath)
-                    dssGet.write.mode(SaveMode.Overwrite).parquet(parquetPath)
+                    newDs.write.mode(SaveMode.Overwrite).parquet(parquetPath)
                 }
             })
         } else {

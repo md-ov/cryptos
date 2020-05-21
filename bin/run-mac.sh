@@ -24,7 +24,7 @@ if ! [ -d ${dataPath}/trades/xbt-before-$now ]; then
 
 	mv -n ${krakencPath}/out/trades/*.csv ${dataPath}/trades/xbt-before-$now/
 	echo "krakenc/out/trades/*.csv moved to ${dataPath}/trades/xbt-before-$now/"
-	
+
 	echo "Retrieve trades from last timestamp DONE"
 
 	echo "cryptos-apps to-parquets-from-csv trades"
@@ -48,7 +48,7 @@ echo "${krakencPath}/out/trades/today mkdir"
 
 node ${krakencPath}/main-get-t-today-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\",\"n\":1000\}
 echo "main-get-t-today-a.js for XBT EUR done"
-node ${krakencPath}/main-get-o-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\"} 
+node ${krakencPath}/main-get-o-a.js \{\"asset\":\"XBT\",\"currency\":\"EUR\"}
 echo "main-get-o-a.js for XBT EUR done"
 
 echo "Get kraken at $now successfully completed"
@@ -60,19 +60,17 @@ echo "${dataPath}/trades/xbt-today-$now maked"
 
 mv -n ${krakencPath}/out/trades/today/*.csv ${dataPath}/trades/xbt-today-$now
 echo "${krakencPath}/out/trades/today/*.csv moved to ${dataPath}/trades/xbt-today-$now"
-mkdir ${dataPath}/ohlc/xbt
-mv ${krakencPath}/out/ohlc/*.csv ${dataPath}/ohlc/xbt
-echo "${krakencPath}/out/ohlc/*.csv moved to ${dataPath}/ohlc/xbt"
+mkdir ${dataPath}/ohlc/xbt/$now
+mv ${krakencPath}/out/ohlc/*.csv ${dataPath}/ohlc/xbt/$now
+echo "${krakencPath}/out/ohlc/*.csv moved to ${dataPath}/ohlc/xbt/$now"
 
-sudo rm -rf ${dataPath}/parquets/XBT/EUR/OHLC/parquet
-echo "${dataPath}/parquets/XBT/EUR/OHLC/parquet removed"
 sudo rm -rf ${dataPath}/parquets/XBT/EUR/TRADES/today/*
 echo "${dataPath}/parquets/XBT/EUR/TRADES/today/* removed"
 mkdir ${dataPath}/parquets/XBT/EUR/TRADES/today/parquet
 echo "{dataPath}/parquets/XBT/EUR/TRADES/today/parquet maked"
 
 echo "Starting To parquets with spark for ohlc xbt..."
-~/pack/bin/cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir ${dataPath}/ohlc/xbt --parquets-dir ${dataPath}/parquets --minimum 500
+~/pack/bin/cryptos-apps to-parquets-from-csv --master local --api ohlc --input-dir ${dataPath}/ohlc/xbt/$now --parquets-dir ${dataPath}/parquets --minimum 500
 echo "To parquets with spark for ohlc xbt done"
 
 echo "Starting To parquets with spark for trades xbt-today-$now..."

@@ -2,8 +2,9 @@ package com.minhdd.cryptos.scryptosbt.domain
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.env
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
-import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, FileSystemService, TimestampHelper}
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import com.minhdd.cryptos.scryptosbt.tools.FileHelper.getSeparator
 
@@ -49,7 +50,9 @@ case class CryptoPartitionKey(asset: String,
         CryptoPartitionKey.getOHLCParquetPath(parquetsDir, asset, currency)
     }
 
-
+    def getOHLCPath(parquetsDir: String, ts: String): String = {
+        CryptoPartitionKey.getOHLCParquetPath(parquetsDir, ts, asset, currency)
+    }
 }
 
 object CryptoPartitionKey {
@@ -68,6 +71,18 @@ object CryptoPartitionKey {
             day = getFusionValue(keys.map(_.day).distinct)
         )
     }
+
+    def getOHLCParquetPath(parquetsDir: String, ts: String, asset: String, currency: String): String = {
+        val separator: String = getSeparator(parquetsDir)
+        val fullParquetDir = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
+        val path = fullParquetDir +
+          asset.toUpperCase + separator +
+          currency.toUpperCase + separator +
+          "OHLC" + separator +
+          "parquet" + separator +
+          ts
+        path
+    }
     
     def getOHLCParquetPath(parquetsDir: String, asset: String, currency: String): String = {
         val separator: String = getSeparator(parquetsDir)
@@ -75,7 +90,8 @@ object CryptoPartitionKey {
         val path = fullParquetDir +
             asset.toUpperCase + separator +
             currency.toUpperCase + separator +
-            "OHLC" + separator + "parquet"
+            "OHLC" + separator +
+            "parquet"
         path
     }
     
@@ -194,13 +210,23 @@ object Crypto {
             t.recoverWith({ case e => Failure(f(e)) })
         }
     }
-    
+
+    def getLastParquet(ss: SparkSession, path: String, fs: FileSystemService = FileSystemService("local")): Option[Dataset[Crypto]] = {
+        Try {
+            val lastFolder: String = fs.getChildren(path).sortWith { case (x, y) => x.toLong > y.toLong }.last
+            ss.read.parquet(path + env.pathDelimiter + lastFolder).as[Crypto](encoder(ss))
+        }.mapException(e => {
+            e.printStackTrace()
+            new Exception("there is some problem")
+        }).toOption
+    }
+
     def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
         Try {
             ss.read.parquet(path).as[Crypto](encoder(ss))
         }.mapException(e => {
-            println(e.getMessage)
-            new Exception("path is not a parquet", e)
+            e.printStackTrace()
+            new Exception("$path is not a parquet")
         }).toOption
     }
     
@@ -312,4 +338,3 @@ case class FlattenCrypto(
 }
 
 
-    
