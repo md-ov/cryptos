@@ -225,8 +225,8 @@ object Crypto {
         Try {
             ss.read.parquet(path).as[Crypto](encoder(ss))
         }.mapException(e => {
-            e.printStackTrace()
-            new Exception("$path is not a parquet")
+            println(e.getMessage)
+            new Exception("$path is not a parquet", e)
         }).toOption
     }
     
