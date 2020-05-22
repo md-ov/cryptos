@@ -1,9 +1,9 @@
 package com.minhdd.cryptos.scryptosbt.parquet
 
-import java.io.File
 import java.util.Date
 
-import com.minhdd.cryptos.scryptosbt.{ToParquetsFromCsv, env}
+import com.minhdd.cryptos.scryptosbt.tools.FileHelper.getListOfFiles
+import com.minhdd.cryptos.scryptosbt.ToParquetsFromCsv
 import com.minhdd.cryptos.scryptosbt.domain.{Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.domain.Crypto.getPartitionFromPath
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, FileSystemService}
@@ -11,16 +11,7 @@ import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import com.minhdd.cryptos.scryptosbt.tools.FileHelper.firstLine
 
 object ToParquetsFromCSV {
-    
-    def getListOfFiles(dir: String): List[File] = {
-        val d = new File(dir)
-        if (d.exists && d.isDirectory) {
-            d.listFiles.filter(_.isFile).toList
-        } else {
-            Nil
-        }
-    }
-    
+
     def getPartitionKey(line: String, api: String): Option[CryptoPartitionKey] = {
         if (api == "ohlc") {
             Option(Crypto.parseOHLC(line).head.partitionKey)
