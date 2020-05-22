@@ -22,23 +22,25 @@ object ToParquetsFromCSV {
     
     def run(args: ToParquetsFromCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
-        val ss: SparkSession = SparkSession.builder()
+        val spark: SparkSession = SparkSession.builder()
           .config("spark.driver.maxResultSize", "3g")
           .config("spark.network.timeout", "600s")
           .config("spark.executor.heartbeatInterval", "60s")
           .appName("toParquet").master(master).getOrCreate()
 
-        ss.sparkContext.setLogLevel("ERROR")
+        spark.sparkContext.setLogLevel("ERROR")
+        import spark.implicits._
+
         if (apiLowercased == "ohlc") {
             val fileList: Seq[String] = getListOfFiles(args.inputDir).map(_.getAbsolutePath)
             val dss: Seq[(CryptoPartitionKey, Dataset[String])] = 
-                fileList.map(filePath => (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile
+                fileList.map(filePath => (getPartitionKey(firstLine(filePath).get, apiLowercased).get, spark.read.textFile
                 (filePath)))
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] = dss.map(e => {
-                val ds = e._2.flatMap(Crypto.parseOHLC)(Crypto.encoder(ss))
+                val ds = e._2.flatMap(Crypto.parseOHLC)
                 (e._1, ds)
             })
-            runOHLC(ss, dsCryptos, args.parquetsDir, args.minimum)
+            runOHLC(spark, dsCryptos, args.parquetsDir, args.minimum)
             "status|SUCCESS"
         } else if (apiLowercased == "trades") {
             def getNumber(fileName: String) = {
@@ -54,15 +56,15 @@ object ToParquetsFromCSV {
             
             val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = 
                 orderedFileList.filter(firstLine(_).nonEmpty).map(filePath => 
-                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile(filePath)))
+                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, spark.read.textFile(filePath)))
     
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
                 orderedDatasets.map(e => {
-                    val ds = e._2.flatMap(Crypto.parseTrade)(Crypto.encoder(ss))
+                    val ds = e._2.flatMap(Crypto.parseTrade)
                     (e._1, ds)
                 })
     
-            runTrades(ss, dsCryptos, args.parquetsDir, args.minimum)
+            runTrades(spark, dsCryptos, args.parquetsDir, args.minimum)
 //            println("There must be at least : " +  (fileList.size - 1) * 1000  + " and at most : " + fileList.size * 1000)
             "status|SUCCESS"
         } else {

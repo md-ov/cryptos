@@ -37,9 +37,11 @@ object SparkHelper {
         csvFromDS(dsString, csvPath)
     }
     
-    def csvFromSeqCrypto(ss: SparkSession, csvPath: String, seq: Seq[Crypto]): Unit = {
-        val ds: Dataset[Crypto] = ss.createDataset(seq)(Crypto.encoder(ss))
-        import ss.implicits._
+    def csvFromSeqCrypto(spark: SparkSession, csvPath: String, seq: Seq[Crypto]): Unit = {
+        import spark.implicits._
+
+        val ds: Dataset[Crypto] = spark.createDataset(seq)
+        import spark.implicits._
         val dsString: Dataset[String] = ds.map(_.flatten.toLine())
         csvFromDS(dsString, csvPath)
     }

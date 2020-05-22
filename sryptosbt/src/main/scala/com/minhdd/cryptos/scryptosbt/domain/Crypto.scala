@@ -101,9 +101,6 @@ object CryptoPartitionKey {
             year
         path
     }
-
-
-
 }
 
 case class CryptoValue(datetime: Timestamp,
@@ -186,42 +183,40 @@ object Crypto {
         ))
     }
     
-    def encoder(ss: SparkSession): Encoder[Crypto] = {
-        import ss.implicits._
-        implicitly[Encoder[Crypto]]
-    }
-    
     implicit class TryOps[T](val t: Try[T]) extends AnyVal {
         def mapException(f: Throwable => Throwable): Try[T] = {
             t.recoverWith({ case e => Failure(f(e)) })
         }
     }
 
-    def getLastParquet(ss: SparkSession, path: String, fs: FileSystemService = FileSystemService("local")): Option[Dataset[Crypto]] = {
+    def getLastParquet(spark: SparkSession, path: String, fs: FileSystemService = FileSystemService("local")): Option[Dataset[Crypto]] = {
         Try {
+            import spark.implicits._
             val lastFolder: String = fs.getChildren(path).sortWith { case (x, y) => x.toLong > y.toLong }.head
-            ss.read.parquet(path + env.pathDelimiter + lastFolder).as[Crypto](encoder(ss))
+            spark.read.parquet(path + env.pathDelimiter + lastFolder).as[Crypto]
         }.mapException(e => {
             e.printStackTrace()
             new Exception("there is some problem")
         }).toOption
     }
 
-    def getPartitionFromPath(ss: SparkSession, path: String): Option[Dataset[Crypto]] = {
+    def getPartitionFromPath(spark: SparkSession, path: String): Option[Dataset[Crypto]] = {
         Try {
-            ss.read.parquet(path).as[Crypto](encoder(ss))
+            import spark.implicits._
+            spark.read.parquet(path).as[Crypto]
         }.mapException(e => {
             println(e.getMessage)
             new Exception("$path is not a parquet", e)
         }).toOption
     }
     
-    def getPartitionsUniFromPath(ss: SparkSession, prefix: String, path: String): Option[Dataset[Crypto]] = {
+    def getPartitionsUniFromPath(spark: SparkSession, prefix: String, path: String): Option[Dataset[Crypto]] = {
         import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
+            import spark.implicits._
             val allPartitionsPath: Seq[String] = FileHelper.getAllDir(path)
             val allPaths = allPartitionsPath.map(prefix + _)
-            allPaths.map(ss.read.parquet(_).as[Crypto](encoder(ss))).reduce(_.union(_))
+            allPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
         }.mapException(e => {
             println(e.getMessage)
             new Exception("path is not a parquet", e)
@@ -234,12 +229,13 @@ object Crypto {
         import spark.implicits._
         import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
+            import spark.implicits._
             val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
             val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
             val dsFromLastTimestampDay: Dataset[Crypto] =
-                spark.read.parquet(FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto](encoder(spark))
+                spark.read.parquet(FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto]
             val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(_.cryptoValue.datetime.afterOrSame(ts))
-            val todayDs: Dataset[Crypto] = spark.read.parquet(todayPath).as[Crypto](encoder(spark))
+            val todayDs: Dataset[Crypto] = spark.read.parquet(todayPath).as[Crypto]
             if (todayDs.count == 0) {
                 throw new RuntimeException("There is no today data")
             } else if (allPaths.nonEmpty) {
@@ -256,9 +252,10 @@ object Crypto {
     }
     
     
-    def getPartitionFromPathFromLastTimestamp(ss: SparkSession, path: String, ts: Timestamp): Option[Dataset[Crypto]] = {
+    def getPartitionFromPathFromLastTimestamp(spark: SparkSession, path: String, ts: Timestamp): Option[Dataset[Crypto]] = {
         Try {
-            ss.read.parquet(path).as[Crypto](encoder(ss)).filter(_.cryptoValue.datetime.afterOrSame(ts))
+            import spark.implicits._
+            spark.read.parquet(path).as[Crypto].filter(_.cryptoValue.datetime.afterOrSame(ts))
         }.mapException(e => {
             println(e.getMessage)
             new Exception("path is not a parquet", e)

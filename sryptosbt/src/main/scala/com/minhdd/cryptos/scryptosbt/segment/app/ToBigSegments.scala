@@ -83,7 +83,9 @@ object ToBigSegments {
 
 
   def toBigSegmentsBetween2013and2016(spark: SparkSession): (Timestamp, Array[Crypto]) = {
-    val trades: Dataset[Crypto] = spark.createDataset(Seq[Crypto]())(Crypto.encoder(spark))
+    import spark.implicits._
+
+    val trades: Dataset[Crypto] = spark.createDataset(Seq[Crypto]())
 
     val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => {
       x.partitionKey.year == "2013" ||

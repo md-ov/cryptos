@@ -33,8 +33,10 @@ object ToParquetsFromTodayCSV {
     
     def run(args: ToParquetsFromTodayCsv, master: String): String = {
         val apiLowercased = args.api.toLowerCase
-        val ss: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
-        ss.sparkContext.setLogLevel("ERROR")
+        val spark: SparkSession = SparkSession.builder().appName("toParquet").master(master).getOrCreate()
+        spark.sparkContext.setLogLevel("ERROR")
+        import spark.implicits._
+
         if (apiLowercased == "ohlc") {
 
             "status|NOT_PROCESSED"
@@ -52,15 +54,15 @@ object ToParquetsFromTodayCSV {
             
             val orderedDatasets: Seq[(CryptoPartitionKey, Dataset[String])] = 
                 orderedFileList.filter(firstLine(_).isDefined).map(filePath => 
-                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, ss.read.textFile(filePath)))
+                (getPartitionKey(firstLine(filePath).get, apiLowercased).get, spark.read.textFile(filePath)))
     
             val dsCryptos: Seq[(CryptoPartitionKey, Dataset[Crypto])] =
                 orderedDatasets.map(e => {
-                    val ds = e._2.flatMap(Crypto.parseTrade)(Crypto.encoder(ss))
+                    val ds = e._2.flatMap(Crypto.parseTrade)
                     (e._1, ds)
                 })
     
-            runTodayTrades(ss, dsCryptos, args.parquetsDir, args.minimum)
+            runTodayTrades(spark, dsCryptos, args.parquetsDir, args.minimum)
             "status|SUCCESS"
         } else {
             "status|ERROR|api"
