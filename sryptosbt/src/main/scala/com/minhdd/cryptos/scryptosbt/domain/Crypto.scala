@@ -16,8 +16,12 @@ case class CryptoPartitionKey(asset: String,
                               api: String,
                               year: String,
                               month: String,
-                              day: String
-                             ) {
+                              day: String) {
+
+    val PARQUET: String = "parquet"
+
+    def date: String = DateTimeHelper.getDate(year, month, day)
+
     def getTodayPartitionPath(parquetsDir: String): String = {
         val separator: String = getSeparator(parquetsDir)
         val fullParquetDir: String = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
@@ -25,13 +29,10 @@ case class CryptoPartitionKey(asset: String,
             asset.toUpperCase + separator +
             currency.toUpperCase + separator +
             api.toUpperCase + separator +
-            "today" + separator + "parquet"
+            "today" + separator + PARQUET
         path
     }
 
-
-    def date(): String = DateTimeHelper.getDate(year, month, day)
-    
     def getPartitionPath(parquetsDir: String): String = {
         val separator: String = getSeparator(parquetsDir)
         val fullParquetDir: String = if (parquetsDir.endsWith(separator)) parquetsDir else parquetsDir + separator
@@ -42,7 +43,7 @@ case class CryptoPartitionKey(asset: String,
             year + separator + month + separator + day + separator +
             provider.toUpperCase + separator +
             api.toUpperCase + separator +
-            "parquet"
+            PARQUET
         path
     }
     

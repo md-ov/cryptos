@@ -86,8 +86,8 @@ object ToParquetsFromCSV {
     
     def getAllKeys(orderedDatasets: Seq[(CryptoPartitionKey, Dataset[Crypto])]): Seq[CryptoPartitionKey] = {
         val firstKey: CryptoPartitionKey = orderedDatasets.head._1
-        val firstDate: String = firstKey.date()
-        val lastDate: String = orderedDatasets.last._1.date()
+        val firstDate: String = firstKey.date
+        val lastDate: String = orderedDatasets.last._1.date
     
         val dates: Seq[String] = DateTimeHelper.getDates(firstDate, lastDate)
         dates.map(date => firstKey.copy(
@@ -105,7 +105,7 @@ object ToParquetsFromCSV {
     
     def filterDatasets(firstDates: Seq[String], dss: Seq[(String, Dataset[Crypto])], filterKey: CryptoPartitionKey)
     : Option[Dataset[Crypto]] = {
-        val filterDate: String = filterKey.date()
+        val filterDate: String = filterKey.date
         val seq: Seq[Dataset[Crypto]] = 
             dss.indices
               .filter(i => {
@@ -162,7 +162,7 @@ object ToParquetsFromCSV {
                     minimumNumberOfElementForOnePartition: Long): Unit = {
         if (datasets.nonEmpty) {
             
-            val orderedDatasetsWithFirstDate: Seq[(String, Dataset[Crypto])] = datasets.map(e => (e._1.date(), e._2))
+            val orderedDatasetsWithFirstDate: Seq[(String, Dataset[Crypto])] = datasets.map(e => (e._1.date, e._2))
             
             val firstDates: Seq[String] = orderedDatasetsWithFirstDate.map(_._1)
             val allKeys: Seq[CryptoPartitionKey] = getAllKeys(datasets)
