@@ -213,7 +213,7 @@ object Crypto {
 
     def getLastParquet(ss: SparkSession, path: String, fs: FileSystemService = FileSystemService("local")): Option[Dataset[Crypto]] = {
         Try {
-            val lastFolder: String = fs.getChildren(path).sortWith { case (x, y) => x.toLong > y.toLong }.last
+            val lastFolder: String = fs.getChildren(path).sortWith { case (x, y) => x.toLong > y.toLong }.head
             ss.read.parquet(path + env.pathDelimiter + lastFolder).as[Crypto](encoder(ss))
         }.mapException(e => {
             e.printStackTrace()
