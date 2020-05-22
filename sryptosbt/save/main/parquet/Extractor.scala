@@ -22,7 +22,7 @@ object Extractor {
         val maxValue: Double = values.reduce(maxOfTwoDoubles(_, _))
         val minValue: Double = values.reduce(minOfTwoDoubles(_, _))
         Crypto(
-            partitionKey = CryptoPartitionKey.fusion(keys),
+            partitionKey = fusion(keys),
             cryptoValue = CryptoValue(
                 datetime = TimestampHelper.getTimestamp(d, DateTimeHelper.defaultFormat),
                 value = averageValue,
@@ -42,5 +42,22 @@ object Extractor {
     
     private def minOfTwoDoubles(val1: Double, val2: Double) = {
         if (val1 < val2) val1 else val2
+    }
+
+    private def fusion(keys: Seq[CryptoPartitionKey]): CryptoPartitionKey = {
+
+        def getFusionValue(values: Seq[String]): String = {
+            if (values.size == 1) values.head else values.mkString(":")
+        }
+
+        CryptoPartitionKey(
+            asset = getFusionValue(keys.map(_.asset).distinct),
+            currency = getFusionValue(keys.map(_.currency).distinct),
+            provider = getFusionValue(keys.map(_.provider).distinct),
+            api = getFusionValue(keys.map(_.api).distinct),
+            year = getFusionValue(keys.map(_.year).distinct),
+            month = getFusionValue(keys.map(_.month).distinct),
+            day = getFusionValue(keys.map(_.day).distinct)
+        )
     }
 }

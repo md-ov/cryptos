@@ -55,7 +55,7 @@ object ToBigSegments {
 
   def toBigSegmentsAfter2016(spark: SparkSession, notTakenFromLastYear: Array[Crypto], lastTimestamp: Timestamp, year: String, lastYear: String): (Timestamp, Array[Crypto]) = {
     import spark.implicits._
-    val thisYearTrades: Dataset[Crypto] = ParquetHelper.tradesCryptoDs(year, spark)
+    val thisYearTrades: Dataset[Crypto] = ParquetHelper().tradesCryptoDs(year, spark)
 
     val trades: Dataset[Crypto] = if (lastYear != "2016") {
         spark.createDataset(notTakenFromLastYear).union(thisYearTrades)
@@ -67,7 +67,7 @@ object ToBigSegments {
     val todayMonth: String = todayPartitionKey.month
     val todayDay: String = todayPartitionKey.day
 
-    val ohlcs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => {
+    val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => {
       (year != thisYear || x.partitionKey.month != todayMonth || x.partitionKey.day != todayDay) &&
         (x.partitionKey.year == year || (x.partitionKey.year == lastYear && !x.cryptoValue.datetime.before(lastTimestamp)))
     })
@@ -85,7 +85,7 @@ object ToBigSegments {
   def toBigSegmentsBetween2013and2016(spark: SparkSession): (Timestamp, Array[Crypto]) = {
     val trades: Dataset[Crypto] = spark.createDataset(Seq[Crypto]())(Crypto.encoder(spark))
 
-    val ohlcs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => {
+    val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => {
       x.partitionKey.year == "2013" ||
         x.partitionKey.year == "2014" ||
         x.partitionKey.year == "2015" ||

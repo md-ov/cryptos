@@ -49,8 +49,8 @@ object CompleteSmallSegments {
             year = lastTsHelper.getYear,
             month = lastTsHelper.getMonth,
             day = lastTsHelper.getDay)
-        val newTrades: Dataset[Crypto] = ParquetHelper.tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
-        val newOHLCs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
+        val newTrades: Dataset[Crypto] = ParquetHelper().tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
+        val newOHLCs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
 
         val newBigs: Dataset[Seq[BeforeSplit]] = SegmentHelper.toBigSegments(spark, newTrades, newOHLCs)._2
         val newSmalls: Dataset[Seq[BeforeSplit]] = ToSmallSegments.cut(newBigs)

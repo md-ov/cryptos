@@ -146,7 +146,7 @@ object ToParquetsFromCSV {
                 if (dss.isDefined) {
                     val dssGet: Dataset[Crypto] = dss.get
                     val key: CryptoPartitionKey = dssGet.head().partitionKey
-                    val lastDs: Dataset[Crypto] = ParquetHelper.ohlcCryptoDs(spark)
+                    val lastDs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark)
                     val newDs: Dataset[Crypto] = lastDs.union(dssGet)
                     val parquetPath: String = key.getOHLCPath(parquetsDir, DateTimeHelper.now)
                     println("writing partition : " + parquetPath)

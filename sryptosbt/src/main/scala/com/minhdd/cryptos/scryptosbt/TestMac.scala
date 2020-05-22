@@ -18,7 +18,7 @@ object TestMac {
 
     spark.sparkContext.setLogLevel("ERROR")
 
-    val parquet = ParquetHelper.ohlcCryptoDs(spark)
+    val parquet = ParquetHelper().ohlcCryptoDs(spark)
     println(parquet.count)
 
 //    val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
