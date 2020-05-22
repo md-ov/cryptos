@@ -1,4 +1,4 @@
-package com.minhdd.cryptos.scryptosbt.model.domain
+package com.minhdd.cryptos.scryptosbt.domain
 
 case class Rates(
   truePositiveOnPositive: Double,

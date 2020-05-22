@@ -5,7 +5,7 @@ import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
-object VariationTrainer {
+object TrainerVariation {
     
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder()

@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
 // it takes 20h to run this trainer of model
-object UpOrDownTrainer {
+object TrainerUpOrDown {
     
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder()

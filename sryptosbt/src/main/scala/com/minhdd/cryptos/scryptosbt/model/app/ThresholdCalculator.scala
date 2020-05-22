@@ -1,8 +1,8 @@
 package com.minhdd.cryptos.scryptosbt.model.app
 
+import com.minhdd.cryptos.scryptosbt.domain.Rates
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
-import com.minhdd.cryptos.scryptosbt.model.domain.Rates
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction, linearPath, upDownPath}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, linearPath, predict, prediction, upDownPath}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
