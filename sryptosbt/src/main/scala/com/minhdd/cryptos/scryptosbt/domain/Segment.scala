@@ -26,11 +26,7 @@ case class Segment(
 )
 
 object Segment {
-    def encoder(spark: SparkSession): Encoder[Segment] = {
-        import spark.implicits._
-        implicitly[Encoder[Segment]]
-    }
-    
+
     def apply(seq: Seq[BeforeSplit], last: Option[BeforeSplit]): Segment = {
         val begin = seq.head
         val evolutionDirection = if (last.isEmpty){

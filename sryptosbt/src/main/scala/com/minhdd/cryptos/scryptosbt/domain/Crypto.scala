@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import com.minhdd.cryptos.scryptosbt.env
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, FileSystemService, TimestampHelper}
-import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import com.minhdd.cryptos.scryptosbt.tools.FileHelper.getSeparator
 
 import scala.util.{Failure, Try}
