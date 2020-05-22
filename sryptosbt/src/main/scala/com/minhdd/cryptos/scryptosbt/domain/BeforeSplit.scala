@@ -6,8 +6,7 @@ import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.constants.evolutionNone
 import org.apache.spark.sql.{Encoder, SparkSession}
 
-case class BeforeSplit(
-                        datetime: Timestamp,
+case class BeforeSplit(datetime: Timestamp,
                         value: Double,
                         evolution: String,
                         variation: Double,
@@ -18,8 +17,8 @@ case class BeforeSplit(
                         volume: Double,
                         count: Option[Int],
                         importantChange: Option[Boolean],
-                        isEndOfSegment: Boolean
-                      ){
+                        isEndOfSegment: Boolean){
+
     def toLine = {
         ("" /: this.getClass.getDeclaredFields) { (a, f) =>
             f.setAccessible(true)
@@ -29,17 +28,7 @@ case class BeforeSplit(
 }
 
 object BeforeSplit {
-    
-    def encoder(spark: SparkSession): Encoder[BeforeSplit] = {
-        import spark.implicits._
-        implicitly[Encoder[BeforeSplit]]
-    }
-    
-    def encoderSeq(spark: SparkSession): Encoder[Seq[BeforeSplit]] = {
-        import spark.implicits._
-        implicitly[Encoder[Seq[BeforeSplit]]]
-    }
-    
+
     def apply(krakenCrypto: KrakenCrypto): BeforeSplit = {
         BeforeSplit(
             datetime = krakenCrypto.datetime,

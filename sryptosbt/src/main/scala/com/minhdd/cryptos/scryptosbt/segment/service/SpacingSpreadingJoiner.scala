@@ -33,16 +33,7 @@ case class CryptoSpreadContainer(
 }
 
 object CryptoContainer {
-    def encoder(spark: SparkSession): Encoder[CryptoContainer] = {
-        import spark.implicits._
-        implicitly[Encoder[CryptoContainer]]
-    }
-    
-    def groupByEncoder(spark: SparkSession): Encoder[(Timestamp, Seq[CryptoContainer])] = {
-        import spark.implicits._
-        implicitly[Encoder[(Timestamp, Seq[CryptoContainer])]]
-    }
-    
+
     def fromOHLCToCryptoContainer(timestamp: Timestamp, ohlc: CryptoContainer): KrakenCrypto = {
         KrakenCrypto(
             datetime = timestamp,
@@ -89,9 +80,10 @@ object SpacingSpreadingJoiner {
     
     private def spread(spacedKrakenCryptos: Dataset[KrakenCrypto]): Dataset[KrakenCrypto] = {
         val window = Window.orderBy("datetime")
-        implicit val encoder: Encoder[KrakenCrypto] = KrakenCrypto.encoder(spacedKrakenCryptos.sparkSession)
+        import spacedKrakenCryptos.sparkSession.implicits._
+
         implicit val groupbyEncoder: Encoder[CryptoSpreadContainer] = CryptoSpreadContainer.encoder(spacedKrakenCryptos.sparkSession)
-        
+
         val ds: Dataset[CryptoSpreadContainer] =
             spacedKrakenCryptos
               .withColumn("timestamp", col("datetime"))
@@ -110,6 +102,7 @@ object SpacingSpreadingJoiner {
     
     private def space(trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): Dataset[KrakenCrypto] = {
         val spark: SparkSession = trades.sparkSession
+        import spark.implicits._
     
         val containersTrades: Dataset[CryptoContainer] = toContainers(trades, "trades")
         val containersOhlcs: Dataset[CryptoContainer] = toContainers(ohlcs, "ohlc")
@@ -120,7 +113,7 @@ object SpacingSpreadingJoiner {
               .withColumn("values", struct("*"))
               .groupBy("timestamp")
               .agg(collect_list("values"))
-              .as[(Timestamp, Seq[CryptoContainer])](CryptoContainer.groupByEncoder(spark))
+              .as[(Timestamp, Seq[CryptoContainer])]
         
         //        grouped.filter(x => x._2.exists(_.api == "ohlc")).take(10).foreach(x => {
         //              val containersTrades: Seq[CryptoContainer] = x._2.filter(_.api == "trades")
@@ -134,12 +127,14 @@ object SpacingSpreadingJoiner {
             val containersTrades: Seq[CryptoContainer] = x._2.filter(_.api == "trades")
             val containersOhlcs: Seq[CryptoContainer] = x._2.filter(_.api == "ohlc")
             oneKrakenCrypto(x._1, containersTrades, containersOhlcs)
-        })(KrakenCrypto.encoder(spark))
+        })
         
         spacedKrakenCryptos
     }
     
     private def toContainers(cryptos: Dataset[Crypto], api: String): Dataset[CryptoContainer] = {
+        import cryptos.sparkSession.implicits._
+        
         cryptos.map(crypto =>
             CryptoContainer(
                 timestamp = crypto.cryptoValue.datetime.adjusted,
@@ -148,7 +143,7 @@ object SpacingSpreadingJoiner {
                 cryptoValue = crypto.cryptoValue,
                 tradeMode = crypto.tradeMode,
                 count = crypto.count
-            ))(CryptoContainer.encoder(cryptos.sparkSession))
+            ))
     }
     
     private def oneKrakenCrypto(timestamp: Timestamp, containersTrades: Seq[CryptoContainer], 
