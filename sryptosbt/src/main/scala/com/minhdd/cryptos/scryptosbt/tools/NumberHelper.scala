@@ -9,7 +9,7 @@ object NumberHelper {
     
     def twoDigit(s: String): String = {
         if (s.length == 1) "0" + s
-        else s.toString
+        else s
     }
     
     def fromStringToInt(s: String, ignoreException: Boolean = true): Option[Int] = {

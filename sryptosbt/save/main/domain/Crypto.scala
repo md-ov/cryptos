@@ -261,12 +261,15 @@ object Crypto {
     }
 }
 
-case class Crypto(partitionKey: CryptoPartitionKey,
-                  cryptoValue: CryptoValue,
-                  tradeMode: Option[String],
-                  count: Option[Int],
-                  processingDt: Timestamp,
-                  prediction: Option[CryptoPrediction]) {
+case class Crypto
+(
+    partitionKey: CryptoPartitionKey,
+    cryptoValue: CryptoValue,
+    tradeMode: Option[String],
+    count: Option[Int],
+    processingDt: Timestamp,
+    prediction: Option[CryptoPrediction]
+) {
     def flatten: FlattenCrypto = {
         import cryptoValue._
         import partitionKey._
@@ -300,5 +303,12 @@ case class FlattenCrypto(processingDt: Timestamp,
                          volume: Double,
                          prediction: Option[Double],
                          accuracy: Option[Double],
-                         predictionDt: Option[Timestamp])
+                         predictionDt: Option[Timestamp]) {
+    def toLine(): String =
+        ("" /: this.getClass.getDeclaredFields) { (a, f) =>
+            f.setAccessible(true)
+            a + ";" + f.get(this)
+        }.substring(1)
+}
+
 
