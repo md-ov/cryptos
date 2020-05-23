@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-05-21 20:45")
+        main("2020-05-21 20:45:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -29,7 +29,7 @@ object ResultTaker {
     import spark.implicits._
     
     def main(beginDtString: String): Unit = {
-        val dtf: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")
+        val dtf: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
         val beginDt: Timestamp = dtf.parseDateTime(beginDtString).toTimestamp
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(beginDt: Timestamp)
 
