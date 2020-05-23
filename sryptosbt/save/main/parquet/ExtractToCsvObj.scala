@@ -34,12 +34,19 @@ object ExtractToCsvObj {
     
             val ds1: Option[Dataset[Crypto]] = Crypto.getPartition(ss, args.parquetsDir, key1)
             val ds2: Option[Dataset[Crypto]] = Crypto.getPartition(ss, args.parquetsDir, key2)
-            val ds: Option[Dataset[Crypto]] = DatasetHelper.union(ds1, ds2)
+            val ds: Option[Dataset[Crypto]] = union(ds1, ds2)
             ds.map(Extractor.oneDayCryptoValue(ss, d, _, Seq(key1, key2)))
         })
         
         SparkHelper.csvFromSeqCrypto(ss, args.csvpath, cryptos)
     
         "status|SUCCESS"
+    }
+
+    private def union(ds1: Option[Dataset[Crypto]], ds2: Option[Dataset[Crypto]]): Option[Dataset[Crypto]] = {
+        if (ds1.isEmpty && ds2.isEmpty) None
+        else if (ds1.isEmpty) ds2
+        else if (ds2.isEmpty) ds1
+        else Some(ds1.get.union(ds2.get))
     }
 }

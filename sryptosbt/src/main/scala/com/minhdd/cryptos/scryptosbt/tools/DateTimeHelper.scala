@@ -9,8 +9,8 @@ import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.{DateTimeImplicit, dtf
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
-
 object DateTimeHelper {
+
     val defaultFormat = "yyyy-MM-dd"
     
     val dtfOut: DateTimeFormatter = DateTimeFormat.forPattern(defaultFormat)

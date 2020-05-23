@@ -8,8 +8,7 @@ import scala.util.Try
 object NumberHelper {
     
     def twoDigit(s: String): String = {
-        if (s.length == 1) "0" + s
-        else s
+        if (s.length == 1) "0" + s else s
     }
     
     def fromStringToInt(s: String, ignoreException: Boolean = true): Option[Int] = {
