@@ -12,11 +12,7 @@ object SparkHelper {
         val hdfs = FileSystem.get(hadoopConfig)
         FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
     }
-    
-    def parquetFromDs(ds: Dataset[_], parquetPath: String): Unit = {
-        ds.write.parquet(parquetPath)
-    }
-    
+
     def csvFromDS(ds: Dataset[_], csvPath: String): Unit = {
         ds.coalesce(1)
           .write.format("com.databricks.spark.csv")
@@ -49,5 +45,4 @@ object SparkHelper {
     def csvFromDataframe(csvPath: String, df: DataFrame): Unit = {
         df.coalesce(1).write.option("delimiter", ";").csv(csvPath)
     }
-    
 }

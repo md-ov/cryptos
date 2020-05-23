@@ -300,5 +300,12 @@ case class FlattenCrypto(processingDt: Timestamp,
                          volume: Double,
                          prediction: Option[Double],
                          accuracy: Option[Double],
-                         predictionDt: Option[Timestamp])
+                         predictionDt: Option[Timestamp]) {
+
+    def toLine(): String =
+        ("" /: this.getClass.getDeclaredFields) { (a, f) =>
+            f.setAccessible(true)
+            a + ";" + f.get(this)
+        }.substring(1)
+}
 

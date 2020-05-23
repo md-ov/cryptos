@@ -15,14 +15,20 @@ object TestMac {
       .config("spark.executor.heartbeatInterval", "60s")
       .appName("big segments")
       .master("local[*]").getOrCreate()
-
     spark.sparkContext.setLogLevel("ERROR")
 
+    testOHLC(spark)
+//    testActualSegment(spark)
+  }
+
+  private def testOHLC(spark: SparkSession): Unit = {
     val parquet = ParquetHelper().ohlcCryptoDs(spark)
     println(parquet.count)
+  }
 
-//    val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-//    println(actualSegments.size)
-//    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
+  private def testActualSegment(spark: SparkSession): Unit = {
+    val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+    println(actualSegments.size)
+    SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
   }
 }
