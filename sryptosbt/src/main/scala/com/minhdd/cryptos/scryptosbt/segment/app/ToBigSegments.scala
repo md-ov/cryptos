@@ -9,6 +9,7 @@ import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
+//1
 //run first
 //in 2021 change thisYear and run
 

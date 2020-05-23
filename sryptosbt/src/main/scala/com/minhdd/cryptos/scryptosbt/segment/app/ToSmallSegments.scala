@@ -7,6 +7,7 @@ import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
+//2
 //after ToBigSegments
 //update seq of year and run
 object ToSmallSegments {
