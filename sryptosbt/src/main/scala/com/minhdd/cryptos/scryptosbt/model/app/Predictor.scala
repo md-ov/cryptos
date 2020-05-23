@@ -77,7 +77,10 @@ object Predictor {
         negativeCount: Long,
         okNegative: DataFrame) = stats(targeted)
 
-        printPredictionHistory(p, linearP, lastSegment)
+        println("prediction")
+        printPrediction(p, linearP, lastSegment)
+
+        println;println("stats")
         printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
     
@@ -152,18 +155,16 @@ object Predictor {
         print(actualSegments.size)
     }
     
-    private def printPredictionHistory(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
+    private def printPrediction(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
+        print(lastSegment.head.datetime.toString.substring(0, 19))
+        print(";")
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(";")
-        print(s"${ml.upDownPath}-${ml.linearPath}")
+        print(lastSegment.head.value)
         print(";")
         print(lastSegment.last.value)
         print(";")
         print(lastSegment.last.datetime.toString.substring(0, 19))
-        print(";")
-        print(lastSegment.head.datetime.toString.substring(0, 19))
-        print(";")
-        print(lastSegment.head.value)
         print(";")
         print(lastSegment.size)
         print(";")
@@ -184,6 +185,7 @@ object Predictor {
         } else {
             print(-1)
         }
-        println(";;;;;;;;")
+        print(";;;;;;;")
+        println(s"${ml.upDownPath}-${ml.linearPath}")
     }
 }
