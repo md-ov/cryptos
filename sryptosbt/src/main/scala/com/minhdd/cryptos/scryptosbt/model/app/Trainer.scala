@@ -6,6 +6,7 @@ import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
 import com.minhdd.cryptos.scryptosbt.model.service.ml._
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Trainer {
@@ -20,11 +21,13 @@ object Trainer {
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
         
-        val pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler, gbt))
-        val paramGrid = new ParamGridBuilder().addGrid(param = gbt.maxIter, values = Array(5, 50, 100)).build()
-        val evaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
+        val pipeline: Pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler, gbt))
+        val paramGrid: Array[ParamMap] = new ParamGridBuilder().addGrid(param = gbt.maxIter, values = Array(5, 50, 100)).build()
+        val evaluator: RegressionEvaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
         val cv = new CrossValidator()
-          .setEstimator(pipeline).setEvaluator(evaluator).setEstimatorParamMaps(paramGrid)
+          .setEstimator(pipeline)
+          .setEvaluator(evaluator)
+          .setEstimatorParamMaps(paramGrid)
           .setNumFolds(3).setSeed(27)
         
         val model: CrossValidatorModel = cv.fit(trainDF)

@@ -15,7 +15,7 @@ results for positive:
 |    0|    1.0| 7131|
 +-----+-------+-----+
 
-threshold, truePositiveOnPositive, trueNegativeOnNegative, positiveRate, negativeRate, trueRate
+threshold,                truePositiveOnPositive, trueNegativeOnNegative,positiveRate,        negativeRate, trueRate
 
 -0.5872355993339519       0.7524032959487297      1.0                   0.9999542250297537    4.57E-5  0.7524146296804907))
 -0.5336411747689104       0.7524291289469769      1.0                   0.999919893802069     8.01E-5  0.7524489609081754))
