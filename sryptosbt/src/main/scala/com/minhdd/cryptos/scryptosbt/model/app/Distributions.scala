@@ -10,7 +10,8 @@ import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-
+//3
+//après predictor
 object Distributions {
     def main(args: Array[String]): Unit = {
                 distribution()

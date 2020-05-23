@@ -14,6 +14,7 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
+//3
 object Predictor {
     val thresholdForPositiveLinear = 0.31886961827175364
     val thresholdForPositive = 0.5

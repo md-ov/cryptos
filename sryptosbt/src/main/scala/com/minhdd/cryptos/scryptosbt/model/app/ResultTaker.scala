@@ -11,6 +11,7 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
+//3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
         main("2020-05-21 20:45")

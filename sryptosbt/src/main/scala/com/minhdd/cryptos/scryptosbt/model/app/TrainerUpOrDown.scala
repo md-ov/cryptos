@@ -6,6 +6,7 @@ import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegments
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
+//1 runfirst
 // it takes 20h to run this trainer of model
 object TrainerUpOrDown {
     

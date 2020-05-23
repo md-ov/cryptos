@@ -7,6 +7,7 @@ import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+//2
 //après les trainers
 object ThresholdCalculator {
 

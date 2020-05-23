@@ -7,6 +7,7 @@ import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.ml.Transformer
 import org.apache.spark.sql.SparkSession
 
+//1 runfirst
 object TrainerLinear {
     
     def main(args: Array[String]): Unit = {
