@@ -1,0 +1,40 @@
+Les étapes
+-------------------------------------------------------------
+- télécharger de la donnée Kraken et intégration dans parquet
+- peut etre compléter les segments ?
+- lancer prédiction (avec modèle 20191211 pour evolution et modèle 200118 pour linéarité) et obtenir la prédiction
+- decision si une tracsaction de vente ou d'achat est favorable
+
+Les résultats de prédictions
+-------------------------------------------------------------
+- Timestamp du début de segment encours
+- Valeur du début de segment encours
+- Timestamp du moment actuel
+- Valeur du moment actuel
+- Nombre d'élément du segment encours
+- Prédiction de type Double (entre -0.1 et 1.1) sur le sens d'évolution du fin à venir du segment encours
+- Prédiction de type Double (entre -0.1 et 1.1) sur la linéarité d'évolution du segment encours
+
+PAS ENCORE AFFICHE
+-------------------------------------------------------------
+- Prédiction binaire (1, 0, -1) sur le sens d'évolution du fin à venir du segment par rapport au début de segment
+    1: augmentation
+    0 : diminuation
+    -1 : pas de prédiction
+
+- Prédiction binaire (1, -1) sur la linéarité d'évolution du segment encours
+    1 : linéair
+    -1: pas de prédiction
+
+
+comment décider pour une tracsaction
+-------------------------------------------------------------
+Get predictions binaires en se basant sur prédictions de type Double et les thresholds
+
+Prédiction binaire 0 sur le sens d'évolution 	=> Vente
+Prédiction binaire 1 sur le sens d'évolution  	=> Achat
+
+comment une transaction a une forte probabilité d'étre rentable
+-------------------------------------------------------------
+Prédiction binaire 1 sur la linéarité, delta actuel petit (valeur - valeur du début segment)
+car c'est plus sur que la valeur continue de progresser dans le sens prédit

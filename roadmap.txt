@@ -1,0 +1,48 @@
+try using my program on mac
+there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
+TrainerVariation
+run training on databricks de OV mi Mai
+try to improve time of training, try to improve the algorithm
+
+synchroniser 0 roadmap\input
+use of others crypto monnaies
+automatiser tous les étapes en sh
+
+
+delete all and return asus
+-----------------------------------------------------------------------------
+- improve codes
+- documentation, présentation
+il faut avoir un roadmap et définir des périmètres dans chaque release : release 0, release 1 ...
+2020-01-29 : version 0 done
+- test, exploitation
+	validation de prédiction sans la donnée du fin segment (qui n'est pas par exemple récupéré)
+	chaque fois sauvegarder dans history.csv et now-prediction-history.csv
+	appliquer sur des tradings sur Kraken une fois c'est stable et fiable
+
+- ref duyen khoi
+- essayer https://cryptowat.ch/docs/api
+- maintenance et évolution
+	+ label taken date pour now-prediction-history ?
+	+ moèdle de prédiction de delta value entre fin et début du segment
+	+ améliorer le modèle pour prédire évolution (temps, scores, un autre algo)
+		utiliser d'autre collone pour améliorer le score, par ex  : les caractéristiques de n segments précedents
+		réduire des collones pour réduire le temps de calcul
+	+ améliorer le modèle pour prédire linéarité (temps, scores, un autre algo)
+	+ mettre sur Azure Databricks et lancer model trainer
+	+ utilisation de la donnée blockchain pour plus de précision
+	+ utiliser la donnée des autres cryptomonnaies pour croiser avec celle à prédire
+	+ bat à lancer pour la prédiction et afficher les résultat de prédiction
+	+ trade automatique sur kraken en fonction du résultat de prédiction, surtout avec les algo de trading deja trouvé, réfléchir pour another algo more sophisticated
+	+ áp dụng cho autres crypto monnaies
+	+ ap dung cho bourse, il faut aussi apprendre la bourse et tous les techniques de trading
+	+ réfléxion et choix technique pour orchestateur et automatisme, airflow, azkaban, le truc en scala, lancer shell depuis nodejs
+	+ timeseries techniques
+
+- il faut tester le calcul de segment:
+	+ calcul segments sur une intervalle par exemple entre 2013 et 2017/06 en déplacant les données brut ailleurs
+	+ lancer complete segment sur une intervalle suivant par exemple entre 2017/06 et 2018/03 en remettant les données brut jusqu'à 2018/03
+	+ compléter l'ensemble des segments jusqu'a aujours'hui
+	+ comparer les segments entre le calcul total et cette calcul incrémentale
+	+ 000 20190708 liire analyser pour confirmer qu ily a plus de problème
+

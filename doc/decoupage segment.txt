@@ -1,0 +1,43 @@
+Notion de segment
+-------------------------------------------------------------
+Une portion de temps-valeur en discret sans intérruption 
+
+
+pourquoi le resultat de coupage segment est différent pour les deux derniers segments entre deux dernier fois 
+-------------------------------------------------------------
+car :  un segment peut etre prolongé par exemple dans le cas ou c'est un segment de sens augmenté et les données qui s'ajoutent prolonge dans la continuation d'augmentation
+l'algo de découpage de segment
+
+def toSmallSegments(seq: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
+        if (seq.size <= 2 || seq.map(_.value).linear(constants.relativeMinDelta)) {
+            Seq(seq)
+        } else {
+            val length = seq.length
+            val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+            val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+            val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
+            
+            val superiorSplit: Option[Int] = 
+                if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
+                Option(superiorMaybeSplit._2)
+            } else {
+                None
+            }
+            val inferiorSplit: Option[Int] = 
+                if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
+                Option(inferiorMaybeSplit._2)
+            } else {
+                None
+            }
+    
+            val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+    
+            if (splitPoints.length == 1) {
+                renvoie 2 segments avec isEndOfSegment = true pour le dernier element du premier segment
+            } else if (splitPoints.length == 2) {
+                renvoie 3 segments avec isEndOfSegment = true pour les derniers elements du premier segment et du deuxième segment
+            } else {
+                renvoie 1 seul segment
+            }
+        }
+    }

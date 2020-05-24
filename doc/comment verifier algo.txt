@@ -1,0 +1,6 @@
+pour vérifier algo utiliser
+
+predictions-and-results.csv : pour prendre le timestamp du début de segment à vérifier
+lancer run.sh ou run-mac.sh
+mettre cette valeur comme argument pour ResultTaker et lance ResultTaker pour obtenir deux dataframe de résultat (evolution et linearité)
+prendre les valeurs dans les collones : enddt, label(x2), endvalue, numberOfElement et compléter predictions-and-results.xlsx
