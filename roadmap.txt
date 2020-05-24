@@ -2,6 +2,9 @@ try using my program on mac
 there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
 TrainerVariation
 run training on databricks de OV mi Mai
+add feature for trainers :
+	- previous segment properties (like value, evolution up or down, linearity, ....)
+	- properties of segment of the same season of year or the same day of week
 try to improve time of training, try to improve the algorithm
 
 synchroniser 0 roadmap\input
