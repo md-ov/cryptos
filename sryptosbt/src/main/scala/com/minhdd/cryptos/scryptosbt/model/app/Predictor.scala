@@ -132,44 +132,46 @@ object Predictor {
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
         (segmentsWithRawPrediction, predictionOfLastSegment, predictionLinearOfLastSegment)
     }
+
+    val delimiter = ","
     
     private def printHistory(actualSegments: Seq[Seq[BeforeSplit]], lastSegment: Seq[BeforeSplit], targetedCount: Long, positiveCount: Long, okPositive: DataFrame, negativeCount: Long, okNegative: DataFrame) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
-        print(";")
+        print(delimiter)
         print(s"${ml.upDownPath}-${ml.linearPath}")
-        print(";")
+        print(delimiter)
         print(targetedCount)
-        print(";")
+        print(delimiter)
         print(okPositive.count() + "/" + positiveCount)
-        print(";")
+        print(delimiter)
         print(okNegative.count() + "/" + negativeCount)
-        print(";")
+        print(delimiter)
         print(thresholdForPositive)
-        print(";")
+        print(delimiter)
         print(thresholdForNegative)
-        print(";")
+        print(delimiter)
         print(actualSegments.head.head.datetime.toString.substring(0, 19))
-        print(";")
+        print(delimiter)
         print(lastSegment.last.datetime.toString.substring(0, 19))
-        print(";")
+        print(delimiter)
         print(actualSegments.size)
     }
     
     private def printPrediction(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
         print(lastSegment.head.datetime.toString.substring(0, 19))
-        print(";")
+        print(delimiter)
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
-        print(";")
+        print(delimiter)
         print(lastSegment.head.value)
-        print(";")
+        print(delimiter)
         print(lastSegment.last.value)
-        print(";")
+        print(delimiter)
         print(lastSegment.last.datetime.toString.substring(0, 19))
-        print(";")
+        print(delimiter)
         print(lastSegment.size)
-        print(";")
+        print(delimiter)
         print(p)
-        print(";")
+        print(delimiter)
         if (p >= thresholdForPositive) {
             print(1)
         } else if (p <= thresholdForNegative) {
@@ -177,15 +179,15 @@ object Predictor {
         } else {
             print(-1)
         }
-        print(";")
+        print(delimiter)
         print(linearP)
-        print(";")
+        print(delimiter)
         if (linearP >= thresholdForPositiveLinear) {
             print(1)
         } else {
             print(-1)
         }
-        print(";;;;;;;")
+        print(s"$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter")
         println(s"${ml.upDownPath}-${ml.linearPath}")
     }
 }
