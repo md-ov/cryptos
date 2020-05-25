@@ -42,7 +42,7 @@ object Predictor {
         val lastSegment: Seq[BeforeSplit] = ds.collect.last
         val df = ds.toDF()
         println("number of actualSegments: " + actualSegments.size)
-        println("last segment: " + lastSegment.head.datetime + " -> " + lastSegment.last.datetime)
+        println("last segment: " + lastSegment.head.datetime + " -> " + lastSegment.last.datetime + " : " + lastSegment.last.value)
         val mapBegindtAndSegmentLength: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
         //        val segments: DataFrame = Expansion.expansion(spark, ds)
         //        segments.filter(col("numberOfElement") === 2).show(10, false)
