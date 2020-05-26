@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt.tools
 
 import java.io.File
+import java.net.URL
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.CryptoPartitionKey
@@ -23,8 +24,9 @@ object FileHelper {
 
   def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
     val d = new File(path)
-    getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false, false).map(_.getAbsolutePath).filter(_
-      .contains(cryptoPartitionKey.provider))
+    getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false, false)
+      .map(_.getAbsolutePath)
+      .filter(_.contains(cryptoPartitionKey.provider))
   }
 
   private def getRecursiveDirsFromLastTimestamp(directory: File, ts: Timestamp,
@@ -107,7 +109,8 @@ object FileHelper {
       } else if (path.contains(":")) {
         path
       } else {
-        env.prefixPath + getClass.getResource("/" + path).getPath
+        val resource: URL = getClass.getResource("/" + path)
+        env.prefixPath + resource.getPath
       }
     } else {
       path

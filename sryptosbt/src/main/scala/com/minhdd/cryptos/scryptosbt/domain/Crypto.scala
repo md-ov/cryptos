@@ -223,20 +223,34 @@ object Crypto {
         import com.minhdd.cryptos.scryptosbt.tools.FileHelper
         Try {
             import spark.implicits._
-            val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
-            val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
-            val dsFromLastTimestampDay: Dataset[Crypto] =
-                spark.read.parquet(FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto]
-            val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(_.cryptoValue.datetime.afterOrSame(ts))
+
             val todayDs: Dataset[Crypto] = spark.read.parquet(todayPath).as[Crypto]
             if (todayDs.count == 0) {
                 throw new RuntimeException("There is no today data")
-            } else if (allPaths.nonEmpty) {
-                allPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
-                    .union(todayDs)
-                    .union(filteredDsFromLastTimestampDay)
             } else {
-                todayDs.union(filteredDsFromLastTimestampDay)
+                val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
+                val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
+                val pathForSpark: String = FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)
+                val dsFromLastTimestampDay: Option[Dataset[Crypto]] =
+                    Try {
+                        spark.read.parquet(pathForSpark).as[Crypto]
+                    }.mapException(e => {
+                        println(e.getMessage())
+                        new Exception("there is some problem")
+                    }).toOption
+
+                if (dsFromLastTimestampDay.isEmpty) {
+                    todayDs.filter(_.cryptoValue.datetime.afterOrSame(ts))
+                } else {
+                    val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.get.filter(_.cryptoValue.datetime.afterOrSame(ts))
+                    if (allPaths.nonEmpty) {
+                        allPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
+                          .union(todayDs)
+                          .union(filteredDsFromLastTimestampDay)
+                    } else {
+                        todayDs.union(filteredDsFromLastTimestampDay)
+                    }
+                }
             }
         }.mapException(e => {
             println(e.getMessage)

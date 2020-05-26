@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-05-25 02:00:00")
+        main("2020-05-26 02:00:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -33,10 +33,9 @@ object ResultTaker {
         val beginDt: Timestamp = dtf.parseDateTime(beginDtString).toTimestamp
         val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(beginDt: Timestamp)
 
-        val lastBeforeSplit: BeforeSplit = actualSegments.last.last
         println("last element : ")
-        println(s"- value : ${lastBeforeSplit.value}")
-        println(s"- dt : ${lastBeforeSplit.datetime}")
+        println(s"- value : ${actualSegments.last.head.value} -> ${actualSegments.last.last.value}")
+        println(s"- dt : ${actualSegments.last.head.datetime} -> ${actualSegments.last.last.datetime}")
 
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments)
         val df = ds.toDF()
