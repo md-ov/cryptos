@@ -59,7 +59,7 @@ object Predictor {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           }).select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
-            "beginvalue", "endvalue", "numberOfElement", "label", "prediction").show()
+            "beginvalue", "endvalue", "numberOfElement", "label", "linear", "prediction").show()
         println("prediction for last segment : ")
         predictionOfLastSegment.show()
         println("prediction lineaire for last segment : ")
