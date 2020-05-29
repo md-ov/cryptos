@@ -1,5 +1,4 @@
 begin-dt,prediction-day,begin-value,value,dt,number-of-element,prediction,prediction-01,prediction-linear,prediction-linear-01,label-01,label-dt,label-value,label-linear,label-number-of-element,label-taken-dt,model-prediction
-begin-dt,prediction-day,begin-value,value,dt,number-of-element,prediction,prediction-01,prediction-linear,prediction-linear-01,label-01,label-dt,label-value,label-linear,label-number-of-element,label-taken-dt,model-prediction
 2019-12-18 14:15:00,2020-01-08,5820.4,6586.4,2020-01-04 11:45:00,1623,0.80659702,-1,,,1,2020-01-08 02:15:00,7555.7,,,,15/20191211
 2019-12-18 14:15:00,2020-01-08,5820.4,6586.4,2020-01-04 11:45:00,1623,0.80659702,-1,,,1,2020-01-19 04:00:00,8252.2,1,3032,,15/20191211
 2019-12-18 14:15:00,2020-01-08,5820.4,6586.4,2020-01-04 11:45:00,1623,0.80659702,-1,,,1,2020-01-15 00:30:00,7957.1,,2634,,15/20191211
