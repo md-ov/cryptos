@@ -29,38 +29,42 @@ object Splitter {
         if (seq.size <= 2 || seq.map(_.value).linear(constants.relativeMinDelta)) {
             Seq(seq)
         } else {
-            val length = seq.length
-            val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
-            val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
-            val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
-            
-            val superiorSplit: Option[Int] = 
-                if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
+            cutWhenNotLinear(seq)
+        }
+    }
+
+    def cutWhenNotLinear(seq: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
+        val length = seq.length
+        val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+        val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+        val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
+
+        val superiorSplit: Option[Int] =
+            if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
                 Option(superiorMaybeSplit._2)
             } else {
                 None
             }
-            val inferiorSplit: Option[Int] = 
-                if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
+        val inferiorSplit: Option[Int] =
+            if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
                 Option(inferiorMaybeSplit._2)
             } else {
                 None
             }
-    
-            val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
-    
-            if (splitPoints.length == 1) {
-                val splitPointElement = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
-                Seq(seq.slice(0, splitPoints.head) :+ splitPointElement, seq.slice(splitPoints.head, length))
-            } else if (splitPoints.length == 2) {
-                val splitPointElement1 = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
-                val splitPointElement2 = seq.apply(splitPoints.last).copy(isEndOfSegment = true)
-                Seq(seq.slice(0, splitPoints.head) :+ splitPointElement1,
-                    seq.slice(splitPoints.head, splitPoints.last) :+ splitPointElement2,
-                    seq.slice(splitPoints.last, length))
-            } else {
-                Seq(seq)
-            }
+
+        val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+
+        if (splitPoints.length == 1) {
+            val splitPointElement = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
+            Seq(seq.slice(0, splitPoints.head) :+ splitPointElement, seq.slice(splitPoints.head, length))
+        } else if (splitPoints.length == 2) {
+            val splitPointElement1 = seq.apply(splitPoints.head).copy(isEndOfSegment = true)
+            val splitPointElement2 = seq.apply(splitPoints.last).copy(isEndOfSegment = true)
+            Seq(seq.slice(0, splitPoints.head) :+ splitPointElement1,
+                seq.slice(splitPoints.head, splitPoints.last) :+ splitPointElement2,
+                seq.slice(splitPoints.last, length))
+        } else {
+            Seq(seq)
         }
     }
 }
