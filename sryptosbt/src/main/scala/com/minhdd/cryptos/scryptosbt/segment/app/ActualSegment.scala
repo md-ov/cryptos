@@ -14,27 +14,48 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 //4
 //after CompleteSmallSegments
 object ActualSegment {
-    
-    def tradesFromLastSegment(ss: SparkSession, lastTimestamps: Timestamp,
-                              lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
 
-        
-        Crypto.getPartitionsUniFromPathFromLastTimestamp(
-            spark = ss, prefix = env.prefixPath,
-            path1 = env.parquetsPath, path2 = env.parquetsPath, todayPath = env.todayPath,
-            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
-    }
-    
     val spark: SparkSession = SparkSession.builder()
       .config("spark.driver.maxResultSize", "3g")
       .config("spark.network.timeout", "600s")
       .config("spark.executor.heartbeatInterval", "60s")
       .appName("big segments")
       .master("local[*]").getOrCreate()
-    
+
     spark.sparkContext.setLogLevel("ERROR")
     import spark.implicits._
     
+    def tradesFromLastSegment(spark: SparkSession, lastTimestamps: Timestamp,
+                              lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
+
+        
+        Crypto.getPartitionsUniFromPathFromLastTimestamp(
+            spark = spark, prefix = env.prefixPath,
+            path1 = env.parquetsPath, path2 = env.parquetsPath, todayPath = env.todayPath,
+            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
+    }
+
+    def getBeforeSplits(beginTimestamp: Timestamp, endTimestamp: Timestamp): Seq[BeforeSplit] = {
+        val beginTsHelper: TimestampHelper = TimestampHelper(beginTimestamp.getTime)
+        val beginCryptoPartitionKey = CryptoPartitionKey(
+            asset = "XBT",
+            currency = "EUR",
+            provider = "KRAKEN",
+            api = "TRADES",
+            year = beginTsHelper.getYear,
+            month = beginTsHelper.getMonth,
+            day = beginTsHelper.getDay)
+
+        val trades: Dataset[Crypto] = tradesFromLastSegment(spark, beginTimestamp, beginCryptoPartitionKey)
+          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+
+        val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark)
+          .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
+          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+
+        SegmentHelper.toBeforeSplits(spark, trades, ohlcs)
+    }
+
     def getActualSegments(lastTimestamp: Timestamp): Seq[Seq[BeforeSplit]] = {
         val lastTsHelper: TimestampHelper = TimestampHelper(lastTimestamp.getTime)
         val lastCryptoPartitionKey = CryptoPartitionKey(
@@ -61,14 +82,5 @@ object ActualSegment {
         println("last ts of small segments : " + lastTimestamp)
 
         getActualSegments(lastTimestamp)
-    }
-    
-    def main(args: Array[String]): Unit = {
-        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-    
-        println(actualSegments.size)
-        println(actualSegments.last.size)
-        println(actualSegments.last.head.datetime)
-        println(actualSegments.last.last.datetime)
     }
 }

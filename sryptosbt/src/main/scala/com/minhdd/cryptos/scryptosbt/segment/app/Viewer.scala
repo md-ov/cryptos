@@ -6,6 +6,7 @@ import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
+import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -24,12 +25,22 @@ object Viewer {
 
     def main(args: Array[String]): Unit = {
 //        viewSegments
-        viewHowCutSmallSegments
+//        viewHowCutSmallSegments
+        viewActualSegments
+    }
+
+    def viewActualSegments = {
+        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+
+        println(actualSegments.size)
+        //        println(actualSegments.last.size)
+        //        println(actualSegments.last.head.datetime)
+        //        println(actualSegments.last.last.datetime)
     }
 
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2020-06-02 01:30:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2020-06-07 16:00:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2020-05-07 21:30:00")
+        val end: Timestamp = TimestampHelper.getTimestamp("2020-05-11 20:15:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)

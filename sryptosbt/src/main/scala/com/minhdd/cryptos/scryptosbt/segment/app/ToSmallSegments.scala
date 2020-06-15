@@ -13,9 +13,11 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 object ToSmallSegments {
     
     def cut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-        val length = seq.length
+        println(seq.size)
+        seq.foreach(x => println(s"${x.head.datetime} -> ${x.last.datetime} (end : ${x.last.isEndOfSegment}) "))
         val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(Splitter.toSmallSegments)
-        if (smallers.length > length) {
+
+        if (smallers.length > seq.length) {
             cut(smallers)
         } else {
             smallers
