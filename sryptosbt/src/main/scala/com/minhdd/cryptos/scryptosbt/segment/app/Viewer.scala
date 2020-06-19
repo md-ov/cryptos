@@ -8,7 +8,7 @@ import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
-import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
+import com.minhdd.cryptos.scryptosbt.tools.{SparkHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object Viewer {
@@ -40,8 +40,8 @@ object Viewer {
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2020-05-07 21:30:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2020-05-11 20:30:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2020-06-02 01:30:00")
+        val end: Timestamp = TimestampHelper.getTimestamp("2020-06-15 08:45:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
@@ -49,6 +49,7 @@ object Viewer {
         println("when linear true then it must not be cutable")
         println(linear)
         println(cuts.size)
+//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq.csv", seq)
     }
 
     def viewSegments: Unit = {
