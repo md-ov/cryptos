@@ -1,7 +1,8 @@
-try using my program on mac
-there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
+couper la seq en ensemble de segment linear et on se basera pas sur linéarité mais sur la prediction de duree, delta value
 TrainerVariation
 TrainerLabelNumberOfElement
+
+there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
 
 run training on databricks de OV mi Mai
 try to improve time of training, try to improve the algorithm
