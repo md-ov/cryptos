@@ -1,4 +1,8 @@
-couper la seq en ensemble de segment linear et on se basera pas sur linéarité mais sur la prediction de duree, delta value
+documenter comment couper un segment en segments linéairs
+documenter comment déterminer si un segment est linéair
+
+couper en ensemble de segment linear
+et on se basera pas sur linéarité mais sur la prediction de duree, delta value :
 TrainerVariation
 TrainerLabelNumberOfElement
 
@@ -20,9 +24,6 @@ automatiser achat et vendre avec predictions
 synchroniser 0 roadmap\input
 use of others crypto monnaies
 automatiser tous les étapes en sh
-
-
-delete all and return asus
 -----------------------------------------------------------------------------
 - improve codes
 - documentation, présentation
