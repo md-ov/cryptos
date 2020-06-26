@@ -30,7 +30,7 @@ object Splitter {
     def generalCut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
         import ds.sparkSession.implicits._
         val count: Long = ds.count
-        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(s => cutWithTwoPointsMax(s, getSimpleCutPoints(s)))
+        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(s => cutWithTwoPointsMax(s, getCutPoints(s)))
         if (smallers.count > count) {
             generalCut(smallers)
         } else {
@@ -42,7 +42,7 @@ object Splitter {
         println(seq.size)
         seq.foreach(x => println(s"${x.head.datetime} -> ${x.last.datetime} (end : ${x.last.isEndOfSegment}) "))
 
-        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(s => cutWithTwoPointsMax(s, getSimpleCutPoints(s)))
+        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(s => cutWithTwoPointsMax(s, getCutPoints(s)))
 
         if (smallers.length > seq.length) {
             generalCut(smallers)
@@ -87,7 +87,7 @@ object Splitter {
         if (seq.size <= 2) {
             None
         } else {
-            val points: Seq[Int] = getSimpleCutPoints(seq)
+            val points: Seq[Int] = getCutPoints(seq)
             if (points.isEmpty) {
                 None
             } else {
@@ -121,7 +121,7 @@ object Splitter {
         if (seq.size <= 2 || linear(seq)) {
             Seq(seq)
         } else {
-            cutWithTwoPointsMax(seq, getSimpleCutPoints(seq))
+            cutWithTwoPointsMax(seq, getCutPoints(seq))
         }
     }
 
@@ -141,7 +141,7 @@ object Splitter {
         }
     }
 
-    private def getSimpleCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
+    private def getCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
         val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
         val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
         val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
@@ -159,7 +159,18 @@ object Splitter {
                 None
             }
 
-        val splitPoints: Seq[Int] = Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+        val splitPoints: Seq[Int] = if (superiorSplit.isEmpty && inferiorSplit.isEmpty) {
+            if (superiorMaybeSplit._1 - inferiorMaybeSplit._1 >= constants.relativeMinDelta) {
+                Seq(superiorMaybeSplit._2, inferiorMaybeSplit._2)
+                  .filterNot(x => x == 0)
+                  .filterNot(x => x == seq.length - 1)
+                  .sortWith(_ < _)
+            } else {
+                Nil
+            }
+        } else {
+            Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+        }
 
         splitPoints
     }
