@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.segment.service
 
 import java.sql.Timestamp
 
+import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, KrakenCrypto}
 import com.minhdd.cryptos.scryptosbt.tools.Derivative
@@ -9,6 +10,10 @@ import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 object SegmentHelper {
+
+    def linear(seq: Seq[BeforeSplit]): Boolean = {
+        seq.map(_.value).linear(constants.relativeMinDelta)
+    }
     
     def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
         import spark.implicits._

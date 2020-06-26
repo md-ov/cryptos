@@ -7,6 +7,7 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{DoubleImplicit, SeqDoubleImplicit}
 import com.minhdd.cryptos.scryptosbt.tools.SeqHelper
 import org.apache.spark.sql.Dataset
+import SegmentHelper.linear
 
 object Splitter {
     def toSplit(b: BeforeSplit): Boolean = b.importantChange.getOrElse(false)
@@ -109,10 +110,6 @@ object Splitter {
     private def cutOnePoint(seq: Seq[BeforeSplit], point: Int): Seq[Seq[BeforeSplit]] = {
         val splitPointElement = seq.apply(point).copy(isEndOfSegment = true)
         Seq(seq.slice(0, point) :+ splitPointElement, seq.slice(point, seq.length))
-    }
-
-    private def linear(seq: Seq[BeforeSplit]): Boolean = {
-        seq.map(_.value).linear(constants.relativeMinDelta)
     }
 
     ////////////////

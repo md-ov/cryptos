@@ -10,6 +10,7 @@ import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
 import com.minhdd.cryptos.scryptosbt.tools.{SparkHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
+import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper.linear
 
 object Viewer {
 
@@ -24,8 +25,8 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-//        viewSegments
-        viewHowCutSmallSegments
+        viewSegments
+//        viewHowCutSmallSegments
 //        viewActualSegments
     }
 
@@ -57,6 +58,11 @@ object Viewer {
         val smalls: Dataset[Seq[BeforeSplit]] =
             spark.read.parquet(s"$dataDirectory/segments/small/$smallSegmentsFolder").as[Seq[BeforeSplit]]
         smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
-        println(smalls.count())
+        println("size of small segments: " + smalls.count())
+        println("==============")
+        val notlinears: Dataset[(Int, Timestamp, Timestamp)] = smalls.filter(x => !linear(x)).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2")
+        println("non linear : " + notlinears.count())
+        notlinears.show()
+
     }
 }
