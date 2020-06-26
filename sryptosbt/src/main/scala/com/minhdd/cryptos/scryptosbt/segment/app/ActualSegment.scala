@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants.smallSegmentsFolder
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
-import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper
+import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}
 import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper
 import org.apache.spark.sql.{Dataset, SparkSession}
 
@@ -70,7 +70,7 @@ object ActualSegment {
         val newOHLCs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
     
         val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
-        ToSmallSegments.cut(Seq(actualSegment))
+        Splitter.generalCut(Seq(actualSegment))
     }
     
     def getActualSegments: Seq[Seq[BeforeSplit]] = {

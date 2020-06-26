@@ -45,10 +45,11 @@ object Viewer {
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
-        val cuts: Seq[Seq[BeforeSplit]] = Splitter.cutWhenNotLinear(seq)
+        val cuts: Seq[Seq[BeforeSplit]] = Splitter.generalCut(Seq(seq))
         println("when linear true then it must not be cutable")
-        println(linear)
-        println(cuts.size)
+        println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
+        println("linear : " + linear)
+        println("cuts size : " + cuts.size)
 //        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq.csv", seq)
     }
 

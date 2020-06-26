@@ -14,7 +14,7 @@ class SplitterTest extends FunSuite {
     
     
     test("test toSmallSegments 1 element") {
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(Seq(beforeSplit1))
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(Seq(beforeSplit1))
         
         assert(splits.size == 1)
         assert(splits.head.size == 1)
@@ -22,7 +22,7 @@ class SplitterTest extends FunSuite {
     }
     
     test("test toSmallSegments 2 element") {
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(Seq(beforeSplit1, beforeSplit2))
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(Seq(beforeSplit1, beforeSplit2))
         
         assert(splits.size == 1)
         assert(splits.head.size == 2)
@@ -31,7 +31,7 @@ class SplitterTest extends FunSuite {
     }
     
     test("test toSmallSegments 2 small segments") {
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(Seq(beforeSplit1, beforeSplit2, beforeSplit3))
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(Seq(beforeSplit1, beforeSplit2, beforeSplit3))
         
         assert(splits.size == 2)
         assert(splits.head.size == 2)
@@ -47,7 +47,7 @@ class SplitterTest extends FunSuite {
         val beforeSplit1 = BeforeSplit(TimestampHelper.getTimestamp("2019-07-04 00:15:00"), 10535.2D)
         val beforeSplit2 = BeforeSplit(TimestampHelper.getTimestamp("2019-07-04 00:30:00"), 20535.2D)
         
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(Seq(beforeSplit3, beforeSplit1, beforeSplit2))
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(Seq(beforeSplit3, beforeSplit1, beforeSplit2))
         
         assert(splits.size == 1)
         assert(splits.head.size == 3)
@@ -63,7 +63,7 @@ class SplitterTest extends FunSuite {
         val beforeSplit1 = BeforeSplit(TimestampHelper.getTimestamp("2019-07-04 00:30:00"), 10535.2D)
         val beforeSplit2 = BeforeSplit(TimestampHelper.getTimestamp("2019-07-04 00:45:00"), 20535.2D)
         
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(Seq(beforeSplit3, beforeSplit33, beforeSplit1, beforeSplit2))
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(Seq(beforeSplit3, beforeSplit33, beforeSplit1, beforeSplit2))
         
         assert(splits.size == 1)
         assert(splits.head.size == 4)
@@ -88,18 +88,18 @@ class SplitterTest extends FunSuite {
         val bs12 = BeforeSplit(TimestampHelper.getTimestamp("2019-07-04 02:45:00"), 40535.2D)
         val seq = Seq(bs1, bs2, bs3, bs4, bs5, bs6, bs7, bs8, bs9, bs10, bs11, bs12)
         
-        val splits: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(seq)
+        val splits: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(seq)
         
         splits.map(bss => bss.map(_.value)).foreach(println)
         assert(splits.size == 2)
         
         println("----")
-        val splits2: Seq[Seq[BeforeSplit]] = splits.flatMap(Splitter.toSmallSegments)
+        val splits2: Seq[Seq[BeforeSplit]] = splits.flatMap(Splitter.simpleCut)
         splits2.map(bss => bss.map(_.value)).foreach(println)
         assert(splits2.size == 3)
     
         println("----")
-        val splits3: Seq[Seq[BeforeSplit]] = splits2.flatMap(Splitter.toSmallSegments)
+        val splits3: Seq[Seq[BeforeSplit]] = splits2.flatMap(Splitter.simpleCut)
         splits3.map(bss => bss.map(_.value)).foreach(println)
         assert(splits3.size == 3)
     }
@@ -124,7 +124,7 @@ class SplitterTest extends FunSuite {
             x.datetime.before(y.datetime)
         }
 
-        val cutted: Seq[Seq[BeforeSplit]] = Splitter.toSmallSegments(seq)
+        val cutted: Seq[Seq[BeforeSplit]] = Splitter.simpleCut(seq)
 
         cutted.foreach(x => {
             println("-------")

@@ -11,30 +11,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 //after ToBigSegments
 //update seq of year and run
 object ToSmallSegments {
-    
-    def cut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-        println(seq.size)
-        seq.foreach(x => println(s"${x.head.datetime} -> ${x.last.datetime} (end : ${x.last.isEndOfSegment}) "))
-        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(Splitter.toSmallSegments)
 
-        if (smallers.length > seq.length) {
-            cut(smallers)
-        } else {
-            smallers
-        }
-    }
-    
-    def cut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
-        import ds.sparkSession.implicits._
-        val count: Long = ds.count
-        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(Splitter.toSmallSegments)
-        if (smallers.count > count) {
-            cut(smallers)
-        } else {
-            smallers
-        }
-    }
-    
     def main(args: Array[String]): Unit = {
         val spark: SparkSession = SparkSession.builder()
             .config("spark.driver.maxResultSize", "3g")
@@ -50,7 +27,7 @@ object ToSmallSegments {
             val bigs: Dataset[Seq[BeforeSplit]] =
                 spark.read.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year").as[Seq[BeforeSplit]]
 //            bigs.filter(_.head.isEndOfSegment == true).show(5, false)
-            cut(bigs)
+            Splitter.generalCut(bigs)
         }).reduce(_.union(_))
         
 //        bb.filter(_.last.isEndOfSegment == false).show(5, false)
