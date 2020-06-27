@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.domain.Rates
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, linearPath, predict, prediction, upDownPath}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction, upDownPath}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -26,8 +26,7 @@ object ThresholdCalculator {
   val minimumNegativeRate = 0.3
 
   def main(args: Array[String]): Unit = {
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/$linearPath")
-    //    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
+        val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
 
     println(df.count())
 

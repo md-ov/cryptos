@@ -2,7 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import com.minhdd.cryptos.scryptosbt.model.service.ml.{upDownPath, linearPath}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.{upDownPath}
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
@@ -27,8 +27,7 @@ object Distributions {
     
     spark.sparkContext.setLogLevel("ERROR")
     
-//    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
-    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/linear-results/$linearPath")
+    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
     val thresholdForPositiveLinear = 0.31886961827175364
     val thresholdForPositive = 0.5
     val thresholdForNegative = 0.5
@@ -38,7 +37,7 @@ object Distributions {
       .setOutputCol(predict)
     binarizerForSegmentDetection.setThreshold(thresholdForPositiveLinear)
     val binarizedResults: DataFrame = binarizerForSegmentDetection.transform(df)
-    
+
     val ok = binarizedResults.filter(col(predict) === col(label))
     val notok = binarizedResults.filter(!(col(predict) === col(label)))
     val notokPositive =

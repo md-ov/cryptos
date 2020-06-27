@@ -20,7 +20,6 @@ object Predictor {
     val thresholdForPositive = 0.5
     val thresholdForNegative = 0.5
     val modelPath: String = s"$dataDirectory/ml/models/${ml.upDownPath}"
-    val linearModelPath = s"$dataDirectory/ml/linear-models/${ml.linearPath}"
 
     def main(args: Array[String]): Unit = {
         main()
@@ -50,8 +49,7 @@ object Predictor {
         
         val
         (segmentsWithRawPrediction: DataFrame,
-        predictionOfLastSegment: DataFrame,
-        predictionLinearOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
+        predictionOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
 
         println("raw predictions : ")
         segmentsWithRawPrediction
@@ -62,11 +60,8 @@ object Predictor {
             "beginvalue", "endvalue", "numberOfElement", "label", "linear", "prediction").show()
         println("prediction for last segment : ")
         predictionOfLastSegment.show()
-        println("prediction lineaire for last segment : ")
-        predictionLinearOfLastSegment.show()
-        
+
         val p = predictionOfLastSegment.map(_.getAs[Double]("prediction")).head()
-        val linearP = predictionLinearOfLastSegment.map(_.getAs[Double]("prediction")).head()
 
         println("number of predicted elements: " + segmentsWithRawPrediction.count())
         val targeted: DataFrame = segmentsWithRawPrediction.filter(_.getAs[Boolean]("isSegmentEnd")).cache()
@@ -78,7 +73,7 @@ object Predictor {
         okNegative: DataFrame) = stats(targeted)
 
         println("prediction")
-        printPrediction(p, linearP, lastSegment)
+        printPrediction(p, lastSegment)
 
         println;println("stats")
         printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
@@ -111,9 +106,7 @@ object Predictor {
     
     private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]) = {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
-        val linearModel: CrossValidatorModel = ModelHelper.getModel(spark, linearModelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
-        val segmentsWithRawPredictionForLinear: DataFrame = linearModel.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
           .filter(row => !row.getAs[Boolean]("isSegmentEnd")) //afficher la prédiction du dernier segment avec isSegmentEnd == false
           .filter(row => {
@@ -122,15 +115,8 @@ object Predictor {
           })
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-        val predictionLinearOfLastSegment: DataFrame = segmentsWithRawPredictionForLinear
-          .filter(row => !row.getAs[Boolean]("isSegmentEnd"))
-          .filter(row => {
-              val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
-              foundElement.get._2 == row.getAs[Int]("numberOfElement")
-          })
-          .select("begindt", "enddt", "isSegmentEnd", "linear", "beginEvolution", "endEvolution", "evolutionDirection",
-              "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-        (segmentsWithRawPrediction, predictionOfLastSegment, predictionLinearOfLastSegment)
+
+        (segmentsWithRawPrediction, predictionOfLastSegment)
     }
 
     val delimiter = ","
@@ -138,7 +124,7 @@ object Predictor {
     private def printHistory(actualSegments: Seq[Seq[BeforeSplit]], lastSegment: Seq[BeforeSplit], targetedCount: Long, positiveCount: Long, okPositive: DataFrame, negativeCount: Long, okNegative: DataFrame) = {
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(delimiter)
-        print(s"${ml.upDownPath}-${ml.linearPath}")
+        print(s"${ml.upDownPath}")
         print(delimiter)
         print(targetedCount)
         print(delimiter)
@@ -157,7 +143,7 @@ object Predictor {
         print(actualSegments.size)
     }
     
-    private def printPrediction(p: Double, linearP: Double, lastSegment: Seq[BeforeSplit]) = {
+    private def printPrediction(p: Double, lastSegment: Seq[BeforeSplit]) = {
         print(lastSegment.head.datetime.toString.substring(0, 19))
         print(delimiter)
         print(DateTimeHelper.defaultDateFormat.format(new Date()))
@@ -180,14 +166,10 @@ object Predictor {
             print(-1)
         }
         print(delimiter)
-        print(linearP)
+        print("1")
         print(delimiter)
-        if (linearP >= thresholdForPositiveLinear) {
-            print(1)
-        } else {
-            print(-1)
-        }
+        print("1")
         print(s"$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter")
-        println(s"${ml.upDownPath}-${ml.linearPath}")
+        println(s"${ml.upDownPath}")
     }
 }

@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.model.app.Predictor.{linearModelPath, modelPath}
+import com.minhdd.cryptos.scryptosbt.model.app.Predictor.{modelPath}
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
@@ -42,19 +42,15 @@ object ResultTaker {
         val mapBegindtAndSegmentLength: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
         val
         (segmentsWithRawPrediction: DataFrame,
-        predictionOfLastSegment: DataFrame,
-        predictionLinearOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
+        predictionOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
 
         segmentsWithRawPrediction.show()
         predictionOfLastSegment.show()
-        predictionLinearOfLastSegment.show()
     }
     
-    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]): (DataFrame, DataFrame, DataFrame) = {
+    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]): (DataFrame, DataFrame) = {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
-        val linearModel: CrossValidatorModel = ModelHelper.getModel(spark, linearModelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
-        val segmentsWithRawPredictionForLinear: DataFrame = linearModel.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
           .filter(row => {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
@@ -62,13 +58,7 @@ object ResultTaker {
           })
           .select("begindt", "enddt", "isSegmentEnd", "linear", "beginEvolution", "endEvolution", "evolutionDirection",
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-        val predictionLinearOfLastSegment: DataFrame = segmentsWithRawPredictionForLinear
-          .filter(row => {
-              val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
-              foundElement.get._2 == row.getAs[Int]("numberOfElement")
-          })
-          .select("begindt", "enddt", "isSegmentEnd", "linear", "beginEvolution", "endEvolution", "evolutionDirection",
-              "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
-        (segmentsWithRawPrediction, predictionOfLastSegment, predictionLinearOfLastSegment)
+
+        (segmentsWithRawPrediction, predictionOfLastSegment)
     }
 }
