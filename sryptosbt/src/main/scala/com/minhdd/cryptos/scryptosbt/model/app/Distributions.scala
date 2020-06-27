@@ -15,8 +15,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 //set threshold (for positive or negative)
 object Distributions {
     def main(args: Array[String]): Unit = {
-                distribution()
-//        percentiles()
+//                distribution()
+        percentiles()
     }
     
     val spark: SparkSession = SparkSession.builder()
