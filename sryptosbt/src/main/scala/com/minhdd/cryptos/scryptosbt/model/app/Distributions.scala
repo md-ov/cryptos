@@ -12,6 +12,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 //3
 //après predictor
+//set threshold (for positive or negative)
 object Distributions {
     def main(args: Array[String]): Unit = {
                 distribution()
@@ -28,14 +29,13 @@ object Distributions {
     spark.sparkContext.setLogLevel("ERROR")
     
     val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/results/$upDownPath")
-    val thresholdForPositiveLinear = 0.31886961827175364
-    val thresholdForPositive = 0.5
-    val thresholdForNegative = 0.5
+    val thresholdForPositive = 0.6609068691287857
+    val thresholdForNegative = 0.06683752680961988
     
     val binarizerForSegmentDetection = new Binarizer()
       .setInputCol(prediction)
       .setOutputCol(predict)
-    binarizerForSegmentDetection.setThreshold(thresholdForPositiveLinear)
+    binarizerForSegmentDetection.setThreshold(thresholdForPositive)
     val binarizedResults: DataFrame = binarizerForSegmentDetection.transform(df)
 
     val ok = binarizedResults.filter(col(predict) === col(label))
