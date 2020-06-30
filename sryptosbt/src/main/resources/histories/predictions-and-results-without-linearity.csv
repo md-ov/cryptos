@@ -1,0 +1,2 @@
+begin-dt,prediction-day,begin-value,value,dt,number-of-element,prediction,prediction-01,label-01,label-dt,label-value,label-number-of-element,label-taken-dt,model-prediction
+2020-06-30 00:00:00,2020-06-30,8204.7,8147.4,2020-06-30 09:45:00,40,0.08149647617788966,-1,,,,,,15/20200627002149

@@ -165,11 +165,7 @@ object Predictor {
         } else {
             print(-1)
         }
-        print(delimiter)
-        print("1")
-        print(delimiter)
-        print("1")
-        print(s"$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter")
+        print(s"$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter")
         println(s"${ml.upDownPath}")
     }
 }
