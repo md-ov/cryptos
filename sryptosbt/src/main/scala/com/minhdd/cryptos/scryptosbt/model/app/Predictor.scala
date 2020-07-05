@@ -57,7 +57,7 @@ object Predictor {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           }).select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
-            "beginvalue", "endvalue", "numberOfElement", "label", "linear", "prediction").show()
+            "beginvalue", "endvalue", "numberOfElement", "label", "prediction").show()
         println("prediction for last segment : ")
         predictionOfLastSegment.show()
 
@@ -144,28 +144,30 @@ object Predictor {
     }
     
     private def printPrediction(p: Double, lastSegment: Seq[BeforeSplit]) = {
-        print(lastSegment.head.datetime.toString.substring(0, 19))
+        printt(lastSegment.head.datetime.toString.substring(0, 19))
         print(delimiter)
-        print(DateTimeHelper.defaultDateFormat.format(new Date()))
+        printt(DateTimeHelper.defaultDateFormat.format(new Date()))
         print(delimiter)
-        print(lastSegment.head.value)
+        printt(lastSegment.head.value)
         print(delimiter)
-        print(lastSegment.last.value)
+        printt(lastSegment.last.value)
         print(delimiter)
-        print(lastSegment.last.datetime.toString.substring(0, 19))
+        printt(lastSegment.last.datetime.toString.substring(0, 19))
         print(delimiter)
-        print(lastSegment.size)
+        printt(lastSegment.size)
         print(delimiter)
-        print(p)
+        printt(p)
         print(delimiter)
         if (p >= thresholdForPositive) {
-            print(1)
+            printt(1)
         } else if (p <= thresholdForNegative) {
-            print(0)
+            printt(0)
         } else {
-            print(-1)
+            printt(-1)
         }
-        print(s"$delimiter$delimiter$delimiter$delimiter$delimiter$delimiter")
-        println(s"${ml.upDownPath}")
+        print(s"""$delimiter\"\"$delimiter\"\"$delimiter\"\"$delimiter\"\"$delimiter\"\"$delimiter""")
+        printt(s"${ml.upDownPath}")
     }
+
+    private def printt(value: Any): Unit = print("\"" + value + "\"")
 }

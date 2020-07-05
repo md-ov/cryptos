@@ -2,6 +2,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.env._
+import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformer, ExpansionSegmentsTransformerForVariationModel}
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
 
@@ -18,10 +19,12 @@ object TrainerVariation {
         
         spark.sparkContext.setLogLevel("ERROR")
         
-        val path: String = s"$dataDirectory/segments/small/$smallSegmentsFolder"
-        val expansionStrucTypePath = this.getClass.getResource("/expansion").getPath
+        val segmentsPath: String = s"$dataDirectory/segments/small/$smallSegmentsFolder"
+        val expansionStrucTypePath: String = this.getClass.getResource("/expansion").getPath
+        val transformer: ExpansionSegmentsTransformerForVariationModel = Expansion.getTransformerForVariationModel(spark, expansionStrucTypePath)
         val modelPath = s"$dataDirectory/ml/variation-models/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
         val resultPath = s"$dataDirectory/ml/variation-results/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
-        //        trainingModelAndWriteModelAndTestDfWithRawPrediction(spark, path, expansionStrucTypePath, modelPath, resultPath)
+
+        TrainerRegression.train(spark, segmentsPath, modelPath, resultPath, transformer)
     }
 }

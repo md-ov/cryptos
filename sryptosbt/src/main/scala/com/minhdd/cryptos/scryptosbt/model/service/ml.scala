@@ -17,7 +17,7 @@ object ml {
       .setInputCols(Array(
           "beginvalue", "begin-evo", "beginVariation", "beginVolume", "beginCount", 
           "ohlcBeginVolume", "beginderive", "beginsecondderive",
-          "numberOfElement", "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive"
+          "numberOfElement", "variation", "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive"
       ))
       .setOutputCol("features")
       .setHandleInvalid("keep")
@@ -42,7 +42,7 @@ object ml {
           .withColumn("ohlcBeginVolume", col("begin.ohlc_volume"))
           .withColumn("isSegmentEnd", col("isSegmentEnd"))
           .select(
-              "begindt", "enddt", "variation", "linear", "isSegmentEnd", "evolutionDirection", "beginvalue", "endvalue",
+              "begindt", "enddt", "variation", "isSegmentEnd", "evolutionDirection", "beginvalue", "endvalue",
               "beginEvolution", "beginVariation", "beginVolume",
               "endEvolution", "endVariation", "endVolume",
               "standardDeviationVolume", "numberOfElement", 
