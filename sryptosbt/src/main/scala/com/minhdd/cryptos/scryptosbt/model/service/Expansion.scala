@@ -13,17 +13,21 @@ object Expansion {
         new ExpansionSegmentsTransformerForVariationModel(spark, schema)
     }
 
+  def getTransformerForSizeModel(spark: SparkSession, schema: StructType): ExpansionSegmentsTransformerForSizeModel = {
+    new ExpansionSegmentsTransformerForSizeModel(spark, schema)
+  }
+
     def expansion(ss: SparkSession, ds: Dataset[Seq[BeforeSplit]]): DataFrame = {
         import ss.implicits._
         val expandedSegments: Dataset[Segment] = ds.flatMap(Segment.segments)
-                println("expandedSegments")
-                expandedSegments.show(2, false)
-                println("----------------")
-        
+//                println("expandedSegments")
+//                expandedSegments.show(2, false)
+//                println("----------------")
+
         val df = ml.toDataFrame(expandedSegments)
-                println("dataframe")
-                df.show(2, false)
-                println("----------------")
+//                println("dataframe")
+//                df.show(2, false)
+//                println("----------------")
         
         df
     }

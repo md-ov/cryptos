@@ -44,7 +44,7 @@ object ml {
               "begindt", "enddt", "variation", "isSegmentEnd", "evolutionDirection", "beginvalue", "endvalue",
               "beginEvolution", "beginVariation", "beginVolume",
               "endEvolution", "endVariation", "endVolume",
-              "standardDeviationVolume", "numberOfElement", 
+              "standardDeviationVolume", "numberOfElement", "targetsize",
               "averageVolume", "averageVariation", "standardDeviationVariation",
               "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive",
               "averageCount", "standardDeviationCount",

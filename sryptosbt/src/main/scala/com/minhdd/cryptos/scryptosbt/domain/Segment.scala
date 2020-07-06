@@ -12,6 +12,7 @@ case class Segment(
     evolutionDirection: String,
     standardDeviationVolume: Double,
     numberOfElement: Int,
+    targetsize: Int,
     averageVolume: Double,
     averageVariation: Double,
     standardDeviationVariation: Double,
@@ -26,7 +27,7 @@ case class Segment(
 
 object Segment {
 
-    def apply(seq: Seq[BeforeSplit], last: Option[BeforeSplit]): Segment = {
+    def apply(seq: Seq[BeforeSplit], last: Option[BeforeSplit], size: Int): Segment = {
         val begin = seq.head
         val evolutionDirection = if (last.isEmpty){
             evolutionNone
@@ -41,6 +42,7 @@ object Segment {
             variation = math.abs(seq.last.value - begin.value),
             evolutionDirection = evolutionDirection,
             numberOfElement = seq.size,
+            targetsize = size,
             standardDeviationVolume = seq.map(_.volume).standardDeviation,
             averageVolume = seq.map(_.volume).avg,
             averageVariation = seq.map(_.variation).avg,
@@ -57,15 +59,16 @@ object Segment {
     
     def segments(seq: Seq[BeforeSplit]): Seq[Segment] = {
         val last = seq.last
+        val size = seq.size
     
         if (last.isEndOfSegment) {
             //why 2 to size : a segment has at least 2 elements and at most size elements
             (2 to seq.size).map(i => {
                 val s = seq.take(i)
-                Segment(s, Option(last))
+                Segment(s, Option(last), size)
             })
         } else {
-            Seq(Segment(seq, None))
+            Seq(Segment(seq, None, size))
         }
     }
     
