@@ -47,10 +47,5 @@ object ParquetChecker {
             .distinct()
             .sort("value")
             .show(1, false)
-    
-        println("expansion")
-        val expansionPath = this.getClass.getResource("/expansion").getPath
-        println(expansionPath)
-        spark.read.parquet(expansionPath).show(2)
     }
 }

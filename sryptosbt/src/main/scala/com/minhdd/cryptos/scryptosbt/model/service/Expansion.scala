@@ -1,15 +1,16 @@
 package com.minhdd.cryptos.scryptosbt.model.service
 
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Segment}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object Expansion {
-    def getTransformer(spark: SparkSession, structTypeFilePath: String): ExpansionSegmentsTransformer = {
-        new ExpansionSegmentsTransformer(spark, spark.read.parquet(structTypeFilePath).schema)
+    def getTransformer(spark: SparkSession, schema: StructType): ExpansionSegmentsTransformer = {
+        new ExpansionSegmentsTransformer(spark, schema)
     }
 
-    def getTransformerForVariationModel(spark: SparkSession, structTypeFilePath: String): ExpansionSegmentsTransformerForVariationModel = {
-        new ExpansionSegmentsTransformerForVariationModel(spark, spark.read.parquet(structTypeFilePath).schema)
+    def getTransformerForVariationModel(spark: SparkSession, schema: StructType): ExpansionSegmentsTransformerForVariationModel = {
+        new ExpansionSegmentsTransformerForVariationModel(spark, schema)
     }
 
     def expansion(ss: SparkSession, ds: Dataset[Seq[BeforeSplit]]): DataFrame = {

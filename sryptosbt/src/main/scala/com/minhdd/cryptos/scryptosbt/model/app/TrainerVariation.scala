@@ -1,10 +1,13 @@
 package com.minhdd.cryptos.scryptosbt.model.app
 
 import com.minhdd.cryptos.scryptosbt.constants._
+import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env._
-import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformer, ExpansionSegmentsTransformerForVariationModel}
+import com.minhdd.cryptos.scryptosbt.model.service.ml.label
+import com.minhdd.cryptos.scryptosbt.model.service.{Expansion, ExpansionSegmentsTransformerForVariationModel}
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{abs, col}
 
 //1 runfirst
 object TrainerVariation {
@@ -18,10 +21,13 @@ object TrainerVariation {
           .master("local[*]").getOrCreate()
         
         spark.sparkContext.setLogLevel("ERROR")
-        
+
         val segmentsPath: String = s"$dataDirectory/segments/small/$smallSegmentsFolder"
-        val expansionStrucTypePath: String = this.getClass.getResource("/expansion").getPath
-        val transformer: ExpansionSegmentsTransformerForVariationModel = Expansion.getTransformerForVariationModel(spark, expansionStrucTypePath)
+
+        import spark.implicits._
+        val ds = spark.read.parquet(segmentsPath)
+        val expanded = Expansion.expansion(spark, ds.as[Seq[BeforeSplit]]).limit(1).withColumn(label, abs(col("endvalue") - col("beginvalue")))
+        val transformer: ExpansionSegmentsTransformerForVariationModel = Expansion.getTransformerForVariationModel(spark, expanded.schema)
         val modelPath = s"$dataDirectory/ml/variation-models/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
         val resultPath = s"$dataDirectory/ml/variation-results/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
 

@@ -14,9 +14,7 @@ class ExpansionSegmentsTransformerForVariationModel(spark: SparkSession, transfo
     
     override def transform(ds: Dataset[_]): DataFrame = {
         import spark.implicits._
-        val transformed = Expansion.expansion(spark, ds.as[Seq[BeforeSplit]]).withColumn(label, abs(col("endvalue") - col("beginvalue")))
-    transformed.show(3, false)
-    transformed
+        Expansion.expansion(spark, ds.as[Seq[BeforeSplit]]).withColumn(label, abs(col("endvalue") - col("beginvalue")))
     }
     
     override def copy(extra: ParamMap): ExpansionSegmentsTransformerForVariationModel = this

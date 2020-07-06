@@ -20,8 +20,7 @@ object ml {
           "numberOfElement", "variation", "averageDerive", "standardDeviationDerive", "averageSecondDerive", "standardDeviationSecondDerive"
       ))
       .setOutputCol("features")
-      .setHandleInvalid("keep")
-    
+
     def toDataFrame(ds: Dataset[Segment]): DataFrame = {
         ds
           .withColumn("begindt", col("begin.datetime"))
@@ -58,6 +57,5 @@ object ml {
     val label = "label"
     val predict = "predict"
     
-    val upDownPath = "15/20200512233121"
-    val linearPath = "15/20200513084851"
+    val upDownPath = "15/20200627002149"
 }

@@ -21,7 +21,7 @@ object Trainer {
         val gbt = new GBTRegressor()
         gbt.setSeed(273).setMaxIter(5)
         
-        val pipeline: Pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler, gbt))
+        val pipeline: Pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler.setHandleInvalid("keep"), gbt))
         val paramGrid: Array[ParamMap] = new ParamGridBuilder().addGrid(param = gbt.maxIter, values = Array(5, 50, 100)).build()
         val evaluator: RegressionEvaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
         val cv = new CrossValidator()
