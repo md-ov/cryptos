@@ -4,7 +4,7 @@ import com.minhdd.cryptos.scryptosbt.model.service.ml.{indexerBegin, label, pred
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.regression.{GeneralizedLinearRegression, LinearRegression}
+import org.apache.spark.ml.regression.{GBTRegressor, GeneralizedLinearRegression, LinearRegression}
 import org.apache.spark.ml.tuning.{CrossValidator, CrossValidatorModel, ParamGridBuilder}
 import org.apache.spark.ml.{Pipeline, Transformer}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -16,10 +16,12 @@ object TrainerRegression {
             resultPath: String,
             transformer: Transformer): Unit = {
     val df: DataFrame = spark.read.parquet(segmentsPath)
-    val lr = new LinearRegression()
-      .setMaxIter(2)
-      .setRegParam(0.3)
-      .setElasticNetParam(0.8)
+    val gbt = new GBTRegressor()
+    gbt.setSeed(273).setMaxIter(5)
+//    val lr = new LinearRegression()
+//      .setMaxIter(2)
+//      .setRegParam(0.3)
+//      .setElasticNetParam(0.8)
 
 //    val glr = new GeneralizedLinearRegression()
 //      .setFamily("gaussian")
@@ -29,8 +31,8 @@ object TrainerRegression {
 
     val Array(trainDF, testDF) = df.randomSplit(Array(0.7, 0.3), seed = 42)
 
-    val pipeline: Pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler.setHandleInvalid("skip"), lr))
-    val paramGrid: Array[ParamMap] = new ParamGridBuilder().addGrid(param = lr.maxIter, values = Array(5, 50, 100)).build()
+    val pipeline: Pipeline = new Pipeline().setStages(Array(transformer, indexerBegin, vectorAssembler.setHandleInvalid("skip"), gbt))
+    val paramGrid: Array[ParamMap] = new ParamGridBuilder().addGrid(param = gbt.maxIter, values = Array(5, 50, 100)).build()
 
     val evaluator: RegressionEvaluator = new RegressionEvaluator().setLabelCol(label).setPredictionCol(prediction)
     val cv = new CrossValidator()

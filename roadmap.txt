@@ -16,24 +16,19 @@ TrainerLabelNumberOfElement
 problème de découpage : 2020-07-02 18:30:00|2020-07-04 20:00:00 est un segment down ainsi que le prochaine 2020-07-04 20:00:00|2020-07-05 23:15:00
 pourquoi on coupe à 2020-07-04 20:00:00 ? , c'est mieux que ce soit un segment 2020-07-02 18:30:00|2020-07-05 23:15:00
 
-
----------------------------------------------------------------------------------------------------------
 documenter comment couper un segment en segments linéairs
 documenter comment déterminer si un segment est linéair
 documenter comment lecture diagramme percentile
 
 couper en ensemble de segment linear
 et on se basera pas sur linéarité mais sur evolution, duree, delta
-
 there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
-
-run training on databricks de OV mi Mai
+---------------------------------------------------------------------------------------------------------
 try to improve time of training, try to improve the algorithm
 
 add feature for trainers :
 	- previous segment properties (like value, evolution up or down, linearity, ....)
 	- properties of segment of the same season of year or the same day of week
-
 
 automatiser achat et vendre avec predictions
 	- si segment ended and up très certain => buy
