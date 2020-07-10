@@ -1,16 +1,3 @@
-+-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
-|            begindt|              enddt|isSegmentEnd|beginEvolution|endEvolution|evolutionDirection|beginvalue|endvalue|numberOfElement|label|          prediction|
-+-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
-|2020-07-02 18:30:00|2020-07-04 20:00:00|        true|             -|           -|                up|    8000.0|  8157.6|            199|    1|  0.9903148940543461|
-|2020-07-04 20:00:00|2020-07-05 23:15:00|        true|             -|        down|              down|    8157.6|  7985.1|            110|    0| 0.08149647617788966|
-|2020-07-05 23:15:00|2020-07-09 00:45:00|        true|          down|          up|                up|    7985.1|  8363.1|            295|    1|  0.9890216947657419|
-|2020-07-09 00:45:00|2020-07-09 17:15:00|        true|            up|        down|              down|    8363.1|  8161.1|             67|    0|0.003495200926371...|
-|2020-07-09 17:15:00|               null|       false|          down|        null|                 -|    8161.1|    null|             51|   -1|   0.984413538357821|
-+-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
-
-problème de découpage : 2020-07-02 18:30:00|2020-07-04 20:00:00 est un segment down ainsi que le prochaine 2020-07-04 20:00:00|2020-07-05 23:15:00
-pourquoi on coupe à 2020-07-04 20:00:00 ? , c'est mieux que ce soit un segment 2020-07-02 18:30:00|2020-07-05 23:15:00
-
 documenter comment couper un segment en segments linéairs
 documenter comment déterminer si un segment est linéair
 documenter comment lecture diagramme percentile
@@ -19,6 +6,7 @@ couper en ensemble de segment linear
 et on se basera pas sur linéarité mais sur evolution, duree, delta
 there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
 ---------------------------------------------------------------------------------------------------------
+=> relancer 3 trainers (en local et sur databricks) pour confirmer
 
 la prediction de duree, delta value avec linear regression et GBT is not good at all, the results have many errors
 TrainerVariation
