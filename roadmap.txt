@@ -12,7 +12,7 @@ problème de découpage : 2020-07-02 18:30:00|2020-07-04 20:00:00 est un segment
 pourquoi on coupe à 2020-07-04 20:00:00 ? , c'est mieux que ce soit un segment 2020-07-02 18:30:00|2020-07-05 23:15:00
 
 
-la prediction de duree, delta value :
+la prediction de duree, delta value avec linear regression is not good at all, the results have many errors
 TrainerVariation
 TrainerLabelNumberOfElement
 
