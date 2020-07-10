@@ -59,5 +59,5 @@ object ml {
     
     val upDownPath = "15/20200627002149"
     val variationModelPath = "15/20200706150341"
-    val sizeModelPath = "15/20200706202124"
+    val sizeModelPath = "15/20200710123534"
 }

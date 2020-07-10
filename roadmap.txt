@@ -1,8 +1,9 @@
-la prediction de duree, delta value avec linear regression is not good at all, the results have many errors
+la prediction de duree, delta value avec linear regression et GBT is not good at all, the results have many errors
 TrainerVariation
 TrainerLabelNumberOfElement
-=> essayer GBT
+
 ---------------------------------------------------------------------------------------------------------
+
 +-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
 |            begindt|              enddt|isSegmentEnd|beginEvolution|endEvolution|evolutionDirection|beginvalue|endvalue|numberOfElement|label|          prediction|
 +-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
