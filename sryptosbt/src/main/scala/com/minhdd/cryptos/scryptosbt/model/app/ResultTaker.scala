@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-06-30 00:00:00")
+        main("2020-07-02 18:30:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
