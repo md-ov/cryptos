@@ -1,9 +1,3 @@
-la prediction de duree, delta value avec linear regression et GBT is not good at all, the results have many errors
-TrainerVariation
-TrainerLabelNumberOfElement
-
----------------------------------------------------------------------------------------------------------
-
 +-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
 |            begindt|              enddt|isSegmentEnd|beginEvolution|endEvolution|evolutionDirection|beginvalue|endvalue|numberOfElement|label|          prediction|
 +-------------------+-------------------+------------+--------------+------------+------------------+----------+--------+---------------+-----+--------------------+
@@ -25,6 +19,16 @@ couper en ensemble de segment linear
 et on se basera pas sur linéarité mais sur evolution, duree, delta
 there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
 ---------------------------------------------------------------------------------------------------------
+
+la prediction de duree, delta value avec linear regression et GBT is not good at all, the results have many errors
+TrainerVariation
+TrainerLabelNumberOfElement
+
+présenter le projet et demander un datascientist
+
+---------------------------------------------------------------------------------------------------------
+
+
 try to improve time of training, try to improve the algorithm
 
 add feature for trainers :
