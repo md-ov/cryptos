@@ -31,7 +31,7 @@ object Splitter {
     def generalCut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
         import ds.sparkSession.implicits._
         val count: Long = ds.count
-        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(s => cutWithTwoPointsMax(s, getCutPoints(s)))
+        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(s => if (linear(s)) Seq(s) else cutWithTwoPointsMax(s, getCutPoints(s)))
         if (smallers.count > count) {
             generalCut(smallers)
         } else {
@@ -40,10 +40,7 @@ object Splitter {
     }
 
     def generalCut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-//        println(seq.size)
-//        seq.foreach(x => println(s"${x.head.datetime} -> ${x.last.datetime} (end : ${x.last.isEndOfSegment}) "))
-
-        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(s => cutWithTwoPointsMax(s, getCutPoints(s)))
+        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(s => if (linear(s)) Seq(s) else cutWithTwoPointsMax(s, getCutPoints(s)))
 
         if (smallers.length > seq.length) {
             generalCut(smallers)
@@ -139,40 +136,36 @@ object Splitter {
     }
 
     private def getCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
-        if (linear(seq)) {
-            Nil
-        } else {
-            val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
-            val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
-            val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
+        val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+        val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+        val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
 
-            val superiorSplit: Option[Int] =
-                if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
-                    Option(superiorMaybeSplit._2)
-                } else {
-                    None
-                }
-            val inferiorSplit: Option[Int] =
-                if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
-                    Option(inferiorMaybeSplit._2)
-                } else {
-                    None
-                }
-
-            val splitPoints: Seq[Int] = if (superiorSplit.isEmpty && inferiorSplit.isEmpty) {
-                if (superiorMaybeSplit._1 - inferiorMaybeSplit._1 >= constants.relativeMinDelta) {
-                    Seq(superiorMaybeSplit._2, inferiorMaybeSplit._2)
-                      .filterNot(x => x == 0)
-                      .filterNot(x => x == seq.length - 1)
-                      .sortWith(_ < _)
-                } else {
-                    Nil
-                }
+        val superiorSplit: Option[Int] =
+            if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
+                Option(superiorMaybeSplit._2)
             } else {
-                Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
+                None
+            }
+        val inferiorSplit: Option[Int] =
+            if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
+                Option(inferiorMaybeSplit._2)
+            } else {
+                None
             }
 
-            splitPoints
+        val splitPoints: Seq[Int] = if (superiorSplit.isEmpty && inferiorSplit.isEmpty) {
+            if (superiorMaybeSplit._1 - inferiorMaybeSplit._1 >= constants.relativeMinDelta) {
+                Seq(superiorMaybeSplit._2, inferiorMaybeSplit._2)
+                  .filterNot(x => x == 0)
+                  .filterNot(x => x == seq.length - 1)
+                  .sortWith(_ < _)
+            } else {
+                Nil
+            }
+        } else {
+            Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
         }
+
+        splitPoints
     }
 }
