@@ -57,7 +57,7 @@ object ml {
     val label = "label"
     val predict = "predict"
     
-    val upDownPath = "15/20200627002149"
-    val variationModelPath = "15/20200706150341"
-    val sizeModelPath = "15/20200710123534"
+    val upDownPath = "15/20200711071724"
+    val variationModelPath = "15/20200710213607"
+    val sizeModelPath = "15/20200710182823"
 }

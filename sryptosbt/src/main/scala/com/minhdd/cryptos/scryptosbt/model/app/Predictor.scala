@@ -17,8 +17,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 //3
 //change threshold and run
 object Predictor {
-    val thresholdForPositive = 0.6609068691287857
-    val thresholdForNegative = 0.06683752680961988
+    val thresholdForPositive = 0.10080973364915972
+    val thresholdForNegative = 0.01245948738329146
     val modelPath: String = s"$dataDirectory/ml/models/${ml.upDownPath}"
 
     def main(args: Array[String]): Unit = {
