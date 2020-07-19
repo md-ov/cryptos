@@ -1,0 +1,12 @@
+try to improve time of training, try to improve the algorithm
+
+use of others crypto monnaies
+use of blockchain data
+
+add feature for trainers :
+    - previous segment properties (like value, evolution up or down, linearity, ....)
+    - properties of segment of the same season of year or the same day of week
+
+automatiser achat et vendre avec predictions
+    - si segment ended and up très certain => buy
+    - si segment ended and down très certain => sell

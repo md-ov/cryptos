@@ -14,21 +14,8 @@ couper en ensemble de segment linear
 et on se basera pas sur linéarité mais sur evolution, duree, delta
 there must be some problem with linear prediction, i must find out why there is so many error on last predictions, but I didnt find any problem
 ---------------------------------------------------------------------------------------------------------
-
-
-try to improve time of training, try to improve the algorithm
-
-add feature for trainers :
-	- previous segment properties (like value, evolution up or down, linearity, ....)
-	- properties of segment of the same season of year or the same day of week
-
-automatiser achat et vendre avec predictions
-	- si segment ended and up très certain => buy
-	- si segment ended and down très certain => sell
-
-
 synchroniser 0 roadmap\input
-use of others crypto monnaies
+
 automatiser tous les étapes en sh
 -----------------------------------------------------------------------------
 - improve codes

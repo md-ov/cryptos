@@ -1,0 +1,12 @@
+-une demo, cmd, new data appear, predictor, voir le fichier csv
+-expliquer : segmentation et 3 predictions
+-expliquer : comment gagner de l'argent
+-prochaine etape: aide data science sur prédiction de durée et de l'écart
+-c'est possible de recruter qqun ?
+-quand presentation, quel sonts les choses a parler ?
+-------
+-perspectives.txt
+-architecture
+-explication : segment linéair
+-explication : l'algo de segmentation
+-explication complète
