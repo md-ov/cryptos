@@ -12,7 +12,6 @@ Les résultats de prédictions
 - Timestamp du moment actuel
 - Valeur du moment actuel
 - Nombre d'élément du segment encours
-- Prédiction de type Double (entre -0.1 et 1.1) sur le sens d'évolution du fin à venir du segment encours
 - Prédiction de type Double (entre -0.1 et 1.1) sur la linéarité d'évolution du segment encours
 
 PAS ENCORE AFFICHE
@@ -21,10 +20,6 @@ PAS ENCORE AFFICHE
     1: augmentation
     0 : diminuation
     -1 : pas de prédiction
-
-- Prédiction binaire (1, -1) sur la linéarité d'évolution du segment encours
-    1 : linéair
-    -1: pas de prédiction
 
 
 comment décider pour une tracsaction
@@ -36,5 +31,4 @@ Prédiction binaire 1 sur le sens d'évolution  	=> Achat
 
 comment une transaction a une forte probabilité d'étre rentable
 -------------------------------------------------------------
-Prédiction binaire 1 sur la linéarité, delta actuel petit (valeur - valeur du début segment)
-car c'est plus sur que la valeur continue de progresser dans le sens prédit
+delta actuel petit (valeur - valeur du début segment)
