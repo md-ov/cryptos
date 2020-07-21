@@ -1,3 +1,19 @@
+=> corriger
+le 2020-07-17 17:15:00
+le 2020-07-19 02:15:00
+
+on n'a pas détecté de coupure de segment à 2020-07-16 16:15:00
+
+et à 2020-07-21 14:45:00.0, on a le segment coupé à 2020-07-16 16:15:00
+
+------------------------------------
+
+=> parler à Francois pour la partie datascience
+=> présentation du projet en afterwork
+	en appliquant les principles de présentation
+    parler du projet cryptos at home
+------------------------------------
+
 la prediction de duree, delta value avec linear regression et GBT is not good at all, the results have many errors
 TrainerVariation
 TrainerLabelNumberOfElement
