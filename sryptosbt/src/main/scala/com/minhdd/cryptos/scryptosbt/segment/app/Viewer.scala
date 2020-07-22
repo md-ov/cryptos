@@ -25,8 +25,8 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-//        viewSegments
-        viewHowCutSmallSegments
+        viewSegments
+//        viewHowCutSmallSegments
 //        viewActualSegments
     }
 
@@ -58,12 +58,18 @@ object Viewer {
     def viewSegments: Unit = {
         val smalls: Dataset[Seq[BeforeSplit]] =
             spark.read.parquet(s"$dataDirectory/segments/small/$smallSegmentsFolder").as[Seq[BeforeSplit]]
-        smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
+//        smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_1").show(false)
+
+        val numberOfVeryShortSegments = smalls.filter(_.size < 10).count
+        println("number of very short segments : " + numberOfVeryShortSegments)
+
         println("size of small segments: " + smalls.count())
         println("==============")
         val notlinears: Dataset[(Int, Timestamp, Timestamp)] = smalls.filter(x => !linear(x)).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2")
-        println("non linear : " + notlinears.count())
-        notlinears.show()
+
+        val numberOfNonLinears = notlinears.count()
+        println("non linear : " + numberOfNonLinears)
+        if (numberOfNonLinears > 0) notlinears.show()
 
     }
 }

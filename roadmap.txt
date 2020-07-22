@@ -1,4 +1,7 @@
-lancer small segment, model, threshold, predictor
+=> pourquoi il y a des segments à 2 élements quand on fait Viewer.viewSegments
+check ancien smallsegments : "15/20200710165924" and new smallSegments : "15/20200722153749"
+
+=> lancer small segment, model, threshold, predictor
 
 ------------------------------------
 le 2020-07-17 17:15:00
