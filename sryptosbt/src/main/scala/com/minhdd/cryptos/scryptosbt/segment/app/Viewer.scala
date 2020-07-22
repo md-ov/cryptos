@@ -41,12 +41,13 @@ object Viewer {
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2020-07-02 18:30:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2020-07-05 23:30:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2020-07-09 17:15:00")
+        val end: Timestamp = TimestampHelper.getTimestamp("2020-07-19 23:15:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         val cuts: Seq[Seq[BeforeSplit]] = Splitter.generalCut(Seq(seq))
+        cuts.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).foreach(println)
         println("when linear true then it must not be cutable")
         println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
         println("linear : " + linear)

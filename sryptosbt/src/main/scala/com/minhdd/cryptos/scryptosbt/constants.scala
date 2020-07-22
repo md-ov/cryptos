@@ -11,6 +11,9 @@ object constants {
     
     val minDeltaValue = 150
     val relativeMinDelta = 0.02
+
+    private val numberOfMinutesForStability: Int = 60*12
+    val numberOfCryptoForStability = (60*12 / numberOfMinutesBetweenTwoElement)
     
     val smallSegmentsFolder = "15/20200710165924"
 }

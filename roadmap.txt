@@ -1,10 +1,21 @@
-=> corriger
+lancer small segment, model, threshold, predictor
+
+------------------------------------
 le 2020-07-17 17:15:00
 le 2020-07-19 02:15:00
 
 on n'a pas détecté de coupure de segment à 2020-07-16 16:15:00
-
 et à 2020-07-21 14:45:00.0, on a le segment coupé à 2020-07-16 16:15:00
+
+
+c'est à cause de la linéarité du segment 2020-07-16 16:15:00 - 2020-07-19 23:00:00
+ couper un segment si on trouve un minimum ou un maximum suffisament loins d'un extrémité (on s'appelera distance de stabilité)
+à définir cette distance minimum
+pour l'instant c'est de l'ordre de 12 heures
+
+faire une méthode de coupage par distance de stabilité et l'utiliser seulement en cas d'un segment linear
+
+=> il faut documenter ce cas
 
 ------------------------------------
 

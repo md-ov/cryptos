@@ -31,7 +31,14 @@ object Splitter {
     def generalCut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {
         import ds.sparkSession.implicits._
         val count: Long = ds.count
-        val smallers: Dataset[Seq[BeforeSplit]] = ds.flatMap(s => if (linear(s)) Seq(s) else cutWithTwoPointsMax(s, getCutPoints(s)))
+
+        val smallers: Dataset[Seq[BeforeSplit]] =
+            ds.flatMap(s => if (linear(s)) {
+                cutWithTwoPointsMax(s, getCutPointsWhenLinear(s))
+            } else {
+                cutWithTwoPointsMax(s, getCutPoints(s))
+            })
+
         if (smallers.count > count) {
             generalCut(smallers)
         } else {
@@ -40,7 +47,12 @@ object Splitter {
     }
 
     def generalCut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-        val smallers: Seq[Seq[BeforeSplit]] = seq.flatMap(s => if (linear(s)) Seq(s) else cutWithTwoPointsMax(s, getCutPoints(s)))
+        val smallers: Seq[Seq[BeforeSplit]] =
+            seq.flatMap(s => if (linear(s)) {
+                cutWithTwoPointsMax(s, getCutPointsWhenLinear(s))
+            } else {
+                cutWithTwoPointsMax(s, getCutPoints(s))
+            })
 
         if (smallers.length > seq.length) {
             generalCut(smallers)
@@ -167,5 +179,27 @@ object Splitter {
         }
 
         splitPoints
+    }
+
+    def getCutPointsWhenLinear(seq: Seq[BeforeSplit]): Seq[Int] = {
+        val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+        val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+        val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
+
+        val superiorSplit: Option[Int] =
+            if (superiorMaybeSplit._1 >= constants.relativeMinDelta && variationsWithFirstPoint.last._2 - superiorMaybeSplit._2 >= constants.numberOfCryptoForStability) {
+                Option(superiorMaybeSplit._2)
+            } else {
+                None
+            }
+
+        val inferiorSplit: Option[Int] =
+            if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && variationsWithFirstPoint.last._2 - inferiorMaybeSplit._2 >= constants.numberOfCryptoForStability) {
+                Option(inferiorMaybeSplit._2)
+            } else {
+                None
+            }
+
+        Seq(superiorSplit, inferiorSplit).flatten.sortWith(_ < _)
     }
 }
