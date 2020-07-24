@@ -7,7 +7,7 @@ object SeqHelper {
       Seq((seq, offset))
     } else {
       val parts = seq.splitAt(seq.length / numberOfSplit)
-      Seq((parts._1, offset)) ++ splitWithOffset(parts._2, offset + parts._1.length, numberOfSplit - 1)
+      Seq((parts._1 :+ parts._2.head, offset)) ++ splitWithOffset(parts._2, offset + parts._1.length, numberOfSplit - 1)
     }
   }
 }
