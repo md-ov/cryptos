@@ -68,7 +68,7 @@ object Splitter {
         } else {
             val firstNotLinear: Int = cuts.indices.find(i => !linear(cuts(i))).get
             val offset = if (firstNotLinear == 0) 0 else cutPoints(firstNotLinear - 1)
-            val newPositions: Seq[Int] = pointsToCutWhenNotLinear(cuts(firstNotLinear), offset)
+            val newPositions: Seq[Int] = pointsToHardCut(cuts(firstNotLinear), offset)
             if (newPositions.isEmpty) {
                 println("can not cut for this segment : "+ cuts(firstNotLinear).head.datetime + " -> " + cuts(firstNotLinear).last.datetime)
                 cuts
@@ -79,14 +79,14 @@ object Splitter {
         }
     }
 
-    private def pointsToCutWhenNotLinear(seq: Seq[BeforeSplit], offset: Int, numberOfSplit: Int = 2): Seq[Int] = {
+    private def pointsToHardCut(seq: Seq[BeforeSplit], offset: Int, numberOfSplit: Int = 2): Seq[Int] = {
         val splits: Seq[(Seq[BeforeSplit], Int)] = SeqHelper.splitWithOffset(seq, offset, numberOfSplit)
         val cutPoints: Seq[Int] = splits.flatMap(x => getOneCutPoint(x._1, x._2))
         if (cutPoints.isEmpty) {
             if (numberOfSplit >= seq.length/2) {
                 Nil
             } else {
-                pointsToCutWhenNotLinear(seq, offset, numberOfSplit + 1)
+                pointsToHardCut(seq, offset, numberOfSplit + 1)
             }
         } else {
             cutPoints
