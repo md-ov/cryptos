@@ -1,0 +1,35 @@
+présentation :
+    - voir avec Thomas pour organiser la présentation
+    - préparer les slides et envoyer à Guillaume
+
+15 minutes
+4 5 slides seulement
+partage d'expérience, synthétique, simple rapide à comprendre
+Expérimentation, ni positif, ni optimist
+Dataviz, Tableau Public
+
+
+
+Slide 1
+
+Context, pourquoi ce projet, intentions, visions
+    - toujours motivation pour développer moi meme un projet from scratch, un projet qui marche et qui est et rentable
+    - j'ai fait quelques investissement, et j'ai perdu un peu de l'argent dans mes investissement dans la cryptomonaie
+    - d'ou l'idée d'utiliser mes compétences de développement et de big data pour développer un projet qui va m'aider à investir de manière rentable dans la cryptomonaie
+    - maintenant purement expérimentation
+    - visions : je suis étonné de ce que j'ai pu faire
+
+Slide 2
+
+Etapes de l'application, sources de donnéer, comment transformer, résultats
+
+
+Slide 3
+
+Comment évoluer en terme de data ingéneer, data science
+Comment améliorer
+
+Slide 4
+
+Limitations
+Difficultés

@@ -18,6 +18,12 @@ pour l'instant c'est de l'ordre de 12 heures
 
 faire une méthode de coupage par distance de stabilité et l'utiliser seulement en cas d'un segment linear
 
+
+il u a 3 méthods à regarder
+getCutPoints
+getCutPointsWhenLinear
+pointsToCutWhenNotLinear
+
 => il faut documenter ce cas
 
 ------------------------------------

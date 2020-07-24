@@ -121,8 +121,6 @@ object Splitter {
         Seq(seq.slice(0, point) :+ splitPointElement, seq.slice(point, seq.length))
     }
 
-    ////////////////
-
     def simpleCut(seq: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
         if (seq.size <= 2 || linear(seq)) {
             Seq(seq)
@@ -130,6 +128,7 @@ object Splitter {
             cutWithTwoPointsMax(seq, getCutPoints(seq))
         }
     }
+
 
     private def cutWithTwoPointsMax(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
         val length = seq.length
@@ -146,6 +145,12 @@ object Splitter {
             Seq(seq)
         }
     }
+
+    /**
+     *
+     * get cut points methods
+     *
+     */
 
     private def getCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
         val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex

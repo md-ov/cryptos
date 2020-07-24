@@ -1,0 +1,16 @@
+how to cut a segment S to some smaller linear segments
+
+- if S linear then method : getCutPointsWhenLinear
+find min and max point which is
+    far enough from the end
+    and have enough variation with the begin point
+
+
+- if S not linear then method: getCutPoints
+search for min and max point which is
+    have enough variation with the begin point and have bigger variation with the begin point than the last point
+in case not found any point
+    if variation between min and max is big enough, then take it (when it is not the begin point nor the end point)
+
+- if no cut point found, divide S to 2 sections and try to find cut point in each section
+if no cut point found, divide S to 3 sections and so on
