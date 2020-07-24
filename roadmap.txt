@@ -1,8 +1,10 @@
 => pourquoi il y a des segments à 2 élements quand on fait Viewer.viewSegments
 check ancien smallsegments : "15/20200710165924" and new smallSegments : "15/20200722153749"
+J'ai vérifié un peu c'est ok, car relativeMinDelta est trop petit, il faut peut etre augmenter cette valeur
 
 => lancer small segment, model, threshold, predictor
 
+=> traiter tous les papiers et notes qui traine
 ------------------------------------
 le 2020-07-17 17:15:00
 le 2020-07-19 02:15:00

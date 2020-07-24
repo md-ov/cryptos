@@ -25,24 +25,15 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-//        viewSegments
-        viewHowCutSmallSegments
+        viewSegments
+//        viewHowCutSmallSegments
 //        viewActualSegments
-    }
-
-    def viewActualSegments = {
-        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
-
-        println(actualSegments.size)
-        //        println(actualSegments.last.size)
-        //        println(actualSegments.last.head.datetime)
-        //        println(actualSegments.last.last.datetime)
     }
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2020-03-24 10:45:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2020-03-24 16:30:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2019-06-27 00:15:00")
+        val end: Timestamp = TimestampHelper.getTimestamp("2019-06-27 02:30:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
@@ -55,13 +46,16 @@ object Viewer {
         println("when linear true then it must not be cutable")
         println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
 
-//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20200324", seq)
+        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20190626", seq)
     }
 
     def viewSegments: Unit = {
         val smalls: Dataset[Seq[BeforeSplit]] =
             spark.read.parquet(s"$dataDirectory/segments/small/15/20200724164032").as[Seq[BeforeSplit]]
         smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(10000, false)
+
+        println("segments not ending")
+        smalls.filter(x => ! x.last.isEndOfSegment).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(false)
 
         val numberOfVeryShortSegments = smalls.filter(_.size < 5).count
         println("number of very short segments : " + numberOfVeryShortSegments)
@@ -75,5 +69,14 @@ object Viewer {
         println("non linear : " + numberOfNonLinears)
         if (numberOfNonLinears > 0) notlinears.show()
 
+    }
+
+    def viewActualSegments = {
+        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+
+        println(actualSegments.size)
+        //        println(actualSegments.last.size)
+        //        println(actualSegments.last.head.datetime)
+        //        println(actualSegments.last.last.datetime)
     }
 }
