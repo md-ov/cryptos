@@ -47,17 +47,21 @@ object Splitter {
     }
 
     def generalCut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-        val smallers: Seq[Seq[BeforeSplit]] =
-            seq.flatMap(s => if (linear(s)) {
-                cutWithTwoPointsMax(s, getCutPointsWhenLinear(s))
-            } else {
-                cutWithTwoPointsMax(s, getCutPoints(s))
-            })
-
-        if (smallers.length > seq.length) {
-            generalCut(smallers)
+        if (seq.size == 1 && seq.head.size == 1) {
+            seq
         } else {
-            seq.flatMap(s => if (!linear(s)) hardCut(s, Nil) else Seq(s))
+            val smallers: Seq[Seq[BeforeSplit]] =
+                seq.flatMap(s => if (linear(s)) {
+                    cutWithTwoPointsMax(s, getCutPointsWhenLinear(s))
+                } else {
+                    cutWithTwoPointsMax(s, getCutPoints(s))
+                })
+
+            if (smallers.length > seq.length) {
+                generalCut(smallers)
+            } else {
+                seq.flatMap(s => if (!linear(s)) hardCut(s, Nil) else Seq(s))
+            }
         }
     }
 

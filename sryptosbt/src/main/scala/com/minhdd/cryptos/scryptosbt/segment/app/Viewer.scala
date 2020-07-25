@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
-import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
+import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}
 import com.minhdd.cryptos.scryptosbt.tools.{SparkHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper.linear
@@ -32,8 +32,8 @@ object Viewer {
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2019-06-27 00:15:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2019-06-27 02:30:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2020-07-16 16:15:00.0")
+        val end: Timestamp = TimestampHelper.getTimestamp("2020-07-21 15:00:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
@@ -46,20 +46,23 @@ object Viewer {
         println("when linear true then it must not be cutable")
         println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
 
+        println("------")
+        println("cut big segment first")
+
         SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20190626", seq)
     }
 
     def viewSegments: Unit = {
         val smalls: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory/segments/small/15/20200724164032").as[Seq[BeforeSplit]]
-        smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(10000, false)
+            spark.read.parquet(s"$dataDirectory/segments/small/15/20200725091802").as[Seq[BeforeSplit]]
+        smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(10, false)
 
         println("segments not ending")
-        smalls.filter(x => ! x.last.isEndOfSegment).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(false)
+        smalls.filter(x => ! x.last.isEndOfSegment).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(10,false)
 
         val numberOfVeryShortSegments = smalls.filter(_.size < 5).count
         println("number of very short segments : " + numberOfVeryShortSegments)
-        smalls.filter(_.size < 5).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show()
+        smalls.filter(_.size < 5).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(10)
 
         println("size of small segments: " + smalls.count())
         println("==============")

@@ -27,39 +27,11 @@ object CompleteSmallSegments {
     
     def main(args: Array[String]): Unit = {
         val smallSegmentsPath = s"$dataDirectory/segments/small/$smallSegmentsFolder"
-        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
-
-        completeSmallSegments(smallSegmentsPath, outputSegmentsPath)
-    }
-
-    def completeSmallSegments(smallSegmentsPath: String, outputPath: String) = {
         val smallSegments: Dataset[Seq[BeforeSplit]] = spark.read.parquet(smallSegmentsPath).as[Seq[BeforeSplit]]
+        val actualSegments = spark.createDataset(ActualSegment.getActualSegments(smallSegments))
+        val allSmalls: Dataset[Seq[BeforeSplit]] = actualSegments.union(smallSegments)
 
-        val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
-        val lastTimestamp: Timestamp = lastSegment.last.datetime
-        println(lastSegment.size)
-        println(lastSegment.head.datetime)
-        println(lastTimestamp)
-
-        val lastTsHelper: TimestampHelper = TimestampHelper(lastTimestamp.getTime)
-        val lastCryptoPartitionKey = CryptoPartitionKey(
-            asset = "XBT",
-            currency = "EUR",
-            provider = "KRAKEN",
-            api = "TRADES",
-            year = lastTsHelper.getYear,
-            month = lastTsHelper.getMonth,
-            day = lastTsHelper.getDay)
-        val newTrades: Dataset[Crypto] = ParquetHelper().tradesFromLastSegment(spark, lastTimestamp, lastCryptoPartitionKey)
-        val newOHLCs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).filter(x => !x.cryptoValue.datetime.before(lastTimestamp))
-
-        val newBigs: Dataset[Seq[BeforeSplit]] = SegmentHelper.toBigSegments(spark, newTrades, newOHLCs)._2
-        val newSmalls: Dataset[Seq[BeforeSplit]] = Splitter.generalCut(newBigs)
-
-        newSmalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(false)
-
-        val allSmalls: Dataset[Seq[BeforeSplit]] = newSmalls.union(smallSegments)
-
-        allSmalls.write.parquet(outputPath)
+        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
+        allSmalls.write.parquet(outputSegmentsPath)
     }
 }

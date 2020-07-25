@@ -72,11 +72,17 @@ object ActualSegment {
         val actualSegment: Seq[BeforeSplit] = SegmentHelper.toBeforeSplits(spark, newTrades, newOHLCs)
         Splitter.generalCut(Seq(actualSegment))
     }
+
+    def getSmallSegments: Dataset[Seq[BeforeSplit]]  = {
+        spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
+    }
     
     def getActualSegments: Seq[Seq[BeforeSplit]] = {
-        val smallSegments: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
+        getActualSegments(getSmallSegments)
+    }
 
+    def getActualSegments(smallSegments: Dataset[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
+        val smallSegments: Dataset[Seq[BeforeSplit]] = getSmallSegments
         val lastSegment: Seq[BeforeSplit] = smallSegments.collect().sortWith { case (x, y) => x.last.datetime.before(y.last.datetime) }.last
         val lastTimestamp: Timestamp = lastSegment.last.datetime
         println("last ts of small segments : " + lastTimestamp)
