@@ -52,32 +52,42 @@ object Splitter {
         } else {
             val smallers: Seq[Seq[BeforeSplit]] =
                 seq.flatMap(s => if (linear(s)) {
+//                    println("seq is linear => getCutPointsWhenLinear " + s.head.datetime + " -> " + s.last.datetime)
                     cutWithTwoPointsMax(s, getCutPointsWhenLinear(s))
                 } else {
+//                    println("seq is not linear => getCutPoints " + s.head.datetime + " -> " + s.last.datetime)
                     cutWithTwoPointsMax(s, getCutPoints(s))
                 })
 
             if (smallers.length > seq.length) {
+//                println("it is cut so continue" + seq.length + " -> " + smallers.length)
                 generalCut(smallers)
             } else {
+//                println("it is not cut after some simple search so hardcut")
                 seq.flatMap(s => if (!linear(s)) hardCut(s, Nil) else Seq(s))
             }
         }
     }
 
     private def hardCut(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
+//        println("hardcut : " + seq.head.datetime + " -> " + seq.last.datetime + " with points : " + cutPoints + " - " + cutPoints.map(x => seq.apply(x).datetime))
         val cuts: Seq[Seq[BeforeSplit]] = cutManyPoints(seq, cutPoints)
         if (cuts.forall(linear)) {
+//            println("hardcut : all is linear so return cuts")
             cuts
         } else {
+//            println("hardcut : there is some segment not linear")
+//            println("ignore cut points : " + cutPoints)
             val firstNotLinear: Int = cuts.indices.find(i => !linear(cuts(i))).get
+            val notLinear: Seq[BeforeSplit] = cuts(firstNotLinear)
+//            println("not linear : " + notLinear.head.datetime + " -> " + notLinear.last.datetime)
             val offset = if (firstNotLinear == 0) 0 else cutPoints(firstNotLinear - 1)
-            val newPositions: Seq[Int] = pointsToHardCut(cuts(firstNotLinear), offset)
+            val newPositions: Seq[Int] = pointsToHardCut(notLinear, offset)
             if (newPositions.isEmpty) {
-                println("can not cut for this segment : "+ cuts(firstNotLinear).head.datetime + " -> " + cuts(firstNotLinear).last.datetime)
+//                println("can not cut for this segment : "+ notLinear.head.datetime + " -> " + notLinear.last.datetime)
                 cuts
             } else {
-                val newCutPoints: Seq[Int] = Seq(cutPoints, newPositions).flatten.sortWith { case (x, y) => x < y }
+                val newCutPoints: Seq[Int] = Seq(newPositions).flatten.sortWith { case (x, y) => x < y }
                 hardCut(seq, newCutPoints)
             }
         }
