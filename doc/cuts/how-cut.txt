@@ -14,3 +14,7 @@ in case not found any point
 
 - if no cut point found, divide S to 2 sections and try to find cut point in each section
 if no cut point found, divide S to 3 sections and so on
+
+And it is important how to select cut point :
+If after divide into sections and find some cut points (*) but the segments after cut is not all linear then
+search for cut points in each of non linear sections and ignore all cut points (*)
