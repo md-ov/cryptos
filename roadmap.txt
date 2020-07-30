@@ -1,3 +1,6 @@
+=> il faut : hardcut pour trouver des points seulement mais pas récursive
+quand est-ce qu'on finit : tous linear et getCutPointsWhenLinear return Nil
+
 => relancer tosmallsegments, models x 3 and so on
 
 => traiter tous les papiers et notes qui traine
