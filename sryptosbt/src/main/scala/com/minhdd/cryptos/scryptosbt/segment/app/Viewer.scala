@@ -37,9 +37,9 @@ object Viewer {
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
-        val cuts: Seq[Seq[BeforeSplit]] = Splitter.generalCut(Seq(seq))
-
         println("linear : " + linear)
+
+        val cuts: Seq[Seq[BeforeSplit]] = Splitter.generalCut(Seq(seq))
         println("cuts size : " + cuts.size)
         println("all linear : " + cuts.forall(_.map(_.value).linear(constants.relativeMinDelta)))
         cuts.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).foreach(println)
