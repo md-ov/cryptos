@@ -40,7 +40,7 @@ object Splitter {
             Seq(s)
           } else {
             val cutPoints: Seq[Int] = getCutPoints(s)
-            cutWithTwoPointsMax(s, cutPoints)
+            cutManyPoints(s, cutPoints)
           }
         })
         generalCut(cuts)
@@ -54,17 +54,9 @@ object Splitter {
   }
 
 
-  private def getOneCutPoint(seq: Seq[BeforeSplit], offset: Int): Option[Int] = {
-    if (seq.size <= 2) {
-      None
-    } else {
-      val points: Seq[Int] = getCutPoints(seq)
-      if (points.isEmpty) {
-        None
-      } else {
-        Option(points.head + offset)
-      }
-    }
+  private def getSimpleCutPoints(seq: Seq[BeforeSplit], offset: Int): Seq[Int] = {
+    println("get simple cut points : " + seq.head.datetime + " - " + seq.last.datetime + " - offset : " + offset)
+    getSimpleCutPoints(seq).map(_ + offset)
   }
 
   private def cutManyPoints(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
@@ -94,7 +86,9 @@ object Splitter {
   private def cutWithTwoPointsMax(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
     val length = seq.length
 
-    if (cutPoints.length == 1) {
+    if (cutPoints.isEmpty) {
+      Seq(seq)
+    } else if (cutPoints.length == 1) {
       cutOnePoint(seq, cutPoints.head)
     } else if (cutPoints.length == 2) {
       val splitPointElement1 = seq.apply(cutPoints.head).copy(isEndOfSegment = true)
@@ -115,56 +109,66 @@ object Splitter {
    */
 
   private def getCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
-    val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
-    val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
-    val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
-
-    val superiorSplit: Option[Int] =
-      if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
-        Option(superiorMaybeSplit._2)
-      } else {
-        None
-      }
-    val inferiorSplit: Option[Int] =
-      if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
-        Option(inferiorMaybeSplit._2)
-      } else {
-        None
-      }
-
-    val splitPoints: Seq[Int] = if (superiorSplit.isEmpty && inferiorSplit.isEmpty) {
-      if (superiorMaybeSplit._1 - inferiorMaybeSplit._1 >= constants.relativeMinDelta) {
-        Seq(superiorMaybeSplit._2, inferiorMaybeSplit._2)
-          .filterNot(x => x == 0)
-          .filterNot(x => x == seq.length - 1)
-      } else {
-        Nil
-      }
-    } else {
-      Seq(superiorSplit, inferiorSplit).flatten
-    }
+    val splitPoints: Seq[Int] = getSimpleCutPoints(seq).sortWith(_ < _)
 
     if (splitPoints.nonEmpty) {
-      splitPoints.sortWith(_ < _)
+      splitPoints
     } else {
-      hardSearch(seq, 0, 2).toSeq
+      hardSearch(seq, 0, 2).filter(p => linear(cutOnePoint(seq, p).head)).sortWith(_ > _).headOption.toSeq
     }
   }
 
-  private def hardSearch(seq: Seq[BeforeSplit], offset: Int, numberOfSplit: Int = 2): Option[Int] = {
+  private def getSimpleCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
+    if (seq.size <= 2) {
+      Nil
+    } else {
+      val variationsWithFirstPoint: Seq[(Double, Int)] = seq.map(_.value.relativeVariation(seq.head.value)).zipWithIndex
+      val superiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.maxBy(_._1)
+      val inferiorMaybeSplit: (Double, Int) = variationsWithFirstPoint.minBy(_._1)
+
+      val superiorSplit: Option[Int] =
+        if (superiorMaybeSplit._1 >= constants.relativeMinDelta && superiorMaybeSplit._1 > variationsWithFirstPoint.last._1) {
+          Option(superiorMaybeSplit._2)
+        } else {
+          None
+        }
+      val inferiorSplit: Option[Int] =
+        if (inferiorMaybeSplit._1.abs >= constants.relativeMinDelta && inferiorMaybeSplit._1 < variationsWithFirstPoint.last._1) {
+          Option(inferiorMaybeSplit._2)
+        } else {
+          None
+        }
+
+      if (superiorSplit.isEmpty && inferiorSplit.isEmpty) {
+        if (superiorMaybeSplit._1 - inferiorMaybeSplit._1 >= constants.relativeMinDelta) {
+          Seq(superiorMaybeSplit._2, inferiorMaybeSplit._2)
+            .filterNot(x => x == 0)
+            .filterNot(x => x == seq.length - 1)
+        } else {
+          Nil
+        }
+      } else {
+        Seq(superiorSplit, inferiorSplit).flatten
+      }
+    }
+  }
+
+  private def hardSearch(seq: Seq[BeforeSplit], offset: Int, numberOfSplit: Int = 2): Seq[Int] = {
+    println("hardSearch : " + numberOfSplit)
+    println(seq.head.datetime, seq.last.datetime)
     val splits: Seq[(Seq[BeforeSplit], Int)] = SeqHelper.splitWithOffset(seq, offset, numberOfSplit)
-    val cutPoint: Option[Int] =
-      splits
-        .flatMap(x => getOneCutPoint(x._1, x._2))
-        .find(cutOnePoint(seq, _).forall(linear))
-    if (cutPoint.isEmpty) {
+    val potentialCutPoints: Seq[Int] = splits.flatMap(x => getSimpleCutPoints(x._1, x._2)).sortWith(_ < _)
+    println("potential cut points : " + potentialCutPoints + " - " + potentialCutPoints.map(seq.apply(_).datetime))
+    val cuts: Seq[Seq[BeforeSplit]] = cutManyPoints(seq, potentialCutPoints)
+    if (cuts.forall(linear)) {
+      println("all linear with : " + potentialCutPoints)
+      potentialCutPoints
+    } else {
       if (numberOfSplit >= seq.length / 2) {
-        None
+        Nil
       } else {
         hardSearch(seq, offset, numberOfSplit + 1)
       }
-    } else {
-      cutPoint
     }
   }
 
