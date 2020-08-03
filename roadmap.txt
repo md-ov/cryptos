@@ -1,5 +1,11 @@
-=> il faut : hardcut pour trouver des points seulement mais pas récursive
-quand est-ce qu'on finit : tous linear et getCutPointsWhenLinear return Nil
+=> problèmatique avec le segment actual hard search 3, le point 2020-07-21 15:15:00 n'est pas trouvé
+il faut split : lùi dần từ bên phải, mỗi lần lùi thêm 1 tí : DONE
+
+=> analyser : search for 2 segment sousjacents de meme evolution
+
+=> redocumenter l'algo
+- parmis les cut points search the max one that give the first portion linear
+- relancer les viewer et redocumenter les cas de cuts
 
 => relancer tosmallsegments, models x 3 and so on
 
