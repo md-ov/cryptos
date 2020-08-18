@@ -12,7 +12,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 object SegmentHelper {
 
     def linear(seq: Seq[BeforeSplit]): Boolean = {
-        seq.map(_.value).linear(constants.relativeMinDelta)
+        seq.size <= 1 || seq.map(_.value).linear(constants.relativeMinDelta)
     }
     
     def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {
