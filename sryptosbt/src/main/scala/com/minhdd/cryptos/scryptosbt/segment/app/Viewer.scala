@@ -25,16 +25,17 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-//        viewSegments
-        viewHowCutSmallSegments
+        viewSegments
+//        viewHowCutSmallSegments
 //        viewActualSegments
     }
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
     def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2020-07-16 16:15:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2020-07-23 19:15:00")
+        val start: Timestamp = TimestampHelper.getTimestamp("2019-08-16 07:45:00")
+        val end: Timestamp = TimestampHelper.getTimestamp("2019-08-16 15:00:00")
         val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
+//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20190816", seq)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         println("linear : " + linear)
@@ -45,8 +46,6 @@ object Viewer {
         cuts.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).foreach(println)
         println("when linear true then it must not be cutable")
         println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
-
-//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq202007126", seq)
     }
 
     def viewSegments: Unit = {

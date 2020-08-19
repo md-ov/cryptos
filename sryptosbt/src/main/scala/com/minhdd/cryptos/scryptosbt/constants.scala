@@ -16,5 +16,5 @@ object constants {
     val numberOfCryptoForStability = (60*4 / numberOfMinutesBetweenTwoElement)
     
 //    val smallSegmentsFolder = "15/20200724164032"
-    val smallSegmentsFolder = "15/20200725091802"
+    val smallSegmentsFolder = "15/20200819181046"
 }

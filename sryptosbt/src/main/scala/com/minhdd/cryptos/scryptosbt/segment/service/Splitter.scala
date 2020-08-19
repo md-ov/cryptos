@@ -44,14 +44,41 @@ object Splitter {
           if (linear(s)) {
             Seq(s)
           } else {
-            val cutPoints: Seq[Int] = getCutPoints(s)
-            cutManyPoints(s, cutPoints)
+            getCutPointsAndCut(s)
           }
         })
         generalCut(cuts)
       }
     }
   }
+
+  private def getCutPointsAndCut(seq: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
+    val splitPoints: Seq[Int] = getSimpleCutPoints(seq).sortWith(_ < _)
+
+    if (splitPoints.nonEmpty) {
+      if (splitPoints.size == 1) {
+        cutOnePoint(seq, splitPoints.head)
+      } else {
+        cutManyPoints(seq, splitPoints)
+      }
+    } else {
+      val slidePoint: Seq[Int] = windowSlideFromRightSearch(seq, seq.size)
+      val point: Seq[Int] = if (slidePoint.nonEmpty) {
+        slidePoint
+      } else {
+        hardSearch(seq)
+      }.filter(p => linear(cutOnePoint(seq, p).head)).sortWith(_ > _).headOption.toSeq
+
+      if (point.isEmpty) {
+        println("problem not cut point found for : " + seq.size + " - " + seq.head.datetime)
+        Seq(seq)
+      } else {
+        cutOnePoint(seq, point.head)
+      }
+    }
+  }
+
+  //begin cut methods
 
 
   def cutManyPoints(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
@@ -88,21 +115,7 @@ object Splitter {
     }
   }
 
-  /**
-   *
-   * get cut points methods
-   *
-   */
-
-  private def getCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
-    val splitPoints: Seq[Int] = getSimpleCutPoints(seq).sortWith(_ < _)
-
-    if (splitPoints.nonEmpty) {
-      splitPoints
-    } else {
-      windowSlideFromRightSearch(seq).filter(p => linear(cutOnePoint(seq, p).head)).sortWith(_ > _).headOption.toSeq
-    }
-  }
+  //end cut methods
 
   private def windowSlideFromRightSearch(seq: Seq[BeforeSplit]): Seq[Int] = {
     val smallerSeq: Seq[BeforeSplit] = seq.dropRight(numberOfCryptoForStability)
@@ -177,7 +190,7 @@ object Splitter {
     if (seq.size <= 2 || linear(seq)) {
       Seq(seq)
     } else {
-      cutWithTwoPointsMax(seq, getCutPoints(seq))
+      getCutPointsAndCut(seq)
     }
   }
 
