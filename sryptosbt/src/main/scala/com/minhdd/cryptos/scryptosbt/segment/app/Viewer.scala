@@ -50,7 +50,7 @@ object Viewer {
 
     def viewSegments: Unit = {
         val smalls: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory/segments/small/15/20200725091802").as[Seq[BeforeSplit]]
+            spark.read.parquet(s"$dataDirectory/segments/small/15/20200819181046").as[Seq[BeforeSplit]]
         smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(10, false)
 
         println("segments not ending")

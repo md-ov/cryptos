@@ -125,10 +125,9 @@ object Splitter {
 //        println("windowSlideFromRightSearch with head : " + seq.head.datetime + " - " + newSplitPosition)
 
       val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
-      val part1 = smallerSeq1 :+ smallerSeq2.head
-      val part2 = smallerSeq2
-      val splitPoints: Seq[Int] = Seq((part1, 0), (part2, smallerSeq1.size))
-      .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+      val splitPoints: Seq[Int] =
+        Seq((smallerSeq1 :+ smallerSeq2.head, 0), (smallerSeq2, smallerSeq1.size))
+          .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
 
       if (splitPoints.nonEmpty) {
         splitPoints

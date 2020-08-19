@@ -1,5 +1,6 @@
 => problèmatique avec le segment actual hard search 3, le point 2020-07-21 15:15:00 n'est pas trouvé
 il faut split : lùi dần từ bên phải, mỗi lần lùi thêm 1 tí : DONE
+Need to document this
 
 => analyser : search for 2 segment sousjacents de meme evolution
 
