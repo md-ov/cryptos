@@ -7,6 +7,7 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.DoubleImplicit
 import org.apache.spark.sql.Dataset
 import SegmentHelper.linear
+import com.minhdd.cryptos.scryptosbt.tools.SeqHelper
 import constants.numberOfCryptoForStability
 
 object Splitter {
@@ -80,7 +81,6 @@ object Splitter {
 
   //begin cut methods
 
-
   def cutManyPoints(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Seq[BeforeSplit]] = {
     if (cutPoints.isEmpty) {
       Seq(seq)
@@ -117,14 +117,103 @@ object Splitter {
 
   //end cut methods
 
-  private def windowSlideFromRightSearch(seq: Seq[BeforeSplit]): Seq[Int] = {
-    val smallerSeq: Seq[BeforeSplit] = seq.dropRight(numberOfCryptoForStability)
-    val splitPoints: Seq[Int] = getSimpleCutPoints(smallerSeq).sortWith(_ < _)
-    if (splitPoints.nonEmpty) {
-      splitPoints
+  private def windowSlideFromRightSearch(seq: Seq[BeforeSplit], previousSplitPosition: Int): Seq[Int] = {
+    if (previousSplitPosition <= numberOfCryptoForStability) {
+      Nil
     } else {
-      windowSlideFromRightSearch(smallerSeq)
+      val newSplitPosition = previousSplitPosition - numberOfCryptoForStability
+//        println("windowSlideFromRightSearch with head : " + seq.head.datetime + " - " + newSplitPosition)
+
+      val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
+      val part1 = smallerSeq1 :+ smallerSeq2.head
+      val part2 = smallerSeq2
+      val splitPoints: Seq[Int] = Seq((part1, 0), (part2, smallerSeq1.size))
+      .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+
+      if (splitPoints.nonEmpty) {
+        splitPoints
+      } else {
+        windowSlideFromRightSearch(seq, newSplitPosition)
+      }
     }
+  }
+
+  private def hardSearch(seq: Seq[BeforeSplit], numberOfSplit: Int = 2): Seq[Int] = {
+//    println("hardSearch : " + seq.size + " - "  + numberOfSplit)
+//    println(seq.head.datetime, seq.last.datetime)
+    val splits: Seq[(Seq[BeforeSplit], Int)] = SeqHelper.splitWithOffset(seq, 0, numberOfSplit)
+    val potentialCutPoints: Seq[Int] = splits.flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+//    println("potential cut points : " + potentialCutPoints + " - " + potentialCutPoints.map(seq.apply(_).datetime))
+    val cuts: Seq[Seq[BeforeSplit]] = Splitter.cutManyPoints(seq, potentialCutPoints)
+    if (cuts.forall(linear)) {
+//      println("all linear with : " + potentialCutPoints)
+      potentialCutPoints
+    } else {
+      if (numberOfSplit >= seq.length / 2) {
+        veryHardSearch(seq, Nil)
+      } else {
+        hardSearch(seq, numberOfSplit + 1)
+      }
+    }
+  }
+
+
+  /****** very hard search ***/
+
+  private def veryHardSearch(seq: Seq[BeforeSplit], cutPoints: Seq[Int]): Seq[Int] = {
+//    println("very hardSearch : " + seq.size + " - "  + cutPoints)
+    val cuts: Seq[Seq[BeforeSplit]] = cutManyPoints(seq, cutPoints)
+    if (cuts.forall(linear)) {
+      cutPoints
+    } else {
+
+      val newPositions: Seq[Int] =
+        cuts.indices.filter(i => !linear(cuts(i))).flatMap(notLinearPosition => {
+          val notLinear: Seq[BeforeSplit] = cuts(notLinearPosition)
+          val offset = if (notLinearPosition == 0) 0 else cutPoints(notLinearPosition - 1)
+          pointsToVeryHardCut(notLinear, offset)
+        })
+
+      if (newPositions.isEmpty) {
+        cutPoints
+      } else {
+        val newCutPoints: Seq[Int] = Seq(cutPoints, newPositions).flatten.sortWith { case (x, y) => x < y }
+        veryHardSearch(seq, newCutPoints)
+      }
+    }
+  }
+
+  private def pointsToVeryHardCut(seq: Seq[BeforeSplit], offset: Int, numberOfSplit: Int = 2): Seq[Int] = {
+    val splits: Seq[(Seq[BeforeSplit], Int)] = SeqHelper.splitWithOffset(seq, offset, numberOfSplit)
+    val cutPoints: Seq[Int] = splits.flatMap(x => getOneCutPoint(x._1, x._2))
+    if (cutPoints.isEmpty) {
+      if (numberOfSplit >= seq.length/2) {
+        Nil
+      } else {
+        pointsToVeryHardCut(seq, offset, numberOfSplit + 1)
+      }
+    } else {
+      cutPoints
+    }
+  }
+
+  private def getOneCutPoint(seq: Seq[BeforeSplit], offset: Int): Option[Int] = {
+    if (seq.size <= 2) {
+      None
+    } else {
+      val points: Seq[Int] = getSimpleCutPoints(seq)
+      if (points.isEmpty) {
+        None
+      } else {
+        Option(points.head + offset)
+      }
+    }
+  }
+  /****** fin very hard search ***/
+
+  def getSimpleCutPointsWithOffset(seq: Seq[BeforeSplit], offset: Int): Seq[Int] = {
+//    println("get simple cut points : " + seq.head.datetime + " - " + seq.last.datetime + " - offset : " + offset)
+    getSimpleCutPoints(seq).map(_ + offset)
   }
 
   def getSimpleCutPoints(seq: Seq[BeforeSplit]): Seq[Int] = {
