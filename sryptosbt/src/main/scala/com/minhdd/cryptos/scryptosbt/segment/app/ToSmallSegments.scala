@@ -35,6 +35,6 @@ object ToSmallSegments {
 
         val ts = DateTimeHelper.now
         println(ts)
-//        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
+        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
     }
 }

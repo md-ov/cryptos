@@ -44,7 +44,7 @@ object Splitter {
   }
 
   def generalCut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
-    if (seq.size == 1 && seq.head.size == 1) {
+    if (seq.size <= 1 && seq.head.size <= 1) {
       seq
     } else {
       if (seq.forall(linear)) {

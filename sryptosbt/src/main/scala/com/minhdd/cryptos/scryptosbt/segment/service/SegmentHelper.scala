@@ -38,14 +38,23 @@ object SegmentHelper {
             month = beginTsHelper.getMonth,
             day = beginTsHelper.getDay)
 
-        val trades: Dataset[Crypto] = tradesFromLastSegment(spark, beginTimestamp, beginCryptoPartitionKey)
-          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+        try {
+            val trades: Dataset[Crypto] = tradesFromLastSegment(spark, beginTimestamp, beginCryptoPartitionKey)
+              .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
 
-        val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark)
-          .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
-          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+            val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark)
+              .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
+              .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
 
-        SegmentHelper.toBeforeSplits(spark, trades, ohlcs).dropRight(1)
+            SegmentHelper.toBeforeSplits(spark, trades, ohlcs).dropRight(1)
+        } catch {
+            case e: Exception => {
+                println("problem")
+                println(beginTimestamp.toDateTime)
+                println(endTimestamp.toDateTime)
+                Seq()
+            }
+        }
     }
 
     def tradesFromLastSegment(spark: SparkSession, lastTimestamps: Timestamp,

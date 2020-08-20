@@ -27,8 +27,8 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-//        viewSegments
-        viewHowCutSmallSegments("2013-08-28 02:00:00", "2013-09-27 01:45:00")
+        viewSegments("15/20200820152453")
+//        viewHowCutSmallSegments("2013-08-28 02:00:00", "2013-09-27 01:45:00")
 //        viewActualSegments
     }
 
@@ -50,9 +50,9 @@ object Viewer {
         println("when linear false then it must be cutable but sometime by hard cut but not by simple cut")
     }
 
-    def viewSegments: Unit = {
+    def viewSegments(path: String): Unit = {
         val smalls: Dataset[Seq[BeforeSplit]] =
-            spark.read.parquet(s"$dataDirectory/segments/small/15/20200819181046").as[Seq[BeforeSplit]]
+            spark.read.parquet(s"$dataDirectory/segments/small/$path").as[Seq[BeforeSplit]]
         smalls.map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).sort("_2").show(10, false)
 
         println("segments not ending")
