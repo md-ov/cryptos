@@ -9,6 +9,7 @@ import org.apache.spark.sql.Dataset
 import SegmentHelper.linear
 import com.minhdd.cryptos.scryptosbt.tools.SeqHelper
 import constants.numberOfCryptoForStability
+import org.joda.time.DateTime
 
 object Splitter {
   def toSplit(b: BeforeSplit): Boolean = b.importantChange.getOrElse(false)
@@ -27,6 +28,14 @@ object Splitter {
 
     val lastTimestamp: Timestamp = beforeSplits.apply(splitIndices.last).datetime
     (bigSegments, lastTimestamp)
+  }
+
+  def generalCutDsTs(ds: Dataset[(Timestamp, Timestamp)]): Dataset[Seq[BeforeSplit]] = {
+    import ds.sparkSession.implicits._
+    ds.flatMap(e => {
+      val beforeSplits = SegmentHelper.getBeforeSplits(ds.sparkSession, e._1, e._2)
+      generalCut(Seq(beforeSplits))
+    })
   }
 
   def generalCut(ds: Dataset[Seq[BeforeSplit]]): Dataset[Seq[BeforeSplit]] = {

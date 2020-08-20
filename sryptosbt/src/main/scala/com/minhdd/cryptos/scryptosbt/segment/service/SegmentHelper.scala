@@ -10,7 +10,6 @@ import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
 import com.minhdd.cryptos.scryptosbt.tools.{Derivative, TimestampHelper}
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import org.apache.spark.sql.{Dataset, SparkSession}
-import org.joda.time.DateTime
 
 object SegmentHelper {
 
@@ -24,10 +23,10 @@ object SegmentHelper {
         spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
     }
 
-    def getBeforeSplits(spark: SparkSession, begin: DateTime, end: DateTime): Seq[BeforeSplit] = {
+    def getBeforeSplits(spark: SparkSession, beginTimestamp: Timestamp, endTs: Timestamp): Seq[BeforeSplit] = {
+        import TimestampHelper.TimestampImplicit
         import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
-        val beginTimestamp = begin.toTimestamp
-        val endTimestamp = end.plusMinutes(constants.numberOfMinutesBetweenTwoElement).toTimestamp
+        val endTimestamp = endTs.toDateTime.plusMinutes(constants.numberOfMinutesBetweenTwoElement).toTimestamp
 
         val beginTsHelper: TimestampHelper = TimestampHelper(beginTimestamp.getTime)
         val beginCryptoPartitionKey = CryptoPartitionKey(

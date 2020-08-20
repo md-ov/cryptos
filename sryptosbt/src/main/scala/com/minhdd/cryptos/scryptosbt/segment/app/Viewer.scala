@@ -28,16 +28,15 @@ object Viewer {
 
     def main(args: Array[String]): Unit = {
 //        viewSegments
-        viewHowCutSmallSegments("2013-08-28 02:00:00", "2013-09-27 01:45:00", "yyyy-MM-dd HH:mm:ss")
+        viewHowCutSmallSegments("2013-08-28 02:00:00", "2013-09-27 01:45:00")
 //        viewActualSegments
     }
 
-    // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
-    def viewHowCutSmallSegments(start: String, end: String, format: String): Unit = {
-        val startLocalDate: DateTime = DateTime.parse(start, DateTimeFormat.forPattern(format))
-        val endLocalDate: DateTime = DateTime.parse(end, DateTimeFormat.forPattern(format))
+    def viewHowCutSmallSegments(start: String, end: String): Unit = {
+        val startTs: Timestamp = TimestampHelper.getTimestamp(start)
+        val endTs: Timestamp = TimestampHelper.getTimestamp(end)
 
-        val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, startLocalDate, endLocalDate)
+        val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, startTs, endTs)
 //        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20130919", seq)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)

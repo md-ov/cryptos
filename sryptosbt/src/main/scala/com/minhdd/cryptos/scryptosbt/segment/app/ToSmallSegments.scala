@@ -26,14 +26,15 @@ object ToSmallSegments {
         val bb: Dataset[Seq[BeforeSplit]] = Seq("1316", "2017", "2018", "2019", "2020").map(year => {
             val bigs: Dataset[Seq[BeforeSplit]] =
                 spark.read.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year").as[Seq[BeforeSplit]]
-//            bigs.filter(_.head.isEndOfSegment == true).show(5, false)
-            Splitter.generalCut(bigs)
+//            bigs.map(_.size).filter(_ < 10).show(1000, false)
+//            val completedBigs =
+            Splitter.generalCutDsTs(bigs.map(s => (s.head.datetime, s.last.datetime)))
         }).reduce(_.union(_))
         
 //        bb.filter(_.last.isEndOfSegment == false).show(5, false)
 
         val ts = DateTimeHelper.now
         println(ts)
-        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
+//        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
     }
 }
