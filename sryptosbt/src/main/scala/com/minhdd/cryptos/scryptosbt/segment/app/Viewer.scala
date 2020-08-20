@@ -6,11 +6,13 @@ import com.minhdd.cryptos.scryptosbt.constants
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
+import com.minhdd.cryptos.scryptosbt.segment.service.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}
-import com.minhdd.cryptos.scryptosbt.tools.{SparkHelper, TimestampHelper}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, SparkHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 import com.minhdd.cryptos.scryptosbt.segment.service.SegmentHelper.linear
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTime, LocalDateTimes}
 
 object Viewer {
 
@@ -25,18 +27,19 @@ object Viewer {
     import spark.implicits._
 
     def main(args: Array[String]): Unit = {
-        viewSegments
-//        viewHowCutSmallSegments
+//        viewSegments
+        viewHowCutSmallSegments("2013-08-28 02:00:00", "2013-09-27 01:45:00", "yyyy-MM-dd HH:mm:ss")
 //        viewActualSegments
     }
 
     // to view segment which end at 2020-05-11 20:15:00 you have to add 15s to the end timestamp
-    def viewHowCutSmallSegments: Unit = {
-        val start: Timestamp = TimestampHelper.getTimestamp("2019-08-16 07:45:00")
-        val end: Timestamp = TimestampHelper.getTimestamp("2019-08-16 15:00:00")
-        val seq: Seq[BeforeSplit] = ActualSegment.getBeforeSplits(start, end).dropRight(1)
-//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20190816", seq)
-        import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.{SeqDoubleImplicit}
+    def viewHowCutSmallSegments(start: String, end: String, format: String): Unit = {
+        val startLocalDate: DateTime = DateTime.parse(start, DateTimeFormat.forPattern(format))
+        val endLocalDate: DateTime = DateTime.parse(end, DateTimeFormat.forPattern(format))
+
+        val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, startLocalDate, endLocalDate)
+//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20130919", seq)
+        import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         println("linear : " + linear)
 
@@ -56,9 +59,9 @@ object Viewer {
         println("segments not ending")
         smalls.filter(x => ! x.last.isEndOfSegment).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(10,false)
 
-        val numberOfVeryShortSegments = smalls.filter(_.size < 5).count
-        println("number of very short segments : " + numberOfVeryShortSegments)
-        smalls.filter(_.size < 5).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(10)
+        val numberOfVeryShortSegments = smalls.filter(_.size == 2).count
+        println("number of 2 elements segments : " + numberOfVeryShortSegments)
+        smalls.filter(_.size == 2).map(seq => (seq.size, seq.head.datetime, seq.last.datetime)).show(10)
 
         println("size of small segments: " + smalls.count())
         println("==============")
@@ -71,7 +74,7 @@ object Viewer {
     }
 
     def viewActualSegments = {
-        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+        def actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark)
 
         println(actualSegments.size)
         //        println(actualSegments.last.size)

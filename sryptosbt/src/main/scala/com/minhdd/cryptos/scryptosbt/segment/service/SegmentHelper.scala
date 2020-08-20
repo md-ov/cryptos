@@ -2,17 +2,61 @@ package com.minhdd.cryptos.scryptosbt.segment.service
 
 import java.sql.Timestamp
 
-import com.minhdd.cryptos.scryptosbt.constants
+import com.minhdd.cryptos.scryptosbt.env._
+import com.minhdd.cryptos.scryptosbt.{constants, env}
 import com.minhdd.cryptos.scryptosbt.constants._
-import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, KrakenCrypto}
-import com.minhdd.cryptos.scryptosbt.tools.Derivative
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey, KrakenCrypto}
+import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
+import com.minhdd.cryptos.scryptosbt.tools.{Derivative, TimestampHelper}
 import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
 import org.apache.spark.sql.{Dataset, SparkSession}
+import org.joda.time.DateTime
 
 object SegmentHelper {
 
     def linear(seq: Seq[BeforeSplit]): Boolean = {
         seq.size <= 2 || seq.map(_.value).linear(constants.relativeMinDelta)
+    }
+
+    def getSmallSegments(spark: SparkSession): Dataset[Seq[BeforeSplit]]  = {
+        import spark.implicits._
+
+        spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
+    }
+
+    def getBeforeSplits(spark: SparkSession, begin: DateTime, end: DateTime): Seq[BeforeSplit] = {
+        import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
+        val beginTimestamp = begin.toTimestamp
+        val endTimestamp = end.plusMinutes(constants.numberOfMinutesBetweenTwoElement).toTimestamp
+
+        val beginTsHelper: TimestampHelper = TimestampHelper(beginTimestamp.getTime)
+        val beginCryptoPartitionKey = CryptoPartitionKey(
+            asset = "XBT",
+            currency = "EUR",
+            provider = "KRAKEN",
+            api = "TRADES",
+            year = beginTsHelper.getYear,
+            month = beginTsHelper.getMonth,
+            day = beginTsHelper.getDay)
+
+        val trades: Dataset[Crypto] = tradesFromLastSegment(spark, beginTimestamp, beginCryptoPartitionKey)
+          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+
+        val ohlcs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark)
+          .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
+          .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+
+        SegmentHelper.toBeforeSplits(spark, trades, ohlcs).dropRight(1)
+    }
+
+    def tradesFromLastSegment(spark: SparkSession, lastTimestamps: Timestamp,
+                              lastCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
+
+
+        Crypto.getPartitionsUniFromPathFromLastTimestamp(
+            spark = spark, prefix = env.prefixPath,
+            path1 = env.parquetsPath, path2 = env.parquetsPath, todayPath = env.todayPath,
+            ts = lastTimestamps, lastCryptoPartitionKey = lastCryptoPartitionKey).get
     }
     
     def toBigSegments(spark: SparkSession, trades: Dataset[Crypto], ohlcs: Dataset[Crypto]): (Timestamp, Dataset[Seq[BeforeSplit]]) = {

@@ -4,7 +4,7 @@ import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.model.app.Predictor.{modelPath}
-import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
+import com.minhdd.cryptos.scryptosbt.segment.service.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
 import org.apache.spark.ml.tuning.CrossValidatorModel
@@ -31,7 +31,7 @@ object ResultTaker {
     def main(beginDtString: String): Unit = {
         val dtf: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
         val beginDt: Timestamp = dtf.parseDateTime(beginDtString).toTimestamp
-        val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(beginDt: Timestamp)
+        val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark, beginDt: Timestamp)
 
         println("last element : ")
         println(s"- value : ${actualSegments.last.head.value} -> ${actualSegments.last.last.value}")

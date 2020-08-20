@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
-import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
+import com.minhdd.cryptos.scryptosbt.segment.service.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, SparkHelper, TimestampHelper}
 import org.apache.spark.sql.SparkSession
 
@@ -27,7 +27,7 @@ object TestMac {
   }
 
   private def testActualSegment(spark: SparkSession): Unit = {
-    val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+    val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark)
     println(actualSegments.size)
     SparkHelper.csvFromSeqBeforeSplit(spark, s"${env.mac.tmpDirectory}/actualsegments-${DateTimeHelper.now}.csv", actualSegments.flatten.take(3))
   }

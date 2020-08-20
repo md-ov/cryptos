@@ -6,7 +6,7 @@ import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants._
 import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto, CryptoPartitionKey}
 import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
-import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}
+import com.minhdd.cryptos.scryptosbt.segment.service.{ActualSegment, SegmentHelper, Splitter}
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
 import org.apache.spark.sql.{Dataset, SparkSession}
 

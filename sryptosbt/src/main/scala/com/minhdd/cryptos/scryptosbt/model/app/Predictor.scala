@@ -7,7 +7,7 @@ import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
 import com.minhdd.cryptos.scryptosbt.env.dataDirectory
 import com.minhdd.cryptos.scryptosbt.model.service.ml
 import com.minhdd.cryptos.scryptosbt.model.service.ml.{label, predict, prediction}
-import com.minhdd.cryptos.scryptosbt.segment.app.ActualSegment.getActualSegments
+import com.minhdd.cryptos.scryptosbt.segment.service.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, ModelHelper}
 import org.apache.spark.ml.feature.Binarizer
 import org.apache.spark.ml.tuning.CrossValidatorModel
@@ -36,7 +36,7 @@ object Predictor {
     
     def main() = {
         import spark.implicits._
-        val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments
+        val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark)
         val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
         val lastSegment: Seq[BeforeSplit] = ds.collect.last
         val df = ds.toDF()
