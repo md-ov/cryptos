@@ -1,3 +1,23 @@
+documentation of how segments are cut
+
+
+
+gérer timezone pour les dates
+------------
+(673,2013-09-19 02:00:00.0,2013-09-26 02:00:00.0)
+(96,2013-09-26 02:00:00.0,2013-09-27 01:45:00.0)
+
+
+|672 |2013-09-19 02:00:00|2013-09-26 01:45:00|
+|2   |2013-09-26 01:45:00|2013-09-26 02:00:00|
+|96  |2013-09-26 02:00:00|2013-09-27 01:45:00|
+
+
+???
+----------------
+rechercher des segments cạnh nhau avec meme évolution
+----------------
+
 => problèmatique avec le segment actual hard search 3, le point 2020-07-21 15:15:00 n'est pas trouvé
 il faut split : lùi dần từ bên phải, mỗi lần lùi thêm 1 tí : DONE
 Need to document this

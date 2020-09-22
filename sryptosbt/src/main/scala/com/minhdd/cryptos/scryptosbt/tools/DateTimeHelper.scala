@@ -116,6 +116,8 @@ object TimestampHelper {
     }
     
     implicit class TimestampImplicit(input: Timestamp) {
+
+        def getString: String = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").print(toDateTime)
         
         def afterOrSame(other: Timestamp): Boolean = !input.before(other)
         

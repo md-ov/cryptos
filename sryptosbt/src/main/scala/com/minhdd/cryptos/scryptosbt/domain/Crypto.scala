@@ -8,6 +8,8 @@ import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, FileSystemService, T
 import org.apache.spark.sql.{Dataset, SparkSession}
 import com.minhdd.cryptos.scryptosbt.tools.FileHelper.getSeparator
 import com.minhdd.cryptos.scryptosbt.tools.Implicits.TryImplicit
+import com.minhdd.cryptos.scryptosbt.tools.FileHelper
+
 import scala.util.Try
 
 case class CryptoPartitionKey(asset: String,
@@ -199,6 +201,7 @@ object Crypto {
             import spark.implicits._
             spark.read.parquet(path).as[Crypto]
         }.mapException(e => {
+            println("getPartitionFromPath")
             println(e.getMessage)
             new Exception("$path is not a parquet", e)
         }).toOption
@@ -212,15 +215,44 @@ object Crypto {
             val allPaths = allPartitionsPath.map(prefix + _)
             allPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
         }.mapException(e => {
+            println("getPartitionsUniFromPath")
             println(e.getMessage)
             new Exception("path is not a parquet", e)
         }).toOption
     }
-    
+
+    def getPartitionsUniFromPathBetweenTwoTimestamps(spark: SparkSession, prefix: String, path1: String,
+                                                     path2: String,
+                                                     beginTs: Timestamp, beginCryptoPartitionKey: CryptoPartitionKey,
+                                                     endTs: Timestamp, endCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
+        Try {
+            import spark.implicits._
+
+            val partitionPathOfBeginTimestampDay: String = beginCryptoPartitionKey.getPartitionPath(path2)
+            val allPaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, beginTs, beginCryptoPartitionKey)
+
+            val partitionPathOfEndTimestampDay: String = endCryptoPartitionKey.getPartitionPath(path2)
+            val toExcludePaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, endTs, endCryptoPartitionKey)
+
+            val filteredPaths: Seq[String] = allPaths.filterNot(toExcludePaths.contains) ++ Seq(partitionPathOfBeginTimestampDay, partitionPathOfEndTimestampDay)
+
+//            println(s"filtered paths for : $beginTs -> $endTs" )
+//            filteredPaths.foreach(println)
+//            println(s"end filtered paths for : $beginTs -> $endTs" )
+
+            filteredPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
+
+        }.mapException(e => {
+            println("getPartitionsUniFromPathBetweenTwoTimestamps")
+            println(e.getMessage)
+            new Exception("There is something wrong", e)
+        }).toOption
+    }
+
     def getPartitionsUniFromPathFromLastTimestamp(spark: SparkSession, prefix: String, path1: String,
                                                   path2: String, todayPath: String, ts: Timestamp,
                                                   lastCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
-        import com.minhdd.cryptos.scryptosbt.tools.FileHelper
+
         Try {
             import spark.implicits._
 
@@ -229,7 +261,7 @@ object Crypto {
                 throw new RuntimeException("There is no today data")
             } else {
                 val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
-                val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
+                val allPaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, ts, lastCryptoPartitionKey)
                 val pathForSpark: String = FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)
                 val dsFromLastTimestampDay: Option[Dataset[Crypto]] =
                     Try {
@@ -253,6 +285,7 @@ object Crypto {
                 }
             }
         }.mapException(e => {
+            println("getPartitionsUniFromPathFromLastTimestamp")
             println(e.getMessage)
             new Exception("There is something wrong", e)
         }).toOption
@@ -264,6 +297,7 @@ object Crypto {
             import spark.implicits._
             spark.read.parquet(path).as[Crypto].filter(_.cryptoValue.datetime.afterOrSame(ts))
         }.mapException(e => {
+            println("getPartitionFromPathFromLastTimestamp")
             println(e.getMessage)
             new Exception("path is not a parquet", e)
         }).toOption

@@ -22,7 +22,7 @@ object FileHelper {
 
   def getSeparator(path: String): String = if (!path.contains("\\")) "/" else "\\"
 
-  def getAllDirFromLastTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
+  def getAllDirFromTimestamp(path: String, ts: Timestamp, cryptoPartitionKey: CryptoPartitionKey): Seq[String] = {
     val d = new File(path)
     getRecursiveDirsFromLastTimestamp(d, ts, cryptoPartitionKey, false, false)
       .map(_.getAbsolutePath)

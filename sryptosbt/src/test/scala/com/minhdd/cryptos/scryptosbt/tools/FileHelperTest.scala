@@ -11,7 +11,7 @@ class FileHelperTest extends FunSuite {
     }
     
     test("testGetAllDirFromLastTimestamp") {
-        val allDirs: Seq[String] = FileHelper.getAllDirFromLastTimestamp(
+        val allDirs: Seq[String] = FileHelper.getAllDirFromTimestamp(
             path = "src/test/resources/parquets",
             ts = TimestampHelper.getTimestamp("2019-04-29-10-30", "yyyy-MM-dd-hh-mm"),
             cryptoPartitionKey = CryptoPartitionKey(

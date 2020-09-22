@@ -1,10 +1,14 @@
 package com.minhdd.cryptos.scryptosbt.segment.app
 
+import java.sql.Timestamp
+
 import com.minhdd.cryptos.scryptosbt.env._
 import com.minhdd.cryptos.scryptosbt.constants.numberOfMinutesBetweenTwoElement
-import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.segment.service.Splitter
-import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper
+import com.minhdd.cryptos.scryptosbt.domain.{BeforeSplit, Crypto}
+import com.minhdd.cryptos.scryptosbt.parquet.ParquetHelper
+import com.minhdd.cryptos.scryptosbt.segment.service.{SegmentHelper, Splitter}
+import com.minhdd.cryptos.scryptosbt.tools.{DateTimeHelper, TimestampHelper}
+import com.minhdd.cryptos.scryptosbt.tools.TimestampHelper.TimestampImplicit
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 //2
@@ -22,19 +26,30 @@ object ToSmallSegments {
         
         spark.sparkContext.setLogLevel("ERROR")
         import spark.implicits._
-        
-        val bb: Dataset[Seq[BeforeSplit]] = Seq("1316", "2017", "2018", "2019", "2020").map(year => {
-            val bigs: Dataset[Seq[BeforeSplit]] =
-                spark.read.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year").as[Seq[BeforeSplit]]
+
+        val ohlcDs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).persist
+
+        val sss: Seq[Seq[BeforeSplit]] = Seq("1316", "2017", "2018", "2019", "2020").flatMap(year => {
+            val bigs: Array[Seq[BeforeSplit]] =
+                spark.read.parquet(s"$dataDirectory/segments/big/big$numberOfMinutesBetweenTwoElement/$year").as[Seq[BeforeSplit]].collect
 //            bigs.map(_.size).filter(_ < 10).show(1000, false)
-//            val completedBigs =
-            Splitter.generalCutDsTs(bigs.map(s => (s.head.datetime, s.last.datetime)))
-        }).reduce(_.union(_))
+            Splitter.generalCut(bigs.map(seq => {
+                val start: String = seq.head.datetime.getString
+                val end: String = seq.last.datetime.getString
+                val beforeSplits: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, start, end, ohlcDs)
+                if (beforeSplits.nonEmpty) {
+                    val last = beforeSplits.last.copy(isEndOfSegment = true)
+                    beforeSplits.dropRight(1) :+ last
+                } else {
+                    beforeSplits
+                }
+            }))
+        }).filter(_.nonEmpty)
         
 //        bb.filter(_.last.isEndOfSegment == false).show(5, false)
 
         val ts = DateTimeHelper.now
         println(ts)
-        bb.write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
+        spark.createDataset(sss).write.parquet(s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$ts")
     }
 }

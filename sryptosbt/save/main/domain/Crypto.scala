@@ -224,7 +224,7 @@ object Crypto {
         Try {
             import spark.implicits._
             val partitionPathOfLastTimestampDay: String = lastCryptoPartitionKey.getPartitionPath(path2)
-            val allPaths: Seq[String] = FileHelper.getAllDirFromLastTimestamp(path1, ts, lastCryptoPartitionKey)
+            val allPaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, ts, lastCryptoPartitionKey)
             val dsFromLastTimestampDay: Dataset[Crypto] =
                 spark.read.parquet(FileHelper.getPathForSpark(partitionPathOfLastTimestampDay)).as[Crypto]
             val filteredDsFromLastTimestampDay = dsFromLastTimestampDay.filter(_.cryptoValue.datetime.afterOrSame(ts))
