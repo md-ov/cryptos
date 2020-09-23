@@ -28,10 +28,14 @@ object CompleteSmallSegments {
     def main(args: Array[String]): Unit = {
         val smallSegmentsPath = s"$dataDirectory/segments/small/$smallSegmentsFolder"
         val smallSegments: Dataset[Seq[BeforeSplit]] = spark.read.parquet(smallSegmentsPath).as[Seq[BeforeSplit]]
-        val actualSegments = spark.createDataset(ActualSegment.getActualSegments(smallSegments))
-        val allSmalls: Dataset[Seq[BeforeSplit]] = actualSegments.union(smallSegments)
+        val actualSegments: Dataset[Seq[BeforeSplit]] = spark.createDataset(ActualSegment.getActualSegments(smallSegments))
 
-        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/${DateTimeHelper.now}"
+        val allSmalls: Dataset[Seq[BeforeSplit]] = actualSegments.filter(_.last.isEndOfSegment).union(smallSegments)
+
+        val newTs = DateTimeHelper.now
+        println(newTs)
+
+        val outputSegmentsPath = s"$dataDirectory/segments/small/$numberOfMinutesBetweenTwoElement/$newTs"
         allSmalls.write.parquet(outputSegmentsPath)
     }
 }
