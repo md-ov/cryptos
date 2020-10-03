@@ -1,5 +1,10 @@
-documentation of how segments are cut
+*** améliorer algo :
+- ne pas prendre en compte les petits segments
+- réfléchir sur maybe cut too much ?
 
+
+*** documentation of how segments are cut
+- especially when linéaire : maybe cut too much
 
 
 gérer timezone pour les dates

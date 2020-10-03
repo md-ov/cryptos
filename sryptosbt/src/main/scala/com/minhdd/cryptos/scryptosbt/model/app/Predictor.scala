@@ -17,8 +17,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 //3
 //change threshold and run
 object Predictor {
-    val thresholdForPositive = 0.6335472880803533
-    val thresholdForNegative = 0.004119172126988988
+    val thresholdForPositive = 0.5091548599903941
+    val thresholdForNegative = 0.06671776956132627
     val modelPath: String = s"$dataDirectory/ml/models/${ml.upDownPath}"
 
     def main(args: Array[String]): Unit = {
@@ -72,10 +72,10 @@ object Predictor {
         negativeCount: Long,
         okNegative: DataFrame) = stats(targeted)
 
-        println("prediction")
+        println("prediction for predictions-and-results-without-linearity.csv")
         printPrediction(p, lastSegment)
 
-        println;println("stats")
+        println;println("stats for history.csv")
         printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
     
