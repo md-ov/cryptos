@@ -1,3 +1,10 @@
+il faut étudier le delta moyen de variation
+prédiction, si favorable alors
+mettre un ordre d'achat
+et un ordre de vente en avance avec un delta moyen
+
+
+
 *** améliorer algo :
 - ne pas prendre en compte les petits segments
 - réfléchir sur maybe cut too much ?

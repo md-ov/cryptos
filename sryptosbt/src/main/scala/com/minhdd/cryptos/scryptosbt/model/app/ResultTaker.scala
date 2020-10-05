@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-09-25 00:45:00")
+        main("2020-10-02 07:30:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -57,7 +57,7 @@ object ResultTaker {
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
           })
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
-              "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
+              "beginvalue", "endvalue", "beginVariation", "endVariation", "numberOfElement", "label", "prediction")
 
         (segmentsWithRawPrediction, predictionOfLastSegment)
     }
