@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-10-16 11:45:00")
+        main("2020-09-21 17:15:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -42,23 +42,9 @@ object ResultTaker {
         val mapBegindtAndSegmentLength: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
         val
         (segmentsWithRawPrediction: DataFrame,
-        predictionOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
+        predictionOfLastSegment: DataFrame) = Predictor.predictMethod(df, mapBegindtAndSegmentLength, false)
 
         segmentsWithRawPrediction.show()
         predictionOfLastSegment.show()
-    }
-    
-    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]): (DataFrame, DataFrame) = {
-        val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
-        val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
-        val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
-          .filter(row => {
-              val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
-              foundElement.get._2 == row.getAs[Int]("numberOfElement")
-          })
-          .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
-              "beginvalue", "endvalue", "beginVariation", "endVariation", "numberOfElement", "label", "prediction")
-
-        (segmentsWithRawPrediction, predictionOfLastSegment)
     }
 }

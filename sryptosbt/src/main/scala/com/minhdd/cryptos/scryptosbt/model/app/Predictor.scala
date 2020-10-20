@@ -104,11 +104,11 @@ object Predictor {
         (targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     }
     
-    private def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)]) = {
+    def predictMethod(df: DataFrame, mapBegindtAndSegmentLength: Array[(Timestamp, Int)], filterIsSegmentEnd: Boolean = true) = {
         val model: CrossValidatorModel = ModelHelper.getModel(spark, modelPath)
         val segmentsWithRawPrediction: DataFrame = model.transform(df).cache()
         val predictionOfLastSegment: DataFrame = segmentsWithRawPrediction
-          .filter(row => !row.getAs[Boolean]("isSegmentEnd")) //afficher la prédiction du dernier segment avec isSegmentEnd == false
+
           .filter(row => {
               val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
               foundElement.get._2 == row.getAs[Int]("numberOfElement")
@@ -116,7 +116,12 @@ object Predictor {
           .select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
               "beginvalue", "endvalue", "numberOfElement", "label", "prediction")
 
-        (segmentsWithRawPrediction, predictionOfLastSegment)
+
+        if (filterIsSegmentEnd) { //afficher la prédiction du dernier segment avec isSegmentEnd == false
+            (segmentsWithRawPrediction, predictionOfLastSegment.filter(row => !row.getAs[Boolean]("isSegmentEnd")))
+        } else {
+            (segmentsWithRawPrediction, predictionOfLastSegment)
+        }
     }
 
     val delimiter = ","

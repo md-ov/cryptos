@@ -31,14 +31,14 @@ object Viewer {
     val ohlcDs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).persist
 
     def main(args: Array[String]): Unit = {
-        viewSegments("15/20200923072332")
-//        viewHowCutSmallSegments("2017-01-04 06:15:00", "2017-01-04 18:45:00") //add 15 minutes to the "end"
+//        viewSegments("15/20200923072332")
+        viewHowCutSmallSegments("2020-09-21 17:15:00", "2020-10-19 17:45:00") //add 15 minutes to the "end"
 //        viewActualSegments
     }
 
     def viewHowCutSmallSegments(start: String, end: String): Unit = {
         val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, start, end, ohlcDs)
-        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20170104", seq)
+//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20201010", seq)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         println("linear : " + linear)
