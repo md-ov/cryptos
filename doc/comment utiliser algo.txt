@@ -24,10 +24,10 @@ PAS ENCORE AFFICHE
 
 comment décider pour une tracsaction
 -------------------------------------------------------------
-Get predictions binaires en se basant sur prédictions de type Double et les thresholds
+Get predictions binaires en utilisant ResultTaker et en se basant sur prédictions de type Double et les thresholds
 
-Prédiction binaire 0 sur le sens d'évolution 	=> Vente
-Prédiction binaire 1 sur le sens d'évolution  	=> Achat
+Segment est fini, prédiction inverse du segment fini => action (vente si en train de diminuer, achat si entrain d'augmenter)
+
 
 comment une transaction a une forte probabilité d'étre rentable
 -------------------------------------------------------------
