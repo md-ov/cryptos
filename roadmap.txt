@@ -1,3 +1,10 @@
+il faut faire quantile de précision sur la longueur
+et il faut pas trop miser sur longueur petit
+
+
+c'est pas bon
+"2020-10-22 00:45:00","2020-10-22","11070.9","10817.0","2020-10-22 08:45:00","33","0.04487502114598514","0","0","2020-10-22 06:30:00","","24","20201023","15/20200923072524"
+
 il faut étudier le delta moyen de variation
 prédiction, si favorable alors
 mettre un ordre d'achat
