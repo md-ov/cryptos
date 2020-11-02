@@ -1,11 +1,7 @@
-il faut faire quantile de précision sur la longueur
-et il faut pas trop miser sur longueur petit
-
-
-c'est pas bon
+- c'est pas bon
 "2020-10-22 00:45:00","2020-10-22","11070.9","10817.0","2020-10-22 08:45:00","33","0.04487502114598514","0","0","2020-10-22 06:30:00","","24","20201023","15/20200923072524"
 
-il faut étudier le delta moyen de variation
+- il faut étudier le delta moyen de variation
 prédiction, si favorable alors
 mettre un ordre d'achat
 et un ordre de vente en avance avec un delta moyen
@@ -18,6 +14,11 @@ et un ordre de vente en avance avec un delta moyen
 
 *** documentation of how segments are cut
 - especially when linéaire : maybe cut too much
+
+
+- relancer un calcul de modèle updown avec de la nouvelle donnée
+et modèle durée et modèle delta aussi
+
 
 
 gérer timezone pour les dates
