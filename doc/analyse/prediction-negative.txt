@@ -1,0 +1,17 @@
+sur le graph on voit bien que pour les prédiction négative
+
+90% de prédiction négative fausse se situe à < 35 élements
+
+number of bad negative prediction Smaller Than 25 Elements: 116
+number of good negative prediction Smaller Than 25 Elements: 4772
+it is (bad/good Smaller Than 25 Elements) : 2.4308466051969826 percent
+
+number of bad negative prediction Smaller Than 35 Elements: 134
+number of good negative prediction Smaller Than 35 Elements: 5876
+it is (bad/good Smaller Than 35 Elements) : 2.2804628999319263 percent
+
+total (bad/good): 1.2029586279769162 percent
+
+
+Malgré que la prédiction est la plupart de temps bon
+plus que le nombre d'élements est petit plus qu'on a de chance de tomber sur des mauvais prédiction
