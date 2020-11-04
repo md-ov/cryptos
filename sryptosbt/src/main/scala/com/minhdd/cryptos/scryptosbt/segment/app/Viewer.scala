@@ -32,13 +32,23 @@ object Viewer {
 
     def main(args: Array[String]): Unit = {
 //        viewSegments("15/20200923072332")
-        viewHowCutSmallSegments("2020-09-28 04:00:00", "2020-10-16 06:15:00") //add 15 minutes to the "end"
+//        viewHowCutSmallSegments("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103") //add 15 minutes to the "end"
+        viewHowCutSmallSegmentsBetweenOneTimestampAndToday("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103")
 //        viewActualSegments
     }
 
-    def viewHowCutSmallSegments(start: String, end: String): Unit = {
+    def viewHowCutSmallSegments(start: String, end: String, csvOutputPath: String): Unit = {
         val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplits(spark, start, end, ohlcDs)
-//        SparkHelper.csvFromSeqBeforeSplit(spark, "/Users/minhdungdao/Desktop/seq20200921", seq)
+        viewIt(seq, csvOutputPath)
+    }
+
+    def viewHowCutSmallSegmentsBetweenOneTimestampAndToday(start: String, end: String, csvOutputPath: String): Unit = {
+        val seq: Seq[BeforeSplit] = SegmentHelper.getBeforeSplitsBetweenBeginTimestampAndNow(spark, start, end, ohlcDs)
+        viewIt(seq, csvOutputPath)
+    }
+
+    def viewIt(seq: Seq[BeforeSplit], csvOutputPath: String): Unit = {
+        SparkHelper.csvFromSeqBeforeSplit(spark, csvOutputPath, seq)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         println("linear : " + linear)

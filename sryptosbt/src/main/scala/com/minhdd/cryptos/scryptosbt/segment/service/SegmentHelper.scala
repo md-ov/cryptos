@@ -23,6 +23,52 @@ object SegmentHelper {
         spark.read.parquet(s"$dataDirectory${pathDelimiter}segments${pathDelimiter}small${pathDelimiter}$smallSegmentsFolder").as[Seq[BeforeSplit]]
     }
 
+    def getBeforeSplitsBetweenBeginTimestampAndNow(spark: SparkSession, start: String, end: String, ohlcDs: Dataset[Crypto]): Seq[BeforeSplit] = {
+        val beginTimestamp: Timestamp = TimestampHelper.getTimestamp(start)
+        val endTs: Timestamp = TimestampHelper.getTimestamp(end)
+
+        import TimestampHelper.TimestampImplicit
+        import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
+        val endTimestamp = endTs.toDateTime.plusMinutes(constants.numberOfMinutesBetweenTwoElement).toTimestamp
+
+        val beginTsHelper: TimestampHelper = TimestampHelper(beginTimestamp.getTime)
+        val endTsHelper: TimestampHelper = TimestampHelper(endTimestamp.getTime)
+        val beginCryptoPartitionKey = CryptoPartitionKey(
+            asset = "XBT",
+            currency = "EUR",
+            provider = "KRAKEN",
+            api = "TRADES",
+            year = beginTsHelper.getYear,
+            month = beginTsHelper.getMonth,
+            day = beginTsHelper.getDay)
+
+        val endCryptoPartitionKey = CryptoPartitionKey(
+            asset = "XBT",
+            currency = "EUR",
+            provider = "KRAKEN",
+            api = "TRADES",
+            year = endTsHelper.getYear,
+            month = endTsHelper.getMonth,
+            day = endTsHelper.getDay)
+
+        try {
+            val trades: Dataset[Crypto] = tradesBetweenBeginTimestampAndNow(spark, beginTimestamp, endTimestamp, beginCryptoPartitionKey, endCryptoPartitionKey)
+              .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+              .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
+
+            val ohlcs: Dataset[Crypto] = ohlcDs
+              .filter(x => !x.cryptoValue.datetime.before(beginTimestamp))
+              .filter(x => !x.cryptoValue.datetime.after(endTimestamp))
+
+            SegmentHelper.toBeforeSplits(spark, trades, ohlcs).dropRight(1)
+        } catch {
+            case e: Exception => {
+                println("problem : " + start + " - " + end)
+                Seq()
+            }
+        }
+    }
+
     def getBeforeSplits(spark: SparkSession, start: String, end: String, ohlcDs: Dataset[Crypto]): Seq[BeforeSplit] = {
         val beginTimestamp: Timestamp = TimestampHelper.getTimestamp(start)
         val endTs: Timestamp = TimestampHelper.getTimestamp(end)
@@ -67,6 +113,14 @@ object SegmentHelper {
                 Seq()
             }
         }
+    }
+
+    def tradesBetweenBeginTimestampAndNow(spark: SparkSession, beginTs: Timestamp, endTs: Timestamp, beginCryptoPartitionKey: CryptoPartitionKey, endCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {
+        Crypto.getPartitionsUniFromPathBetweenBeginTimestampAndNow(
+            spark = spark, prefix = env.prefixPath,
+            path1 = env.parquetsPath, path2 = env.parquetsPath,
+            beginTs = beginTs, beginCryptoPartitionKey = beginCryptoPartitionKey,
+            endTs = endTs, endCryptoPartitionKey = endCryptoPartitionKey).get
     }
 
     def tradesBetween(spark: SparkSession, beginTs: Timestamp, endTs: Timestamp, beginCryptoPartitionKey: CryptoPartitionKey, endCryptoPartitionKey: CryptoPartitionKey): Dataset[Crypto] = {

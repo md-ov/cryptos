@@ -221,6 +221,29 @@ object Crypto {
         }).toOption
     }
 
+    def getPartitionsUniFromPathBetweenBeginTimestampAndNow(spark: SparkSession, prefix: String, path1: String,
+                                                             path2: String,
+                                                             beginTs: Timestamp, beginCryptoPartitionKey: CryptoPartitionKey,
+                                                             endTs: Timestamp, endCryptoPartitionKey: CryptoPartitionKey): Option[Dataset[Crypto]] = {
+        Try {
+            import spark.implicits._
+
+            val partitionPathOfBeginTimestampDay: String = beginCryptoPartitionKey.getPartitionPath(path2)
+            val allPaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, beginTs, beginCryptoPartitionKey)
+
+            val toExcludePaths: Seq[String] = FileHelper.getAllDirFromTimestamp(path1, endTs, endCryptoPartitionKey)
+
+            val filteredPaths: Seq[String] = allPaths.filterNot(toExcludePaths.contains) ++ Seq(partitionPathOfBeginTimestampDay, env.todayPath)
+
+            filteredPaths.map(spark.read.parquet(_).as[Crypto]).reduce(_.union(_))
+
+        }.mapException(e => {
+            println("getPartitionsUniFromPathBetweenTwoTimestamps")
+            println(e.getMessage)
+            new Exception("There is something wrong", e)
+        }).toOption
+    }
+
     def getPartitionsUniFromPathBetweenTwoTimestamps(spark: SparkSession, prefix: String, path1: String,
                                                      path2: String,
                                                      beginTs: Timestamp, beginCryptoPartitionKey: CryptoPartitionKey,
