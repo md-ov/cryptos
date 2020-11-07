@@ -40,7 +40,8 @@ object Splitter {
       seq
     } else {
       if (seq.forall(linear)) {
-        seq.flatMap(s => cutWithTwoPointsMax(s, getCutPointsWhenLinear(s)))
+//        seq.flatMap(s => cutWithTwoPointsMax(s, getCutPointsWhenLinear(s)))
+        seq
       } else {
         val cuts: Seq[Seq[BeforeSplit]] = seq.flatMap(s => {
           if (linear(s)) {
@@ -64,7 +65,11 @@ object Splitter {
         cutManyPoints(seq, splitPoints)
       }
     } else {
-      val slidePoint: Seq[Int] = windowSlideFromRightSearch(seq, seq.size)
+      val slidePoint: Seq[Int] = if (seq.head.value > seq.last.value) {
+        windowSlideFromRightSearch(seq, seq.size)
+      } else {
+        windowSlideFromLeftSearch(seq, 0)
+      }
       val point: Seq[Int] = if (slidePoint.nonEmpty) {
         slidePoint
       } else {
@@ -122,19 +127,32 @@ object Splitter {
     if (previousSplitPosition <= numberOfCryptoForStability) {
       Nil
     } else {
-      val newSplitPosition = previousSplitPosition - numberOfCryptoForStability
+      val newSplitPosition: Int = previousSplitPosition - numberOfCryptoForStability
 //        println("windowSlideFromRightSearch with head : " + seq.head.datetime + " - " + newSplitPosition)
+      recursiveSlideSearch(newSplitPosition, windowSlideFromRightSearch, seq)
+    }
+  }
 
-      val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
-      val splitPoints: Seq[Int] =
-        Seq((smallerSeq1 :+ smallerSeq2.head, 0), (smallerSeq2, smallerSeq1.size))
-          .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+  private def windowSlideFromLeftSearch(seq: Seq[BeforeSplit], previousSplitPosition: Int): Seq[Int] = {
+    if (seq.length - previousSplitPosition <= numberOfCryptoForStability) {
+      Nil
+    } else {
+      val newSplitPosition = previousSplitPosition + numberOfCryptoForStability
+      recursiveSlideSearch(newSplitPosition, windowSlideFromLeftSearch, seq)
+    }
+  }
 
-      if (splitPoints.nonEmpty) {
-        splitPoints
-      } else {
-        windowSlideFromRightSearch(seq, newSplitPosition)
-      }
+  private def recursiveSlideSearch(newSplitPosition: Int, searchFunction: (Seq[BeforeSplit], Int) => Seq[Int], seq: Seq[BeforeSplit]): Seq[Int] = {
+    val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
+
+    val splitPoints: Seq[Int] =
+      Seq((smallerSeq1 :+ smallerSeq2.head, 0), (smallerSeq2, smallerSeq1.size))
+        .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+
+    if (splitPoints.nonEmpty) {
+      splitPoints
+    } else {
+      searchFunction(seq, newSplitPosition)
     }
   }
 
