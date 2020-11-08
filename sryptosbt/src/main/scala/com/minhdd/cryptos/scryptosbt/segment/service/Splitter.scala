@@ -65,22 +65,17 @@ object Splitter {
         cutManyPoints(seq, splitPoints)
       }
     } else {
-      val slidePoint: Seq[Int] = if (seq.head.value > seq.last.value) {
-        windowSlideFromRightSearch(seq, seq.size)
+      val slidePoints: Seq[Int] = windowSlideFromRightSearch(seq, seq.size)
+      if (slidePoints.size == 2) {
+        cutManyPoints(seq, slidePoints)
       } else {
-        windowSlideFromLeftSearch(seq, 0)
-      }
-      val point: Seq[Int] = if (slidePoint.nonEmpty) {
-        slidePoint
-      } else {
-        hardSearch(seq)
-      }.filter(p => linear(cutOnePoint(seq, p).head)).sortWith(_ > _).headOption.toSeq
-
-      if (point.isEmpty) {
-        println("problem not cut point found for : " + seq.size + " - " + seq.head.datetime)
-        Seq(seq)
-      } else {
-        cutOnePoint(seq, point.head)
+        val hardCutPoint: Seq[Int] = hardSearch(seq).filter(p => linear(cutOnePoint(seq, p).head)).sortWith(_ > _).headOption.toSeq
+        if (hardCutPoint.isEmpty) {
+          println("problem not cut point found for : " + seq.size + " - " + seq.head.datetime)
+          Seq(seq)
+        } else {
+          cutOnePoint(seq, hardCutPoint.head)
+        }
       }
     }
   }
@@ -127,32 +122,25 @@ object Splitter {
     if (previousSplitPosition <= numberOfCryptoForStability) {
       Nil
     } else {
-      val newSplitPosition: Int = previousSplitPosition - numberOfCryptoForStability
+      val newSplitPosition = previousSplitPosition - numberOfCryptoForStability
 //        println("windowSlideFromRightSearch with head : " + seq.head.datetime + " - " + newSplitPosition)
-      recursiveSlideSearch(newSplitPosition, windowSlideFromRightSearch, seq)
-    }
-  }
 
-  private def windowSlideFromLeftSearch(seq: Seq[BeforeSplit], previousSplitPosition: Int): Seq[Int] = {
-    if (seq.length - previousSplitPosition <= numberOfCryptoForStability) {
-      Nil
-    } else {
-      val newSplitPosition = previousSplitPosition + numberOfCryptoForStability
-      recursiveSlideSearch(newSplitPosition, windowSlideFromLeftSearch, seq)
-    }
-  }
+      val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
 
-  private def recursiveSlideSearch(newSplitPosition: Int, searchFunction: (Seq[BeforeSplit], Int) => Seq[Int], seq: Seq[BeforeSplit]): Seq[Int] = {
-    val (smallerSeq1, smallerSeq2): (Seq[BeforeSplit], Seq[BeforeSplit]) = seq.splitAt(newSplitPosition)
+      val splitPointsLeft: Seq[Int] = getSimpleCutPointsWithOffset(smallerSeq1 :+ smallerSeq2.head, 0)
+      val splitPointsRight: Seq[Int] = getSimpleCutPointsWithOffset(smallerSeq2, smallerSeq1.size)
 
-    val splitPoints: Seq[Int] =
-      Seq((smallerSeq1 :+ smallerSeq2.head, 0), (smallerSeq2, smallerSeq1.size))
-        .flatMap(x => getSimpleCutPointsWithOffset(x._1, x._2)).sortWith(_ < _)
+      val splitPoints = if (splitPointsLeft.size == 1 && splitPointsRight.size == 1) {
+        Seq(splitPointsLeft.head, splitPointsRight.head)
+      } else {
+        Nil
+      }
 
-    if (splitPoints.nonEmpty) {
-      splitPoints
-    } else {
-      searchFunction(seq, newSplitPosition)
+      if (splitPoints.nonEmpty) {
+        splitPoints
+      } else {
+        windowSlideFromRightSearch(seq, newSplitPosition)
+      }
     }
   }
 
