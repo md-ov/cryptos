@@ -1,4 +1,12 @@
-how to cut a segment S to some smaller linear segments
+how to cut a segment S to some smaller linear segments`
+
+  def generalCut(seq: Seq[Seq[BeforeSplit]]): Seq[Seq[BeforeSplit]] = {
+
+  private def getCutPointsAndCut(seq: Seq[BeforeSplit]): Seq[Seq[BeforeSplit]] = {
+    getSimpleCutPoints
+    si pas trouvé, slide-windows cut to find 2 points but not one point
+    si pas trouvé then hard search
+  }
 
 - if S linear then method : getCutPointsWhenLinear
 find min and max point which is

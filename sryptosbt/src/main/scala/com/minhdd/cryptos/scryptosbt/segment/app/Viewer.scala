@@ -32,8 +32,8 @@ object Viewer {
 
     def main(args: Array[String]): Unit = {
 //        viewSegments("15/20200923072332")
-//        viewHowCutSmallSegments("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103") //add 15 minutes to the "end"
-        viewHowCutSmallSegmentsBetweenOneTimestampAndToday("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103")
+        viewHowCutSmallSegments("2020-11-02 13:45:00", "2020-11-04 09:00:00", "/Users/minhdungdao/Desktop/seq20201102-2") //add 15 minutes to the "end"
+//        viewHowCutSmallSegmentsBetweenOneTimestampAndToday("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103")
 //        viewActualSegments
     }
 
@@ -48,7 +48,7 @@ object Viewer {
     }
 
     def viewIt(seq: Seq[BeforeSplit], csvOutputPath: String): Unit = {
-        SparkHelper.csvFromSeqBeforeSplit(spark, csvOutputPath, seq)
+//        SparkHelper.csvFromSeqBeforeSplit(spark, csvOutputPath, seq)
         import com.minhdd.cryptos.scryptosbt.tools.NumberHelper.SeqDoubleImplicit
         val linear: Boolean = seq.map(_.value).linear(constants.relativeMinDelta)
         println("linear : " + linear)

@@ -1,4 +1,10 @@
-si je coupe pas les segments déjà linéaire ce serait mieux ?
+relance get small segments and see if all segment are linears
+---------
+
+
+si on regarde le predictor, il cut too much
+si je coupe pas les segments déjà linéaire ce serait mieux ? non
+comment remédier à ça ?
 
 
 
