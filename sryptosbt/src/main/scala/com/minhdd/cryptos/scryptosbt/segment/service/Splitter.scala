@@ -130,14 +130,9 @@ object Splitter {
       val splitPointsLeft: Seq[Int] = getSimpleCutPointsWithOffset(smallerSeq1 :+ smallerSeq2.head, 0)
       val splitPointsRight: Seq[Int] = getSimpleCutPointsWithOffset(smallerSeq2, smallerSeq1.size)
 
-      val splitPoints = if (splitPointsLeft.size == 1 && splitPointsRight.size == 1) {
+      if (splitPointsLeft.size == 1 && splitPointsRight.size == 1 &&
+        cutManyPoints(seq, Seq(splitPointsLeft.head, splitPointsRight.head)).forall(linear)) {
         Seq(splitPointsLeft.head, splitPointsRight.head)
-      } else {
-        Nil
-      }
-
-      if (splitPoints.nonEmpty) {
-        splitPoints
       } else {
         windowSlideFromRightSearch(seq, newSplitPosition)
       }
