@@ -31,8 +31,8 @@ object Viewer {
     val ohlcDs: Dataset[Crypto] = ParquetHelper().ohlcCryptoDs(spark).persist
 
     def main(args: Array[String]): Unit = {
-//        viewSegments("15/20200923072332")
-        viewHowCutSmallSegments("2020-11-02 13:45:00", "2020-11-04 09:00:00", "/Users/minhdungdao/Desktop/seq20201102-2") //add 15 minutes to the "end"
+        viewSegments("15/20201108103917")
+//        viewHowCutSmallSegments("2020-11-02 13:45:00", "2020-11-04 09:00:00", "/Users/minhdungdao/Desktop/seq20201102-2") //add 15 minutes to the "end"
 //        viewHowCutSmallSegmentsBetweenOneTimestampAndToday("2020-11-03 07:00:00", "2020-11-04 07:15:00", "/Users/minhdungdao/Desktop/seq20201103")
 //        viewActualSegments
     }

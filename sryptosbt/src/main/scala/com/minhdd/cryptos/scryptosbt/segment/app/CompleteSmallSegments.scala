@@ -26,7 +26,7 @@ object CompleteSmallSegments {
     import spark.implicits._
     
     def main(args: Array[String]): Unit = {
-        val smallSegmentsPath = s"$dataDirectory/segments/small/$smallSegmentsFolder"
+        val smallSegmentsPath = s"$dataDirectory/segments/small/15/20201108100310"
         val smallSegments: Dataset[Seq[BeforeSplit]] = spark.read.parquet(smallSegmentsPath).as[Seq[BeforeSplit]]
         val actualSegments: Dataset[Seq[BeforeSplit]] = spark.createDataset(ActualSegment.getActualSegments(smallSegments))
 
