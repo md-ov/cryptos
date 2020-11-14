@@ -3,7 +3,7 @@ package com.minhdd.cryptos.scryptosbt.model.app
 import java.sql.Timestamp
 
 import com.minhdd.cryptos.scryptosbt.domain.BeforeSplit
-import com.minhdd.cryptos.scryptosbt.model.app.Predictor.{modelPath}
+import com.minhdd.cryptos.scryptosbt.model.app.Predictor.{updownModelPath}
 import com.minhdd.cryptos.scryptosbt.segment.service.ActualSegment.getActualSegments
 import com.minhdd.cryptos.scryptosbt.tools.DateTimeHelper.DateTimeImplicit
 import com.minhdd.cryptos.scryptosbt.tools.ModelHelper
@@ -14,7 +14,7 @@ import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 //3 après predictor
 object ResultTaker {
     def main(args: Array[String]): Unit = {
-        main("2020-11-11 19:30:00")
+        main("2020-11-13 03:00:00")
     }
     
     val spark: SparkSession = SparkSession.builder()
@@ -42,7 +42,7 @@ object ResultTaker {
         val mapBegindtAndSegmentLength: Array[(Timestamp, Int)] = ds.map(x => (x.head.datetime, x.length)).collect()
         val
         (segmentsWithRawPrediction: DataFrame,
-        predictionOfLastSegment: DataFrame) = Predictor.predictMethod(df, mapBegindtAndSegmentLength, false)
+        predictionOfLastSegment: DataFrame, _) = Predictor.predictMethod(df, mapBegindtAndSegmentLength, false)
 
         segmentsWithRawPrediction.show()
         predictionOfLastSegment.show()
