@@ -11,54 +11,60 @@ object RegressionExplorer {
     import spark.implicits._
 
     val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/size-results/15/20201108144658")
-//    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/variation-results/15/20201108152242")
-//
-//    df.drop("features", "begin-evo",
-//      "endsecondderive", "beginsecondderive", "endderive", "beginderive",
-//      "ohlcBeginVolume", "beginCount", "standardDeviationCount", "averageCount",
-//      "standardDeviationSecondDerive", "averageSecondDerive", "standardDeviationDerive",
-//      "averageDerive", "standardDeviationVariation", "averageVariation",
-//      "averageVolume", "standardDeviationVolume", "endVolume", "endVariation", "beginVolume",
-//      "beginVariation")
-//      .show(false)
+    //    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/variation-results/15/20201108152242")
+    //
+    //    df.drop("features", "begin-evo",
+    //      "endsecondderive", "beginsecondderive", "endderive", "beginderive",
+    //      "ohlcBeginVolume", "beginCount", "standardDeviationCount", "averageCount",
+    //      "standardDeviationSecondDerive", "averageSecondDerive", "standardDeviationDerive",
+    //      "averageDerive", "standardDeviationVariation", "averageVariation",
+    //      "averageVolume", "standardDeviationVolume", "endVolume", "endVariation", "beginVolume",
+    //      "beginVariation")
+    //      .show(false)
 
 
     val df1: Dataset[(Double, Double, Double, Double, Int)] = df.map(x => {
-//      val label = x.getAs[Double]("label").toDouble
+      //      val label = x.getAs[Double]("label").toDouble
       val label = x.getAs[Int]("label").toDouble
       val prediction = x.getAs[Double]("prediction")
-      val error = (prediction - label)/label
-      val goodPercentage = prediction/label
+      val error = (prediction - label) / label
+      val goodPercentage = prediction / label
       val numberOfElement = x.getAs[Int]("numberOfElement")
       (label, prediction, scala.math.abs(error), goodPercentage, numberOfElement)
     })
 
-    println("sort by column 3 : error ")
-    df1.sort("_3")
-      .show(100, false)
+    //    println("sort by column 3 : error ")
+    //    df1.sort("_3")
+    //      .show(100, false)
+    //
+    //    println("sort by column 4 : good prediction percentage")
+    //    df1.sort("_4")
+    //      .show(100, false)
+    //
+    //    println("sort by column 1 : label")
+    //    df1.sort("_1")
+    //      .show(100, false)
 
-    println("sort by column 4 : good prediction percentage")
-    df1.sort("_4")
-      .show(100, false)
+    val maxNumberOfElement: Double = df1.map(_._5).agg(max("value")).map(_.getInt(0)).collect().head
+    println(s"max number of element : $maxNumberOfElement")
 
-    println("sort by column 1 : label")
-    df1.sort("_1")
-      .show(100, false)
+    for (i <- 1 until 2 + maxNumberOfElement.toInt / 10) {
+      val minimumNumberOfElement: Int = (i - 1) * 10
+      val maximumNumberOfElement: Int = i * 10
 
-    println("number of element")
-    df1.map(_._5).agg(max("value")).show()
-
-//    for (i <- 1 until 50) {
-//      val minimumNumberOfElement: Int = i * 10
-//      println(s"minimumNumberOfElement : $minimumNumberOfElement")
-//      val errorDf = df1.filter(x => x._5 > minimumNumberOfElement).map(x => scala.math.abs(x._3))
-//      println(errorDf.count())
-//      println(errorDf.filter(col("value") < 0.2).count())
-//      errorDf.agg(avg("value")).show()
-//    }
+      val errorDf =
+        df1
+          .filter(x => x._5 > minimumNumberOfElement)
+          .filter(x => x._5 <= maximumNumberOfElement)
+          .map(x => scala.math.abs(x._3))
+      //      println(errorDf.count())
+      //      println(errorDf.filter(col("value") < 0.2).count())
+      //      errorDf
+      val score: Double = errorDf.agg(avg("value")).map(_.getDouble(0)).collect().head
+      println(s"${(i - 1) * 10},${i * 10},$score")
+    }
 
     // best numberOfElement je dirais que c'est environs 340 pas plus
-
 
 
   }
