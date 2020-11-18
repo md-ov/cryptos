@@ -7,10 +7,11 @@ import org.apache.spark.sql.functions.{avg, col, max}
 
 //après regression trainer
 object RegressionExplorer {
+
   def main(args: Array[String]): Unit = {
     import spark.implicits._
-
     val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/size-results/15/20201108144658")
+    df.show(5, false)
     //    val df: DataFrame = spark.read.parquet(s"$dataDirectory/ml/variation-results/15/20201108152242")
     //
     //    df.drop("features", "begin-evo",
@@ -23,15 +24,21 @@ object RegressionExplorer {
     //      .show(false)
 
 
-    val df1: Dataset[(Double, Double, Double, Double, Int)] = df.map(x => {
+    val ds: Dataset[(Double, Double, Double, Double, Int, Int)] = df.map(x => {
       //      val label = x.getAs[Double]("label").toDouble
       val label = x.getAs[Int]("label").toDouble
       val prediction = x.getAs[Double]("prediction")
       val error = (prediction - label) / label
       val goodPercentage = prediction / label
       val numberOfElement = x.getAs[Int]("numberOfElement")
-      (label, prediction, scala.math.abs(error), goodPercentage, numberOfElement)
+      val upOrDown: Int = if (x.getAs[Double]("beginvalue") < x.getAs[Double]("endvalue")) 1 else 0
+      (label, prediction, scala.math.abs(error), goodPercentage, numberOfElement, upOrDown)
     })
+
+    val dsUp: Dataset[(Double, Double, Double, Double, Int, Int)] = ds.filter(_._6 == 1)
+    val dsDown: Dataset[(Double, Double, Double, Double, Int, Int)] = ds.filter(_._6 == 0)
+    printScores(dsUp)
+    printScores(dsDown)
 
     //    println("sort by column 3 : error ")
     //    df1.sort("_3")
@@ -45,7 +52,13 @@ object RegressionExplorer {
     //    df1.sort("_1")
     //      .show(100, false)
 
-    val maxNumberOfElement: Double = df1.map(_._5).agg(max("value")).map(_.getInt(0)).collect().head
+    // best numberOfElement je dirais que c'est environs 340 pas plus
+
+  }
+
+  def printScores(ds: Dataset[(Double, Double, Double, Double, Int, Int)]) = {
+    import spark.implicits._
+    val maxNumberOfElement: Double = ds.map(_._5).agg(max("value")).map(_.getInt(0)).collect().head
     println(s"max number of element : $maxNumberOfElement")
 
     for (i <- 1 until 2 + maxNumberOfElement.toInt / 10) {
@@ -53,7 +66,7 @@ object RegressionExplorer {
       val maximumNumberOfElement: Int = i * 10
 
       val errorDf =
-        df1
+        ds
           .filter(x => x._5 > minimumNumberOfElement)
           .filter(x => x._5 <= maximumNumberOfElement)
           .map(x => scala.math.abs(x._3))
@@ -63,10 +76,6 @@ object RegressionExplorer {
       val score: Double = errorDf.agg(avg("value")).map(_.getDouble(0)).collect().head
       println(s"${(i - 1) * 10},${i * 10},$score")
     }
-
-    // best numberOfElement je dirais que c'est environs 340 pas plus
-
-
   }
 
   val spark: SparkSession = SparkSession.builder()
@@ -77,6 +86,5 @@ object RegressionExplorer {
     .master("local[*]").getOrCreate()
 
   spark.sparkContext.setLogLevel("ERROR")
-
 
 }
