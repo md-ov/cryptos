@@ -78,7 +78,7 @@ object CryptosApps extends CommandApp[CommandAppArgs] {
         println(options match {
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
             case args: ToParquetsFromTodayCsv => ToParquetsFromTodayCSV.run(args, getMaster(args.master))
-            case args: Prediction => println(Predictor.run())
+            case args: Prediction => Predictor.run()
         })
     }
 }

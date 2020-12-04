@@ -35,7 +35,7 @@ object Predictor {
 
   spark.sparkContext.setLogLevel("ERROR")
 
-  def run(): String = {
+  def run(): Unit = {
     import spark.implicits._
     val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark)
     val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
@@ -53,13 +53,13 @@ object Predictor {
     predictionOfLastSegment: DataFrame,
     predictionOfSizeOfLastSegment: DataFrame) = predictMethod(df, mapBegindtAndSegmentLength)
 
-    println("raw predictions : ")
-    segmentsWithRawPrediction
-      .filter(row => {
-        val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
-        foundElement.get._2 == row.getAs[Int]("numberOfElement")
-      }).select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
-      "beginvalue", "endvalue", "numberOfElement", "label", "prediction").show(1000)
+//    println("raw predictions : ")
+//    segmentsWithRawPrediction
+//      .filter(row => {
+//        val foundElement: Option[(Timestamp, Int)] = mapBegindtAndSegmentLength.find(_._1 == row.getAs[Timestamp]("begindt"))
+//        foundElement.get._2 == row.getAs[Int]("numberOfElement")
+//      }).select("begindt", "enddt", "isSegmentEnd", "beginEvolution", "endEvolution", "evolutionDirection",
+//      "beginvalue", "endvalue", "numberOfElement", "label", "prediction").show(1000)
     println("prediction for last segment : ")
     predictionOfLastSegment.show()
 
@@ -77,15 +77,20 @@ object Predictor {
     okPositive: DataFrame,
     negativeCount: Long,
     okNegative: DataFrame) = stats(targeted)
-
-    println("prediction for predictions-and-results-without-linearity.csv")
-    printPrediction(p, pSize, lastSegment)
-
     println
     println("stats for history.csv")
     printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
     println
-    "BUY" //"SELL" "HOLD"
+    println("prediction for predictions-and-results-without-linearity.csv")
+    printPrediction(p, pSize, lastSegment)
+
+    println
+    decision(p, pSize, lastSegment)
+  }
+
+  private def decision(p: Double, pSize: Double, lastSegment: Seq[BeforeSplit]): Unit = {
+    val deltaPercentage: Double = (lastSegment.last.value - lastSegment.head.value) /lastSegment.head.value
+    Decision.run(p, pSize, lastSegment.size, deltaPercentage, thresholdForPositive, thresholdForNegative)
   }
 
   private def stats(targeted: DataFrame): (Long, Long, DataFrame, Long, DataFrame) = {
