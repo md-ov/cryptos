@@ -1,6 +1,7 @@
 package com.minhdd.cryptos.scryptosbt
 
 import caseapp._
+import com.minhdd.cryptos.scryptosbt.model.app.Predictor
 import com.minhdd.cryptos.scryptosbt.parquet.{ToParquetsFromCSV, ToParquetsFromTodayCSV}
 
 sealed trait CommandAppArgs
@@ -63,6 +64,8 @@ case class Predict(
                     step: Option[Int]
                   ) extends CommandAppArgs
 
+case class Prediction() extends CommandAppArgs
+
 object CryptosApps extends CommandApp[CommandAppArgs] {
     
     private def getMaster(master: String): String = {
@@ -75,6 +78,7 @@ object CryptosApps extends CommandApp[CommandAppArgs] {
         println(options match {
             case args: ToParquetsFromCsv => ToParquetsFromCSV.run(args, getMaster(args.master))
             case args: ToParquetsFromTodayCsv => ToParquetsFromTodayCSV.run(args, getMaster(args.master))
+            case args: Prediction => Predictor.run()
         })
     }
 }

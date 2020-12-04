@@ -23,7 +23,7 @@ object Predictor {
   val sizeModelPath: String = s"$dataDirectory/ml/size-models/${ml.sizeModelPath}"
 
   def main(args: Array[String]): Unit = {
-    main()
+    run()
   }
 
   val spark: SparkSession = SparkSession.builder()
@@ -35,7 +35,7 @@ object Predictor {
 
   spark.sparkContext.setLogLevel("ERROR")
 
-  def main() = {
+  def run(): String = {
     import spark.implicits._
     val actualSegments: Seq[Seq[BeforeSplit]] = getActualSegments(spark)
     val ds: Dataset[Seq[BeforeSplit]] = spark.createDataset(actualSegments).cache()
@@ -84,6 +84,8 @@ object Predictor {
     println;
     println("stats for history.csv")
     printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
+
+
   }
 
   private def stats(targeted: DataFrame): (Long, Long, DataFrame, Long, DataFrame) = {
