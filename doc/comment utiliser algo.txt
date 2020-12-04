@@ -16,20 +16,24 @@ Les résultats de prédictions
 
 Les résultats importants de prédictions
 -------------------------------------------------------------
-- Prédiction size (size-prediction)
-- Score du size en utilisant sizeModelScores.csv
+- Prédiction size sizePredict
+- Score du size en utilisant sizeModelScores.csv (pour up segment ou down segment)
 - Prédiction binaire (1, 0, -1) sur le sens d'évolution du fin à venir du segment par rapport au début de segment
     1: augmentation
     0 : diminuation
     -1 : pas de prédiction
 
+- marginSize = (sizePredict - size) / sizePredict
+- delta value : (valeur - valeur du début segment)
 
 comment une transaction a une forte probabilité d'étre rentable
 -------------------------------------------------------------
-score du size
-delta actuel
+le size est suffisament ok > 35
+sizePredict score < margin size
+delta value petit
+
 
 comment décider pour une tracsaction
 -------------------------------------------------------------
-Si prédiction binaire : 0, le size est fiable, delta actuel petit (valeur - valeur du début segment) => vente
-Si prédiction biniare : 1, le size est fiable, delta actuel petit (valeur - valeur du début segment) => achat
+Si prédiction binaire : 0, le size est suffisament ok (>35), delta value petit, sizePredict score < margin size => SELL
+Si prédiction biniare : 1, le size est suffisament ok (>35), delta value petit,  sizePredict score < margin size => BUY
