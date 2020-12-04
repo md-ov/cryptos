@@ -85,7 +85,7 @@ object Predictor {
     println("stats for history.csv")
     printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
 
-
+    "BUY" //"SELL" "HOLD"
   }
 
   private def stats(targeted: DataFrame): (Long, Long, DataFrame, Long, DataFrame) = {
