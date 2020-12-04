@@ -81,10 +81,10 @@ object Predictor {
     println("prediction for predictions-and-results-without-linearity.csv")
     printPrediction(p, pSize, lastSegment)
 
-    println;
+    println
     println("stats for history.csv")
     printHistory(actualSegments, lastSegment, targetedCount, positiveCount, okPositive, negativeCount, okNegative)
-
+    println
     "BUY" //"SELL" "HOLD"
   }
 
