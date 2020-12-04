@@ -80,4 +80,9 @@ cryptos-apps to-parquets-from-today-csv --master local --api trades --input-dir 
 echo "To parquets with spark for trades xbt-today-$today done"
 
 echo "Get kraken successfully completed"
+
+echo "Starting Prediction ..."
+cryptos-apps prediction
+echo "Prediction done"
+
 cmd

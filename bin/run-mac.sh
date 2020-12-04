@@ -77,3 +77,7 @@ echo "Starting To parquets with spark for trades xbt-today-$today..."
 echo "To parquets with spark for trades xbt-today-$today done"
 
 echo "Get kraken successfully completed"
+
+echo "Starting Prediction ..."
+~/pack/bin/cryptos-apps prediction
+echo "Prediction done"
