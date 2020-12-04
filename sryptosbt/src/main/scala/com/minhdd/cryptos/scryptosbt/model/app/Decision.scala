@@ -6,15 +6,15 @@ object Decision {
   def run(upDownPredict: Double, sizePredict: Double, size: Int, deltaPercentage: Double, thresholdForPositive: Double, thresholdForNegative: Double) = {
     println("--- Decision ---")
 
-    if (deltaPercentage < constants.relativeMinDelta) {
-      println(s"delta value small : $deltaPercentage < ${constants.relativeMinDelta}")
+    if (deltaPercentage < constants.relativeMinDelta && size > 35) {
+      println(s"size $size > 35 is good and delta value is small : $deltaPercentage < ${constants.relativeMinDelta}")
       val marginSize: Double = (sizePredict - size) / sizePredict
       println(s"margin size : $sizePredict - $size / $sizePredict = $marginSize")
       if (upDownPredict > thresholdForPositive) {
         println(s"prediction up : $upDownPredict > $thresholdForPositive")
         val errorRatio: Double = sizePredictScoresForUpSegment.find(x => x._1._1 <= sizePredict && sizePredict <= x._1._2).get._2
         if (errorRatio <= marginSize) {
-          println(s"sizePredict score : $sizePredict for up segment may be good : $errorRatio (error Ratio) <= $marginSize (margin Size)")
+          println(s"sizePredict [$sizePredict] for up segment may be good : $errorRatio (error Ratio) <= $marginSize (margin Size)")
           println("BUY")
         } else {
           println(s"sizePredict ($sizePredict) with error ratio for up segment too big and may not be good : $errorRatio (error Ratio) > $marginSize (margin Size)")
@@ -24,7 +24,7 @@ object Decision {
         println(s"prediction down : $upDownPredict < $thresholdForNegative")
         val errorRatio: Double = sizePredictScoresForDownSegment.find(x => x._1._1 <= sizePredict && sizePredict <= x._1._2).get._2
         if (errorRatio <= marginSize) {
-          println(s"sizePredict score : $sizePredict for down segment may be good : $errorRatio (error Ratio) <= $marginSize (margin Size)")
+          println(s"sizePredict [$sizePredict] for down segment may be good : $errorRatio (error Ratio) <= $marginSize (margin Size)")
           println("SELL")
         } else {
           println(s"sizePredict ($sizePredict) with error ratio for down segment too big and may not be good : $errorRatio (error Ratio) >$marginSize (margin Size)")
@@ -34,7 +34,7 @@ object Decision {
         println("HOLD")
       }
     } else {
-      println(s"delta value big : $deltaPercentage > ${constants.relativeMinDelta}")
+      println(s"size $size <= 35 or delta value is big : $deltaPercentage > ${constants.relativeMinDelta}")
       println("HOLD")
     }
   }
