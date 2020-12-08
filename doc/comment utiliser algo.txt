@@ -30,10 +30,9 @@ comment une transaction a une forte probabilité d'étre rentable
 -------------------------------------------------------------
 le size est suffisament ok > 35
 sizePredict score < margin size
-delta value petit
 
 
 comment décider pour une tracsaction
 -------------------------------------------------------------
-Si prédiction binaire : 0, le size est suffisament ok (>35), delta value petit, sizePredict score < margin size => SELL
-Si prédiction biniare : 1, le size est suffisament ok (>35), delta value petit,  sizePredict score < margin size => BUY
+Si prédiction binaire : 0, le size est suffisament ok (>35),sizePredict score < margin size => SELL
+Si prédiction biniare : 1, le size est suffisament ok (>35), sizePredict score < margin size => BUY
