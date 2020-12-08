@@ -6,7 +6,7 @@ object Decision {
   def run(upDownPredict: Double, sizePredict: Double, size: Int, deltaPercentage: Double, thresholdForPositive: Double, thresholdForNegative: Double) = {
     println("--- Decision ---")
 
-    if (deltaPercentage < constants.relativeMinDelta && size > 35) {
+    if (math.abs(deltaPercentage) < constants.relativeMinDelta && size > 35) {
       println(s"size $size > 35 is good and delta value is small : $deltaPercentage < ${constants.relativeMinDelta}")
       val marginSize: Double = (sizePredict - size) / sizePredict
       println(s"margin size : $sizePredict - $size / $sizePredict = $marginSize")
