@@ -18,6 +18,6 @@ object constants {
   //    val smallSegmentsFolder = "15/20200724164032"
   //    val smallSegmentsFolder = "15/20200819181046"
 
-  val smallSegmentsFolder = "15/20201108103917"
+  val smallSegmentsFolder = "15/20201223153612"
 
 }
